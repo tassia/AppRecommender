@@ -1,0 +1,6 @@
+apprec.py Depends on:
+
+python
+debian-python
+
+#apt-xapian-index
