@@ -1,5 +1,22 @@
 #!/usr/bin/python
 
+#  AppRecommender - A GNU/Linux application recommender
+#
+#  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import math
 import stats
 
@@ -12,7 +29,7 @@ def dot_product(x,y):
     return sum([(x[i] * y[i]) for i in range(len(x))])
 
 class SimilarityMeasure:
-    """ Abstraction for diferent similarity measures approach. """
+    """ Abstraction for diferent similarity measure approaches. """
 
 class Distance(SimilarityMeasure):
     """ Euclidian distance measure. """
@@ -28,13 +45,13 @@ class Cosine(SimilarityMeasure):
         return float(dot_product(x,y)/(norm(x)*norm(y)))
 
 class Pearson(SimilarityMeasure):
-    """ Pearson coeficient measure. FIXME: ZeroDivisionError. """
+    """ Pearson coeficient measure. """ # FIXME: ZeroDivisionError
     def __call__(self,x,y):
         """ Return Pearson coeficient between vectors 'x' and 'y'. """
         return stats.pearsonr(x,y)
 
 class Spearman(SimilarityMeasure):
-    """ Spearman correlation measure. FIXME: ZeroDivisionError. """
+    """ Spearman correlation measure. """ # FIXME: ZeroDivisionError
     def __call__(self,x,y):
         """ Return Spearman correlation between vectors 'x' and 'y'. """
         return stats.spearmanr(x,y)

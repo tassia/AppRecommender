@@ -1,0 +1,51 @@
+#!/usr/bin/python
+
+#  AppRecommender - A GNU/Linux application recommender
+#
+#  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from operator import itemgetter
+
+class RecommendationResult:
+    def __init__(self,item_score,size):
+        self.item_score = item_score
+        self.size = size
+
+    def get_prediction(self):
+        sorted_result = sorted(self.item_score.items(), key=itemgetter(1))
+        return sorted_result[:self.size]
+
+    def print_result(self):
+        result = self.get_prediction()
+        for i in range(len(result)):
+            print "%2d: %s" % (i,result[i][0])
+
+class Recommender:
+    """  """
+    def __init__(self,items_repository=None,users_repository=None,
+                 knowledge_repository=None,strategy=None):
+        self.items_repository = items_repository
+        self.users_repository = users_repository
+        self.knowledge_repository = knowledge_repository
+        self.strategy = strategy
+
+    def set_strategy(self,strategy):
+        """  """
+        self.strategy = strategy
+
+    def generate_recommendation(self,user):
+        """  """
+        return self.strategy.run(self,user)
