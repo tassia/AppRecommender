@@ -24,6 +24,7 @@ import re
 
 import xapian
 from debian import debtags
+from strategy import PkgMatchDecider
 
 DB_PATH = "/var/lib/debtags/package-tags"
 INDEX_PATH = os.path.expanduser("~/.app-recommender/debtags_index")
@@ -88,17 +89,6 @@ def load_debtags_index(debtags_db,reindex):
     if reindex:
         debtags_index = create_debtags_index(debtags_db,INDEX_PATH)
     return debtags_index
-
-
-class PkgMatchDecider(xapian.MatchDecider):
-    """ Extends xapian.MatchDecider to disconsider installed packages. """
-
-    def __init__(self, installed_pkgs):
-        xapian.MatchDecider.__init__(self)
-        self.installed_pkgs = installed_pkgs
-
-    def __call__(self, doc):
-        return doc.get_data() not in self.installed_pkgs
 
 
 if __name__ == '__main__':

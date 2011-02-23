@@ -68,16 +68,6 @@ class DebtagsDB(debtags.DB):
                                       relevance_index(b)))
         return normalize_tags(' '.join(sorted_relevant_tags[-qtd_of_tags:]))
 
-class PkgMatchDecider(xapian.MatchDecider):
-    """ Extends xapian.MatchDecider to disconsider installed packages. """
-
-    def __init__(self, installed_pkgs):
-         xapian.MatchDecider.__init__(self)
-         self.installed_pkgs = installed_pkgs
-
-    def __call__(self, doc):
-         return doc.get_data() not in self.installed_pkgs
-
 class DebtagsIndex:
     def __init__(self,path):
         self.path = path
