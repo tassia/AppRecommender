@@ -1,6 +1,3 @@
-apprec.py Depends on:
+AppRecommender - Application recommender for GNU/Linux systems
 
-python
-debian-python
-
-#apt-xapian-index
+Depends: python debian-python apt-xapian-index python-stats
