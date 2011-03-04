@@ -27,6 +27,9 @@ class User:
         self.item_score = item_score
         self.demo_profile = demo_profile
 
+    def items(self):
+        return self.item_score.keys()
+
 class LocalSystem(User):
     """  """
     def __init__(self):
@@ -35,6 +38,3 @@ class LocalSystem(User):
         for p in dpkg_output.replace('install','\t').split():
             item_score[p] = 1
         User.__init__(self,item_score)
-
-    def items(self):
-        return self.item_score.keys()
