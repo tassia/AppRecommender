@@ -50,3 +50,9 @@ if __name__ == '__main__':
 
     result = recommender.generate_recommendation(user)
     result.print_result()
+
+    metrics = []
+    metrics.append(Precision())
+    metrics.append(Recall())
+    validation = CrossValidation(0.1,10,recommender,metrics)
+    validation.run(user)

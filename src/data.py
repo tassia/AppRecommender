@@ -76,8 +76,8 @@ class DebtagsIndex:
         """ Load an existing debtags index. """
         if not reindex:
             try:
-                print ("Opening existing debtags xapian index at \'%s\'" %
-                       self.path)
+                #print ("Opening existing debtags xapian index at \'%s\'" %
+                #       self.path)
                 self.index = xapian.Database(self.path)
             except DatabaseError:
                 print "Could not open debtags xapian index"
