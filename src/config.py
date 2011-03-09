@@ -1,0 +1,131 @@
+#!/usr/bin/python
+
+#  AppRecommender - A GNU/Linux application recommender
+#
+#  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import getopt
+import sys
+import os
+import logging
+
+from ConfigParser import *
+
+class Config():
+    """
+    Class to handle configuration options.
+    """
+    def __init__(self):
+        """
+        Set default configuration options.
+        """
+        self.debug = 0
+        self.output = "/dev/null"
+        self.config = None
+        self.tags_db = "/var/lib/debtags/package-tags"
+        self.tags_index = "~/.app-recommender/debtags_index"
+        self.axi = "/var/lib/apt-xapian-index/index"
+        self.axi_values = "/var/lib/apt-xapian-index/values"
+        self.strategy = "ct"    # defaults to the cheapest one
+
+    def usage(self):
+        """
+        Print usage help.
+        """
+        print " [ general ]"
+        print "  -h, --help              Print this help"
+        print "  -d, --debug             Set debug to true. Default is false."
+        print "  -o, --output=PATH       Path to file to save output."
+        print "  -c, --config=PATH       Path to configuration file."
+        print ""
+        print " [ recommender ]"
+        print "  -t, --tagsdb=PATH       Path to debtags database."
+        print "  -i, --tagsindex=PATH    Path to debtags dedicated index."
+        print "  -a, --axi=PATH          Path to Apt-xapian-index."
+        print "  -s, --strategy=OPTION   Recommendation strategy."
+        print ""
+        print " [ strategy options ] "
+        print "  ct = content-based using tags "
+        print "  cta = content-based using tags via apt-xapian-index"
+        print "  cp = content-based using package descriptions "
+        print "  col = collaborative "
+        print "  colct = collaborative through tags content "
+        print "  colcp = collaborative through package descriptions content "
+
+    def read_option(self, section, option):
+        """
+        Read option from configuration file if it is defined there or return
+        default value.
+        """
+        var = "self.%s" % option
+        if self.config.has_option(section, option):
+            return self.config.get(section, option)
+        else:
+            return eval(var)
+
+    def load_options(self):
+        """
+        Load options from configuration file and command line arguments.
+        """
+        try:
+            self.config = ConfigParser()
+            self.config.read(['/etc/apprecommender/recommender.conf',
+                              os.path.expanduser('~/apprecommender.rc')])
+        except (MissingSectionHeaderError), err:
+            logging.error("Error in config file syntax: %s", str(err))
+            os.abort()
+
+        self.debug = self.read_option('general', 'debug')
+        self.output_filename = self.read_option('general', 'output')
+        self.config = self.read_option('general', 'config')
+
+        self.tags_db = self.read_option('recommender', 'tags_db')
+        self.tags_index = self.read_option('recommender', 'tags_index')
+        self.axi = self.read_option('recommender', 'axi')
+
+        short_options = "hdo:c:t:i:a:s:"
+        long_options = ["help", "debug", "output=", "config=",
+                        "tagsdb=", "tagsindex=", "axi=", "strategy="]
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], short_options,
+                                       long_options)
+        except getopt.GetoptError, err:
+            logging.error("Error parsing args: %s", str(err))
+            print "Syntax error"
+            self.usage()
+            sys.exit()
+
+        for o, p in opts:
+            if o in ("-h", "--help"):
+                self.usage()
+                sys.exit()
+            elif o in ("-d", "--debug"):
+                self.debug = 1
+            elif o in ("-o", "--output"):
+                self.output = p
+            elif o in ("-c", "--config"):
+                self.config = p
+            elif o in ("-t", "--tagsdb"):
+                self.tagsdb = p
+            elif o in ("-i", "--tagsindex"):
+                self.tagsindex = p
+            elif o in ("-a", "--axi"):
+                self.axi = p + "/index"
+                self.axi_values = p + "/values"
+            elif o in ("-s", "--strategy"):
+                self.strategy = p
+            else:
+                assert False, "unhandled option"
