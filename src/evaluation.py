@@ -139,7 +139,7 @@ class CrossValidation:
                     exit(1)
                 round_partition[random_key] = cross_item_score.pop(random_key)
             round_user = User(cross_item_score)
-            predicted_result = self.recommender.generate_recommendation(round_user)
+            predicted_result = self.recommender.get_recommendation(round_user)
             real_result = RecommendationResult(round_partition,len(round_partition))
             evaluation = Evaluation(predicted_result,real_result)
             for metric in self.metrics_list:

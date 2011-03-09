@@ -35,17 +35,16 @@ class RecommendationResult:
 
 class Recommender:
     """  """
-    def __init__(self,items_repository=None,users_repository=None,
-                 knowledge_repository=None,strategy=None):
+    def __init__(self,items_repository,users_repository=None,
+                 knowledge_repository=None):
         self.items_repository = items_repository
         self.users_repository = users_repository
         self.knowledge_repository = knowledge_repository
-        self.strategy = strategy
 
     def set_strategy(self,strategy):
         """  """
         self.strategy = strategy
 
-    def generate_recommendation(self,user):
+    def get_recommendation(self,user):
         """  """
         return self.strategy.run(self,user)

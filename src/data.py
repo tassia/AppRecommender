@@ -41,9 +41,7 @@ def normalize_tags(string):
     """ Normalize tag string so that it can be indexed and retrieved. """
     return string.replace(':','_').replace('-','\'')
 
-class DataRepository:
-    """  """
-    # FIXME todos os repositorios devem ser singleton
+# FIXME Data repositories should be singleton
 
 class DebtagsDB(debtags.DB):
     def __init__(self,path):
@@ -68,18 +66,19 @@ class DebtagsDB(debtags.DB):
                                       relevance_index(b)))
         return normalize_tags(' '.join(sorted_relevant_tags[-qtd_of_tags:]))
 
-class DebtagsIndex:
+class DebtagsIndex(xapian.WritableDatabase):
     def __init__(self,path):
         self.path = path
 
     def load(self,debtags_db,reindex):
         """ Load an existing debtags index. """
+        self.debtags_db = debtags_db
         if not reindex:
             try:
-                #print ("Opening existing debtags xapian index at \'%s\'" %
-                #       self.path)
-                self.index = xapian.Database(self.path)
-            except DatabaseError:
+                print ("Opening existing debtags xapian index at \'%s\'" %
+                       self.path)
+                xapian.Database.__init__(self,self.path)
+            except xapian.DatabaseError:
                 print "Could not open debtags xapian index"
                 reindex =1
         if reindex:
@@ -92,11 +91,11 @@ class DebtagsIndex:
         if not os.path.exists(self.path):
             os.makedirs(self.path)
         print "Creating new debtags xapian index at \'%s\'" % self.path
-        self.index = xapian.WritableDatabase(self.path,
+        xapian.WritableDatabase.__init__(self,self.path,
                                              xapian.DB_CREATE_OR_OVERWRITE)
         for pkg,tags in debtags_db.iter_packages_tags():
             doc = xapian.Document()
             doc.set_data(pkg)
             for tag in tags:
                 doc.add_term(normalize_tags(tag))
-            print "indexing ",self.index.add_document(doc)
+            print "indexing ",self.add_document(doc)
