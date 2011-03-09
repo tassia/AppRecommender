@@ -18,6 +18,14 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import commands
+import xapian
+
+class FilterTag(xapian.ExpandDecider):
+    def __call__(self, term):
+        """
+        Return true if the term is a tag, else false
+        """
+        return term[:2] == "XT"
 
 class User:
     """  """
@@ -29,6 +37,26 @@ class User:
 
     def items(self):
         return self.item_score.keys()
+
+    def axi_tag_profile(self,xapian_db,profile_size):
+        terms = []
+        for item in self.items():
+            terms.append("XP"+item)
+        query = xapian.Query(xapian.Query.OP_OR, terms)
+        enquire = xapian.Enquire(xapian_db)
+        enquire.set_query(query)
+        rset = xapian.RSet()
+        for m in enquire.get_mset(0,30000): #consider all matches
+             rset.add_document(m.docid)
+        eset = enquire.get_eset(profile_size, rset, FilterTag())
+        profile = []
+        for res in eset:
+            profile.append(res.term)
+            #print "%.2f %s" % (res.weight,res.term[2:])
+        return profile
+
+    def debtags_tag_profile(self,debtags_db,profile_size):
+        return debtags_db.get_relevant_tags(self.items(),profile_size)
 
 class LocalSystem(User):
     """  """

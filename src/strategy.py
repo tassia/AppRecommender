@@ -17,6 +17,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os, re
 import xapian
 from data import *
 from recommender import *
@@ -51,27 +52,32 @@ class RecommendationStrategy:
 class ItemReputationStrategy(RecommendationStrategy):
     """ Recommendation strategy based on items reputation. """
     def run(self,items_list,heuristic):
-        """  """
+        """ Perform recommendation strategy """
         return RecomendationResult()
 
 class ContentBasedStrategy(RecommendationStrategy):
     """ Content-based recommendation strategy. """
-    #def __init__(self,items_repository):
-    #    self.items_repository = items_repository
-    def __init__(self,reindex):
-        self.reindex = reindex
-
     def run(self,recommender,user):
-        """  """
-        best_tags = recommender.items_repository.get_relevant_tags(user.items(),
-                                                                   50)
-        debtags_index = DebtagsIndex(
-                        os.path.expanduser("~/.app-recommender/debtags_index"))
-        debtags_index.load(recommender.items_repository,self.reindex)
-
+        """ Perform recommendation strategy """
+        profile = user.debtags_tag_profile(recommender.items_repository.debtags_db,50)
         qp = xapian.QueryParser()
-        query = qp.parse_query(best_tags)
-        enquire = xapian.Enquire(debtags_index.index)
+        query = qp.parse_query(profile)
+        enquire = xapian.Enquire(recommender.items_repository)
+        enquire.set_query(query)
+
+        mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
+        item_score = {}
+        for m in mset:
+            item_score[m.document.get_data()] = m.rank
+        return RecommendationResult(item_score,20)
+
+class AxiContentBasedStrategy(RecommendationStrategy):
+    """ Content-based recommendation strategy based on Apt-xapian-index. """
+    def run(self,recommender,user):
+        """ Perform recommendation strategy """
+        profile = user.axi_tag_profile(recommender.items_repository,50)
+        query = xapian.Query(xapian.Query.OP_OR,profile)
+        enquire = xapian.Enquire(recommender.items_repository)
         enquire.set_query(query)
 
         mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
@@ -83,17 +89,17 @@ class ContentBasedStrategy(RecommendationStrategy):
 class ColaborativeStrategy(RecommendationStrategy):
     """ Colaborative recommendation strategy. """
     def run(self,user,users_repository,similarity_measure):
-        """  """
+        """ Perform recommendation strategy """
         return RecomendationResult()
 
 class KnowledgeBasedStrategy(RecommendationStrategy):
     """ Knowledge-based recommendation strategy. """
     def run(self,user,knowledge_repository):
-        """  """
+        """ Perform recommendation strategy """
         return RecomendationResult()
 
 class DemographicStrategy(RecommendationStrategy):
     """ Recommendation strategy based on demographic data. """
     def run(self,user,items_repository):
-        """  """
+        """ Perform recommendation strategy """
         return RecomendationResult()
