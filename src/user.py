@@ -19,11 +19,12 @@
 
 import commands
 import xapian
+import logging
 
 class FilterTag(xapian.ExpandDecider):
     def __call__(self, term):
         """
-        Return true if the term is a tag, else false
+        Return true if the term is a tag, else false.
         """
         return term[:2] == "XT"
 
@@ -52,7 +53,7 @@ class User:
         profile = []
         for res in eset:
             profile.append(res.term)
-            #print "%.2f %s" % (res.weight,res.term[2:])
+            logging.debug("%.2f %s" % (res.weight,res.term[2:]))
         return profile
 
     def debtags_tag_profile(self,debtags_db,profile_size):

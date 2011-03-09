@@ -19,6 +19,7 @@
 
 import os
 import sys
+import logging
 
 from config import *
 from data import *
@@ -28,41 +29,8 @@ from recommender import *
 from strategy import *
 from user import *
 
-# Setup configuration
-#DB_PATH = "/var/lib/debtags/package-tags"
-#INDEX_PATH = os.path.expanduser("~/.app-recommender/debtags_index")
-#
-#XAPIANDBPATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
-#XAPIANDB = XAPIANDBPATH + "/index"
-#XAPIANDBVALUES = XAPIANDBPATH + "/values"
-
-def set_up_logger(cfg):
-    log_format = '%(asctime)s AppRecommender %(levelname)s: %(message)s'
-    log_level = logging.INFO
-    if cfg.debug is 1:
-        log_level = logging.DEBUG
-    logging.basicConfig(level=log_level,format=log_format,filename=cfg.output)
-    console = logging.StreamHandler(sys.stdout)
-    console.setLevel(log_level)
-    formatter = logging.Formatter('%(levelname)s: %(message)s')
-    console.setFormatter(formatter)
-    logging.getLogger('').addHandler(console)
-
 def set_up_recommender(cfg):
-#    reindex = 0
-#    axi = 0
-#    if len(sys.argv) == 2:
-#        if sys.argv[1] == "axi":
-#            axi = 1
-#        else:
-#            DB_PATH = sys.argv[1]
-#            reindex = 1
-#    elif len(sys.argv) > 2:
-#        print >> sys.stderr, ("Usage: %s [PATH_TO_DEBTAGS_DATABASE]" %
-#                              sys.argv[0])
-#        sys.exit(1)
-
-    reindex = 0
+    reindex = 1 #FIXME should do it only if necessary
 
     if cfg.strategy == "cta":
         axi_db = xapian.Database(cfg.axi)
@@ -72,12 +40,13 @@ def set_up_recommender(cfg):
     elif cfg.strategy == "ct":
         debtags_db = DebtagsDB(cfg.tags_db)
         if not debtags_db.load():
-            print >> sys.stderr,("Could not load DebtagsDB from %s." % DB_PATH)
+            logging.error("Could not load DebtagsDB from %s." % cfg.tags_db)
             sys.exit(1)
         debtags_index = DebtagsIndex(os.path.expanduser(cfg.tags_index))
         debtags_index.load(debtags_db,reindex)
         app_rec = Recommender(debtags_index)
         app_rec.set_strategy(ContentBasedStrategy())
+
     return app_rec
 
 def cross_validation(recommender):
@@ -90,7 +59,7 @@ def cross_validation(recommender):
 if __name__ == '__main__':
     cfg = Config()
     cfg.load_options()
-    set_up_logger(cfg)
+    cfg.set_logger()
     rec = set_up_recommender(cfg)
     user = LocalSystem()
     result = rec.get_recommendation(user)

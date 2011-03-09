@@ -23,6 +23,7 @@ import re
 import xapian
 import axi
 from debian import debtags
+import logging
 
 class Item:
     """  """
@@ -38,7 +39,9 @@ class Package(Item):
         print "debian pkg",self.id
 
 def normalize_tags(string):
-    """ Normalize tag string so that it can be indexed and retrieved. """
+    """
+    Normalize tag string so that it can be indexed and retrieved.
+    """
     return string.replace(':','_').replace('-','\'')
 
 # FIXME Data repositories should be singleton
@@ -53,12 +56,14 @@ class DebtagsDB(debtags.DB):
             self.read(open(self.path, "r"), lambda x: not tag_filter.match(x))
             return 1
         except IOError:
-            print >> sys.stderr, ("IOError: could not open debtags file \'%s\'"
-                                   % self.path)
+            logging.error("IOError: could not open debtags file \'%s\'" %
+                          self.path)
             return 0
 
     def get_relevant_tags(self,pkgs_list,qtd_of_tags):
-        """ Return most relevant tags considering a list of packages. """
+        """
+        Return most relevant tags considering a list of packages.
+        """
         relevant_db = self.choose_packages(pkgs_list)
         relevance_index = debtags.relevance_index_function(self,relevant_db)
         sorted_relevant_tags = sorted(relevant_db.iter_tags(),
@@ -71,31 +76,35 @@ class DebtagsIndex(xapian.WritableDatabase):
         self.path = path
 
     def load(self,debtags_db,reindex):
-        """ Load an existing debtags index. """
+        """
+        Load an existing debtags index.
+        """
         self.debtags_db = debtags_db
         if not reindex:
             try:
-                print ("Opening existing debtags xapian index at \'%s\'" %
-                       self.path)
+                logging.info("Opening existing debtags xapian index at \'%s\'"
+                              % self.path)
                 xapian.Database.__init__(self,self.path)
             except xapian.DatabaseError:
-                print "Could not open debtags xapian index"
+                logging.error("Could not open debtags xapian index")
                 reindex =1
         if reindex:
             self.reindex(debtags_db)
 
     def reindex(self,debtags_db):
-        """ Create a xapian index for debtags info based on file 'debtags_db'
-        and place it at 'index_path'.
+        """
+        Create a xapian index for debtags info based on file 'debtags_db' and
+        place it at 'index_path'.
         """
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-        print "Creating new debtags xapian index at \'%s\'" % self.path
+        logging.info("Creating new debtags xapian index at \'%s\'" % self.path)
         xapian.WritableDatabase.__init__(self,self.path,
-                                             xapian.DB_CREATE_OR_OVERWRITE)
+                                         xapian.DB_CREATE_OR_OVERWRITE)
         for pkg,tags in debtags_db.iter_packages_tags():
             doc = xapian.Document()
             doc.set_data(pkg)
             for tag in tags:
                 doc.add_term(normalize_tags(tag))
-            print "indexing ",self.add_document(doc)
+            doc_id = self.add_document(doc)
+            logging.debug("Indexing doc %d",doc_id)

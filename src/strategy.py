@@ -23,20 +23,30 @@ from data import *
 from recommender import *
 
 class ReputationHeuristic:
-    """ Abstraction for diferent reputation heuristics. """
+    """
+    Abstraction for diferent reputation heuristics.
+    """
 
 class BugsHeuristic(ReputationHeuristic):
-    """ Reputation heuristic based on quantity of open bugs. """
+    """
+    Reputation heuristic based on quantity of open bugs.
+    """
 
 class RCBugsHeuristic(ReputationHeuristic):
-    """ Reputation heuristic based on quantity of RC bugs. """
+    """
+    Reputation heuristic based on quantity of RC bugs.
+    """
 
 class PopularityHeuristic(ReputationHeuristic):
-    """ Reputation heuristic based on popularity of packages. """
+    """
+    Reputation heuristic based on popularity of packages.
+    """
 
 
 class PkgMatchDecider(xapian.MatchDecider):
-    """ Extends xapian.MatchDecider to disconsider installed packages. """
+    """
+    Extends xapian.MatchDecider to disconsider installed packages.
+    """
 
     def __init__(self, installed_pkgs):
         xapian.MatchDecider.__init__(self)
@@ -47,18 +57,28 @@ class PkgMatchDecider(xapian.MatchDecider):
 
 
 class RecommendationStrategy:
-    """ Abstraction for diferent recommendation strategy. """
+    """
+    Abstraction for diferent recommendation strategy.
+    """
 
 class ItemReputationStrategy(RecommendationStrategy):
-    """ Recommendation strategy based on items reputation. """
+    """
+    Recommendation strategy based on items reputation.
+    """
     def run(self,items_list,heuristic):
-        """ Perform recommendation strategy """
+        """
+        Perform recommendation strategy.
+        """
         return RecomendationResult()
 
 class ContentBasedStrategy(RecommendationStrategy):
-    """ Content-based recommendation strategy. """
+    """
+    Content-based recommendation strategy.
+    """
     def run(self,recommender,user):
-        """ Perform recommendation strategy """
+        """
+        Perform recommendation strategy.
+        """
         profile = user.debtags_tag_profile(recommender.items_repository.debtags_db,50)
         qp = xapian.QueryParser()
         query = qp.parse_query(profile)
@@ -72,9 +92,13 @@ class ContentBasedStrategy(RecommendationStrategy):
         return RecommendationResult(item_score,20)
 
 class AxiContentBasedStrategy(RecommendationStrategy):
-    """ Content-based recommendation strategy based on Apt-xapian-index. """
+    """
+    Content-based recommendation strategy based on Apt-xapian-index.
+    """
     def run(self,recommender,user):
-        """ Perform recommendation strategy """
+        """
+        Perform recommendation strategy.
+        """
         profile = user.axi_tag_profile(recommender.items_repository,50)
         query = xapian.Query(xapian.Query.OP_OR,profile)
         enquire = xapian.Enquire(recommender.items_repository)
@@ -87,19 +111,31 @@ class AxiContentBasedStrategy(RecommendationStrategy):
         return RecommendationResult(item_score,20)
 
 class ColaborativeStrategy(RecommendationStrategy):
-    """ Colaborative recommendation strategy. """
+    """
+    Colaborative recommendation strategy.
+    """
     def run(self,user,users_repository,similarity_measure):
-        """ Perform recommendation strategy """
+        """
+        Perform recommendation strategy.
+        """
         return RecomendationResult()
 
 class KnowledgeBasedStrategy(RecommendationStrategy):
-    """ Knowledge-based recommendation strategy. """
+    """
+    Knowledge-based recommendation strategy.
+    """
     def run(self,user,knowledge_repository):
-        """ Perform recommendation strategy """
+        """
+        Perform recommendation strategy.
+        """
         return RecomendationResult()
 
 class DemographicStrategy(RecommendationStrategy):
-    """ Recommendation strategy based on demographic data. """
+    """
+    Recommendation strategy based on demographic data.
+    """
     def run(self,user,items_repository):
-        """ Perform recommendation strategy """
+        """
+        Perform recommendation strategy.
+        """
         return RecomendationResult()

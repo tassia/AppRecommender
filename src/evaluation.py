@@ -19,6 +19,8 @@
 
 import random
 from collections import defaultdict
+import logging
+
 from user import *
 from recommender import *
 
@@ -92,14 +94,17 @@ class Evaluation:
         return metric.run(self)
 
 class CrossValidation:
-    """ Cross-validation method """
+    """
+    Cross-validation method
+    """
     def __init__(self,partition_proportion,rounds,rec,metrics_list):
-        """ Set parameters: partition_size, rounds, recommender and
-        metrics_list """
+        """
+        Set defaults: partition_size, rounds, recommender and metrics_list
+        """
         if partition_proportion<1 and partition_proportion>0:
             self.partition_proportion = partition_proportion
         else:
-            print "A proporcao de particao deve ser um avalor ente 0 e 1."
+            logging.critical("A proporcao de particao deve ser um avalor ente 0 e 1.")
             exit(1)
         self.rounds = rounds
         self.recommender = rec
@@ -126,7 +131,9 @@ class CrossValidation:
         print "|  Mean |%s" % (metrics_mean)
 
     def run(self,user):
-        """ Perform cross-validation. """
+        """
+        Perform cross-validation.
+        """
         partition_size = int(len(user.item_score)*self.partition_proportion)
         cross_item_score = user.item_score.copy()
         for r in range(self.rounds):
@@ -135,7 +142,7 @@ class CrossValidation:
                 if len(cross_item_score)>0:
                     random_key = random.choice(cross_item_score.keys())
                 else:
-                    print "cross_item_score vazio"
+                    logging.critical("cross_item_score vazio")
                     exit(1)
                 round_partition[random_key] = cross_item_score.pop(random_key)
             round_user = User(cross_item_score)
