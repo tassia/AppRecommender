@@ -24,6 +24,7 @@ import xapian
 import axi
 from debian import debtags
 import logging
+import hashlib
 
 class Item:
     """  """
@@ -74,33 +75,52 @@ class DebtagsDB(debtags.DB):
 class DebtagsIndex(xapian.WritableDatabase):
     def __init__(self,path):
         self.path = path
+        self.db_md5 = 0
 
-    def load(self,debtags_db,reindex):
+    def load(self,debtags_db,reindex=0):
         """
         Load an existing debtags index.
         """
         self.debtags_db = debtags_db
+        db = open(debtags_db.path)
+        md5 = hashlib.md5()
+        md5.update(db.read())
+        self.db_md5 = md5.hexdigest()
+
         if not reindex:
             try:
                 logging.info("Opening existing debtags xapian index at \'%s\'"
                               % self.path)
                 xapian.Database.__init__(self,self.path)
+                md5 = self.get_metadata("md5")
+                if not md5 == self.db_md5:
+                    logging.info("Index must be updated.")
+                    reindex = 1
             except xapian.DatabaseError:
-                logging.error("Could not open debtags xapian index")
+                logging.info("Could not open index.")
                 reindex =1
-        if reindex:
-            self.reindex(debtags_db)
 
-    def reindex(self,debtags_db):
+        if reindex:
+            self.create_index(debtags_db)
+
+    def create_index(self,debtags_db):
         """
         Create a xapian index for debtags info based on file 'debtags_db' and
         place it at 'index_path'.
         """
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-        logging.info("Creating new debtags xapian index at \'%s\'" % self.path)
-        xapian.WritableDatabase.__init__(self,self.path,
-                                         xapian.DB_CREATE_OR_OVERWRITE)
+
+        try:
+            logging.info("Creating new xapian index for debtags at \'%s\'" %
+                         self.path)
+            xapian.WritableDatabase.__init__(self,self.path,
+                                             xapian.DB_CREATE_OR_OVERWRITE)
+        except xapian.DatabaseError:
+            logging.critical("Could not create xapian index.")
+            exit(1)
+
+        self.set_metadata("md5",self.db_md5)
         for pkg,tags in debtags_db.iter_packages_tags():
             doc = xapian.Document()
             doc.set_data(pkg)

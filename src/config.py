@@ -42,6 +42,7 @@ class Config():
         self.axi = "/var/lib/apt-xapian-index/index"
         self.axi_values = "/var/lib/apt-xapian-index/values"
         self.strategy = "ct"    # defaults to the cheapest one
+        self.reindex = 0
 
     def usage(self):
         """
@@ -57,6 +58,7 @@ class Config():
         print " [ recommender ]"
         print "  -t, --tagsdb=PATH       Path to debtags database."
         print "  -i, --tagsindex=PATH    Path to debtags dedicated index."
+        print "  -r, --force-reindex     Force reindexing debtags database."
         print "  -a, --axi=PATH          Path to Apt-xapian-index."
         print "  -s, --strategy=OPTION   Recommendation strategy."
         print ""
@@ -98,17 +100,18 @@ class Config():
 
         self.tags_db = self.read_option('recommender', 'tags_db')
         self.tags_index = self.read_option('recommender', 'tags_index')
+        self.reindex = self.read_option('recommender', 'reindex')
         self.axi = self.read_option('recommender', 'axi')
 
-        short_options = "hdvo:c:t:i:a:s:"
+        short_options = "hdvo:c:t:i:ra:s:"
         long_options = ["help", "debug", "verbose", "output=", "config=",
-                        "tagsdb=", "tagsindex=", "axi=", "strategy="]
+                        "tagsdb=", "tagsindex=", "reindex", "axi=", "strategy="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
-        except getopt.GetoptError, err:
-            logging.error("Error parsing args: %s", str(err))
-            print "Syntax error"
+        except getopt.GetoptError as error:
+            self.set_logger()
+            logging.error("Bad syntax: %s" % str(error))
             self.usage()
             sys.exit()
 
@@ -128,6 +131,8 @@ class Config():
                 self.tagsdb = p
             elif o in ("-i", "--tagsindex"):
                 self.tagsindex = p
+            elif o in ("-r", "--force-reindex"):
+                self.reindex = 1
             elif o in ("-a", "--axi"):
                 self.axi = p + "/index"
                 self.axi_values = p + "/values"

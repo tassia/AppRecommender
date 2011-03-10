@@ -85,7 +85,12 @@ class ContentBasedStrategy(RecommendationStrategy):
         enquire = xapian.Enquire(recommender.items_repository)
         enquire.set_query(query)
 
-        mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
+        try:
+            mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
+        except xapian.DatabaseError as error:
+            logging.critical(error.get_msg())
+            exit(1)
+
         item_score = {}
         for m in mset:
             item_score[m.document.get_data()] = m.rank
@@ -104,7 +109,12 @@ class AxiContentBasedStrategy(RecommendationStrategy):
         enquire = xapian.Enquire(recommender.items_repository)
         enquire.set_query(query)
 
-        mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
+        try:
+            mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
+        except xapian.DatabaseError as error:
+            logging.critical(error.get_msg())
+            exit(1)
+
         item_score = {}
         for m in mset:
             item_score[m.document.get_data()] = m.rank

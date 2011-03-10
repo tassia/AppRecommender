@@ -30,8 +30,6 @@ from strategy import *
 from user import *
 
 def set_up_recommender(cfg):
-    reindex = 1 #FIXME should do it only if necessary
-
     if cfg.strategy == "cta":
         axi_db = xapian.Database(cfg.axi)
         app_rec = Recommender(axi_db)
@@ -43,7 +41,7 @@ def set_up_recommender(cfg):
             logging.error("Could not load DebtagsDB from %s." % cfg.tags_db)
             sys.exit(1)
         debtags_index = DebtagsIndex(os.path.expanduser(cfg.tags_index))
-        debtags_index.load(debtags_db,reindex)
+        debtags_index.load(debtags_db,cfg.reindex)
         app_rec = Recommender(debtags_index)
         app_rec.set_strategy(ContentBasedStrategy())
 
