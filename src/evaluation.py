@@ -105,7 +105,7 @@ class CrossValidation:
             self.partition_proportion = partition_proportion
         else:
             logging.critical("A proporcao de particao deve ser um avalor ente 0 e 1.")
-            exit(1)
+            raise Error
         self.rounds = rounds
         self.recommender = rec
         self.metrics_list = metrics_list
@@ -143,7 +143,7 @@ class CrossValidation:
                     random_key = random.choice(cross_item_score.keys())
                 else:
                     logging.critical("cross_item_score vazio")
-                    exit(1)
+                    raise Error
                 round_partition[random_key] = cross_item_score.pop(random_key)
             round_user = User(cross_item_score)
             predicted_result = self.recommender.get_recommendation(round_user)

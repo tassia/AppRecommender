@@ -20,7 +20,7 @@
 import os, re
 import xapian
 from data import *
-from recommender import *
+import recommender
 
 class ReputationHeuristic:
     """
@@ -75,50 +75,50 @@ class ContentBasedStrategy(RecommendationStrategy):
     """
     Content-based recommendation strategy.
     """
-    def run(self,recommender,user):
+    def run(self,rec,user):
         """
         Perform recommendation strategy.
         """
-        profile = user.debtags_tag_profile(recommender.items_repository.debtags_db,50)
+        profile = user.txi_tag_profile(rec.items_repository,50)
         qp = xapian.QueryParser()
         query = qp.parse_query(profile)
-        enquire = xapian.Enquire(recommender.items_repository)
+        enquire = xapian.Enquire(rec.items_repository)
         enquire.set_query(query)
 
         try:
             mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
         except xapian.DatabaseError as error:
             logging.critical(error.get_msg())
-            exit(1)
+            raise Error
 
         item_score = {}
         for m in mset:
             item_score[m.document.get_data()] = m.rank
-        return RecommendationResult(item_score,20)
+        return recommender.RecommendationResult(item_score,20)
 
 class AxiContentBasedStrategy(RecommendationStrategy):
     """
     Content-based recommendation strategy based on Apt-xapian-index.
     """
-    def run(self,recommender,user):
+    def run(self,rec,user):
         """
         Perform recommendation strategy.
         """
-        profile = user.axi_tag_profile(recommender.items_repository,50)
+        profile = user.axi_tag_profile(rec.items_repository,50)
         query = xapian.Query(xapian.Query.OP_OR,profile)
-        enquire = xapian.Enquire(recommender.items_repository)
+        enquire = xapian.Enquire(rec.items_repository)
         enquire.set_query(query)
 
         try:
             mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
         except xapian.DatabaseError as error:
             logging.critical(error.get_msg())
-            exit(1)
+            raise Error
 
         item_score = {}
         for m in mset:
             item_score[m.document.get_data()] = m.rank
-        return RecommendationResult(item_score,20)
+        return recommender.RecommendationResult(item_score,20)
 
 class ColaborativeStrategy(RecommendationStrategy):
     """

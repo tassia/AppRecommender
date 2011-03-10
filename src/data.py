@@ -26,6 +26,8 @@ from debian import debtags
 import logging
 import hashlib
 
+from error import Error
+
 class Item:
     """  """
 
@@ -51,46 +53,46 @@ class Singleton(object):
             cls._inst = object.__new__(cls)
         return cls._inst
 
-class DebtagsDB(debtags.DB,Singleton):
-    def __init__(self,path):
-        self.path = path
+class TagsXapianIndex(xapian.WritableDatabase,Singleton):
+    def __init__(self,cfg):
+        self.path = os.path.expanduser(cfg.tags_index)
+        self.db_path = os.path.expanduser(cfg.tags_db)
+        self.debtags_db = debtags.DB()
 
-    def load(self):
+        db = open(self.db_path)
+        md5 = hashlib.md5()
+        md5.update(db.read())
+        self.db_md5 = md5.hexdigest()
+
+        self.load_index(cfg.reindex)
+
+    def load_db(self):
         tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
         try:
-            self.read(open(self.path, "r"), lambda x: not tag_filter.match(x))
-            return 1
-        except IOError:
-            logging.error("IOError: could not open debtags file \'%s\'" %
-                          self.path)
-            return 0
+            db_file = open(self.db_path, "r")
+            self.debtags_db.read(db_file,lambda x: not tag_filter.match(x))
+        except IOError:  #FIXME try is not catching this
+            logging.error("Could not load DebtagsDB from %s." % self.db_path)
+            raise Error
 
-    def get_relevant_tags(self,pkgs_list,qtd_of_tags):
+    def relevant_tags_from_db(self,pkgs_list,qtd_of_tags):
         """
         Return most relevant tags considering a list of packages.
         """
-        relevant_db = self.choose_packages(pkgs_list)
-        relevance_index = debtags.relevance_index_function(self,relevant_db)
+        if not self.debtags_db.package_count():
+            self.load_db()
+        relevant_db = self.debtags_db.choose_packages(pkgs_list)
+        relevance_index = debtags.relevance_index_function(self.debtags_db,
+                                                           relevant_db)
         sorted_relevant_tags = sorted(relevant_db.iter_tags(),
                                       lambda a, b: cmp(relevance_index(a),
                                       relevance_index(b)))
         return normalize_tags(' '.join(sorted_relevant_tags[-qtd_of_tags:]))
 
-class DebtagsIndex(xapian.WritableDatabase,Singleton):
-    def __init__(self,path):
-        self.path = path
-        self.db_md5 = 0
-
-    def load(self,debtags_db,reindex=0):
+    def load_index(self,reindex):
         """
         Load an existing debtags index.
         """
-        self.debtags_db = debtags_db
-        db = open(debtags_db.path)
-        md5 = hashlib.md5()
-        md5.update(db.read())
-        self.db_md5 = md5.hexdigest()
-
         if not reindex:
             try:
                 logging.info("Opening existing debtags xapian index at \'%s\'"
@@ -105,11 +107,11 @@ class DebtagsIndex(xapian.WritableDatabase,Singleton):
                 reindex =1
 
         if reindex:
-            self.create_index(debtags_db)
+            self.new_index()
 
-    def create_index(self,debtags_db):
+    def new_index(self):
         """
-        Create a xapian index for debtags info based on file 'debtags_db' and
+        Create a xapian index for debtags info based on 'debtags_db' and
         place it at 'index_path'.
         """
         if not os.path.exists(self.path):
@@ -122,10 +124,12 @@ class DebtagsIndex(xapian.WritableDatabase,Singleton):
                                              xapian.DB_CREATE_OR_OVERWRITE)
         except xapian.DatabaseError:
             logging.critical("Could not create xapian index.")
-            exit(1)
+            raise Error
 
+        self.load_db()
         self.set_metadata("md5",self.db_md5)
-        for pkg,tags in debtags_db.iter_packages_tags():
+
+        for pkg,tags in self.debtags_db.iter_packages_tags():
             doc = xapian.Document()
             doc.set_data(pkg)
             for tag in tags:

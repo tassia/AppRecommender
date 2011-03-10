@@ -39,12 +39,12 @@ class User:
     def items(self):
         return self.item_score.keys()
 
-    def axi_tag_profile(self,xapian_db,profile_size):
+    def axi_tag_profile(self,apt_xapian_index,profile_size):
         terms = []
         for item in self.items():
             terms.append("XP"+item)
         query = xapian.Query(xapian.Query.OP_OR, terms)
-        enquire = xapian.Enquire(xapian_db)
+        enquire = xapian.Enquire(apt_xapian_index)
         enquire.set_query(query)
         rset = xapian.RSet()
         for m in enquire.get_mset(0,30000): #consider all matches
@@ -56,8 +56,9 @@ class User:
             logging.debug("%.2f %s" % (res.weight,res.term[2:]))
         return profile
 
-    def debtags_tag_profile(self,debtags_db,profile_size):
-        return debtags_db.get_relevant_tags(self.items(),profile_size)
+    def txi_tag_profile(self,tags_xapian_index,profile_size):
+        return tags_xapian_index.relevant_tags_from_db(self.items(),
+                                                       profile_size)
 
 class LocalSystem(User):
     """  """

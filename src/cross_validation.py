@@ -39,7 +39,7 @@ def set_up_recommender(cfg):
         debtags_db = DebtagsDB(cfg.tags_db)
         if not debtags_db.load():
             logging.error("Could not load DebtagsDB from %s." % cfg.tags_db)
-            sys.exit(1)
+            raise Error
         debtags_index = DebtagsIndex(os.path.expanduser(cfg.tags_index))
         debtags_index.load(debtags_db,cfg.reindex)
         app_rec = Recommender(debtags_index)
