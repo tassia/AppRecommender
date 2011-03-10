@@ -45,9 +45,13 @@ def normalize_tags(string):
     """
     return string.replace(':','_').replace('-','\'')
 
-# FIXME Data repositories should be singleton
+class Singleton(object):
+    def __new__(cls, *args, **kwargs):
+        if '_inst' not in vars(cls):
+            cls._inst = object.__new__(cls)
+        return cls._inst
 
-class DebtagsDB(debtags.DB):
+class DebtagsDB(debtags.DB,Singleton):
     def __init__(self,path):
         self.path = path
 
@@ -72,7 +76,7 @@ class DebtagsDB(debtags.DB):
                                       relevance_index(b)))
         return normalize_tags(' '.join(sorted_relevant_tags[-qtd_of_tags:]))
 
-class DebtagsIndex(xapian.WritableDatabase):
+class DebtagsIndex(xapian.WritableDatabase,Singleton):
     def __init__(self,path):
         self.path = path
         self.db_md5 = 0
