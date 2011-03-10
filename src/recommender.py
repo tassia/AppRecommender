@@ -24,14 +24,16 @@ class RecommendationResult:
         self.item_score = item_score
         self.size = size
 
+    def __str__(self):
+        result = self.get_prediction()
+        str = "\n"
+        for i in range(len(result)):
+            str += "%2d: %s\n" % (i,result[i][0])
+        return str
+
     def get_prediction(self):
         sorted_result = sorted(self.item_score.items(), key=itemgetter(1))
         return sorted_result[:self.size]
-
-    def print_result(self):
-        result = self.get_prediction()
-        for i in range(len(result)):
-            print "%2d: %s" % (i,result[i][0])
 
 class Recommender:
     """  """

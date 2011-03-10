@@ -47,8 +47,16 @@ def set_up_recommender(cfg):
 
     return app_rec
 
+def cross_validation(recommender):
+    metrics = []
+    metrics.append(Precision())
+    metrics.append(Recall())
+    validation = CrossValidation(0.1,10,recommender,metrics)
+    validation.run(user)
+
 if __name__ == '__main__':
     cfg = Config()
     rec = set_up_recommender(cfg)
     user = LocalSystem()
-    print rec.get_recommendation(user)
+    #result.print_result()
+    cross_validation(rec)

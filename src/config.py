@@ -31,7 +31,7 @@ class Config():
     """
     def __init__(self):
         """
-        Set default configuration options.
+        Set configuration options.
         """
         self.debug = 0
         self.verbose = 0
@@ -43,6 +43,8 @@ class Config():
         self.axi_values = "/var/lib/apt-xapian-index/values"
         self.strategy = "ct"    # defaults to the cheapest one
         self.reindex = 0
+        self.load_options()
+        self.set_logger()
 
     def usage(self):
         """
