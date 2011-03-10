@@ -50,7 +50,7 @@ class Config():
         """
         Print usage help.
         """
-        print " [ general ]"
+        print "\n [ general ]"
         print "  -h, --help              Print this help"
         print "  -d, --debug             Set logging level to debug."
         print "  -v, --verbose           Set logging level to verbose."
@@ -130,9 +130,9 @@ class Config():
             elif o in ("-c", "--config"):
                 self.config = p
             elif o in ("-t", "--tagsdb"):
-                self.tagsdb = p
+                self.tags_db = p
             elif o in ("-i", "--tagsindex"):
-                self.tagsindex = p
+                self.tags_index = p
             elif o in ("-r", "--force-reindex"):
                 self.reindex = 1
             elif o in ("-a", "--axi"):

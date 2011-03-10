@@ -18,6 +18,9 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from operator import itemgetter
+from data import *
+from strategy import *
+from error import Error
 
 class RecommendationResult:
     def __init__(self,item_score,size):
@@ -37,11 +40,22 @@ class RecommendationResult:
 
 class Recommender:
     """  """
-    def __init__(self,items_repository,users_repository=None,
-                 knowledge_repository=None):
-        self.items_repository = items_repository
-        self.users_repository = users_repository
-        self.knowledge_repository = knowledge_repository
+    def __init__(self,cfg):
+        try:
+            strategy = "self."+cfg.strategy+"(cfg)"
+            exec(strategy)
+        except (NameError, AttributeError, SyntaxError):
+            logging.critical("Could not perform recommendation strategy '%s'" %
+                              cfg.strategy)
+            raise Error
+
+    def ct(self,cfg):
+        self.items_repository = TagsXapianIndex(cfg)
+        self.strategy = ContentBasedStrategy()
+
+    def cta(self,cfg):
+        self.items_repository = xapian.Database(cfg.axi)
+        self.strategy = AxiContentBasedStrategy()
 
     def set_strategy(self,strategy):
         """  """
