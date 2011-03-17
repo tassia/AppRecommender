@@ -20,6 +20,7 @@
 import commands
 import xapian
 import logging
+import apt
 
 class FilterTag(xapian.ExpandDecider):
     def __call__(self, term):
@@ -30,14 +31,25 @@ class FilterTag(xapian.ExpandDecider):
 
 class User:
     """  """
-    def __init__(self,item_score,user_id=0,demo_profile=0):
+    def __init__(self,item_score,user_id=0,demographic_profile=0):
         """  """
         self.id = user_id
         self.item_score = item_score
-        self.demo_profile = demo_profile
+        self.demographic_profile = demographic_profile
 
     def items(self):
         return self.item_score.keys()
+
+    def maximal_pkg_profile(self):
+        cache = apt.Cache()
+        old_profile_size = len(self.item_score)
+        for p in self.item_score.keys():
+            pkg = cache[p]
+            if pkg.is_auto_installed:
+                del self.item_score[p]
+        profile_size = len(self.item_score)
+        logging.info("Reduced packages profile size from %d to %d." %
+                     (old_profile_size, profile_size))
 
     def axi_tag_profile(self,apt_xapian_index,profile_size):
         terms = []
@@ -65,6 +77,7 @@ class LocalSystem(User):
     def __init__(self):
         item_score = {}
         dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
-        for p in dpkg_output.replace('install','\t').split():
-            item_score[p] = 1
+        for line in dpkg_output.splitlines():
+            pkg = line.split('\t')[0]
+            item_score[pkg] = 1
         User.__init__(self,item_score)
