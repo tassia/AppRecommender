@@ -35,6 +35,7 @@ class User:
         """  """
         self.id = user_id
         self.item_score = item_score
+        self.pkg_profile = self.item_score.keys()
         self.demographic_profile = demographic_profile
 
     def items(self):
@@ -42,18 +43,18 @@ class User:
 
     def maximal_pkg_profile(self):
         cache = apt.Cache()
-        old_profile_size = len(self.item_score)
-        for p in self.item_score.keys():
+        old_profile_size = len(self.pkg_profile)
+        for p in self.pkg_profile[:]:     #iterate list copy
             pkg = cache[p]
             if pkg.is_auto_installed:
-                del self.item_score[p]
-        profile_size = len(self.item_score)
+                self.pkg_profile.remove(p)
+        profile_size = len(self.pkg_profile)
         logging.info("Reduced packages profile size from %d to %d." %
                      (old_profile_size, profile_size))
 
     def axi_tag_profile(self,apt_xapian_index,profile_size):
         terms = []
-        for item in self.items():
+        for item in self.pkg_profile:
             terms.append("XP"+item)
         query = xapian.Query(xapian.Query.OP_OR, terms)
         enquire = xapian.Enquire(apt_xapian_index)
@@ -69,7 +70,7 @@ class User:
         return profile
 
     def txi_tag_profile(self,tags_xapian_index,profile_size):
-        return tags_xapian_index.relevant_tags_from_db(self.items(),
+        return tags_xapian_index.relevant_tags_from_db(self.pkg_profile,
                                                        profile_size)
 
 class LocalSystem(User):
