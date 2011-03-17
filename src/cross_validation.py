@@ -20,6 +20,8 @@
 import os
 import sys
 import logging
+import datetime
+from datetime import timedelta
 
 from config import *
 from data import *
@@ -28,35 +30,28 @@ from similarity_measure import *
 from recommender import *
 from strategy import *
 from user import *
-
-def set_up_recommender(cfg):
-    if cfg.strategy == "cta":
-        axi_db = xapian.Database(cfg.axi)
-        app_rec = Recommender(axi_db)
-        app_rec.set_strategy(AxiContentBasedStrategy())
-
-    elif cfg.strategy == "ct":
-        debtags_db = DebtagsDB(cfg.tags_db)
-        if not debtags_db.load():
-            logging.error("Could not load DebtagsDB from %s." % cfg.tags_db)
-            raise Error
-        debtags_index = DebtagsIndex(os.path.expanduser(cfg.tags_index))
-        debtags_index.load(debtags_db,cfg.reindex)
-        app_rec = Recommender(debtags_index)
-        app_rec.set_strategy(ContentBasedStrategy())
-
-    return app_rec
-
-def cross_validation(recommender):
-    metrics = []
-    metrics.append(Precision())
-    metrics.append(Recall())
-    validation = CrossValidation(0.1,10,recommender,metrics)
-    validation.run(user)
+from error import Error
 
 if __name__ == '__main__':
-    cfg = Config()
-    rec = set_up_recommender(cfg)
-    user = LocalSystem()
-    #result.print_result()
-    cross_validation(rec)
+    try:
+        cfg = Config()
+        rec = Recommender(cfg)
+        user = LocalSystem()
+        user.maximal_pkg_profile()
+
+        begin_time = datetime.datetime.now()
+        logging.debug("Cross-validation started at %s" % begin_time)
+
+        metrics = []
+        metrics.append(Precision())
+        metrics.append(Recall())
+        validation = CrossValidation(0.3,10,rec,metrics)
+        validation.run(user)
+
+        end_time = datetime.datetime.now()
+        logging.debug("Cross-validation completed at %s" % end_time)
+        delta = end_time - begin_time
+        logging.info("Time elapsed: %d seconds." % delta.seconds)
+
+    except Error:
+        logging.critical("Aborting proccess. Use '--debug' for more details.")

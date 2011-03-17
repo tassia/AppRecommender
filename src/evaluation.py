@@ -33,8 +33,7 @@ class Precision(Metric):
         self.desc = " Precision "
 
     def run(self,evaluation):
-        return float(len(evaluation.predicted_real) /
-                     len(evaluation.predicted_relevant))
+        return float(len(evaluation.predicted_real))/len(evaluation.predicted_relevant)
 
 class Recall(Metric):
     """  """
@@ -42,8 +41,7 @@ class Recall(Metric):
         self.desc = "   Recall  "
 
     def run(self,evaluation):
-        return float(len(evaluation.predicted_real) /
-                     len(evaluation.real_relevant))
+        return float(len(evaluation.predicted_real))/len(evaluation.real_relevant)
 
 class F1(Metric):
     """  """
@@ -89,6 +87,9 @@ class Evaluation:
         self.real_relevant = real_result.get_prediction()
         self.predicted_real = [v for v in self.predicted_relevant if v in
                                self.real_relevant]
+        print len(self.predicted_relevant)
+        print len(self.real_relevant)
+        print len(self.predicted_real)
 
     def run(self,metric):
         return metric.run(self)
@@ -134,8 +135,9 @@ class CrossValidation:
         """
         Perform cross-validation.
         """
-        partition_size = int(len(user.item_score)*self.partition_proportion)
-        cross_item_score = user.item_score.copy()
+        cross_item_score = dict.fromkeys(user.pkg_profile,1)
+        partition_size = int(len(cross_item_score)*self.partition_proportion)
+        #cross_item_score = user.item_score.copy()
         for r in range(self.rounds):
             round_partition = {}
             for j in range(partition_size):
