@@ -33,7 +33,7 @@ class Metric:
 
 class Precision(Metric):
     """
-    Accuracy evaluation metric defined as the percentage of relevant itens
+    Classification accuracy metric defined as the percentage of relevant itens
     among the predicted ones.
     """
     def __init__(self):
@@ -50,7 +50,7 @@ class Precision(Metric):
 
 class Recall(Metric):
     """
-    Accuracy evaluation metric defined as the percentage of relevant itens
+    Classification ccuracy metric defined as the percentage of relevant itens
     which were predicted as so.
     """
     def __init__(self):
@@ -66,7 +66,10 @@ class Recall(Metric):
         return float(len(evaluation.predicted_real))/len(evaluation.real_relevant)
 
 class F1(Metric):
-    """  """
+    """
+    Classification accuracy metric which correlates precision and recall into an
+    unique measure.
+    """
     def __init__(self):
         """
         Set metric description.
@@ -79,24 +82,45 @@ class F1(Metric):
         """
         p = Precision().run(evaluation)
         r = Recall().run(evaluation)
-        return float((2*p*r)/(p+r))
+        return float((2*p*r))/(p+r)
 
 class MAE(Metric):
-    """  """
+    """
+    Prediction accuracy metric defined as the mean absolute error.
+    """
     def __init__(self):
         """
         Set metric description.
         """
         self.desc = "    MAE    "
 
+    def get_errors(self,evaluation):
+        """
+        Compute prediction errors.
+        """
+        keys = evaluation.predicted_item_scores.keys()
+        keys.extend(evaluation.real_item_scores.keys())
+        errors = []
+        for k in keys:
+            if k not in evaluation.real_item_scores:
+                evaluation.real_item_scores[k] = 0.0
+            if k not in evaluation.predicted_item_scores:
+                evaluation.predicted_item_scores[k] = 0.0
+            errors.append(float(evaluation.predicted_item_scores[k]-
+                          evaluation.real_item_scores[k]))
+        return errors
+
     def run(self,evaluation):
         """
         Compute metric.
         """
-        print "---" #FIXME
+        errors = self.get_errors(evaluation)
+        return sum(errors)/len(errors)
 
-class MSE(Metric):
-    """  """
+class MSE(MAE):
+    """
+    Prediction accuracy metric defined as the mean square error. 
+    """
     def __init__(self):
         """
         Set metric description.
@@ -107,21 +131,34 @@ class MSE(Metric):
         """
         Compute metric.
         """
-        print "---" #FIXME
+        errors = self.get_errors(evaluation)
+        square_errors = [pow(x,2) for x in errors]
+        return sum(square_errors)/len(square_errors)
 
 class Coverage(Metric):
-    """  """
-    def __init__(self):
+    """
+    Evaluation metric defined as the percentage of itens covered by the
+    recommender (have been recommended at least once).
+    """
+    def __init__(self,repository_size):
         """
-        Set metric description.
+        Set initial parameters.
         """
         self.desc = "  Coverage "
+        self.repository_size = repository_size
+        self.covered = set()
+
+    def save_covered(self,recommended_list):
+        """
+        Register that a list of itens has been recommended.
+        """
+        self.covered.update(set(recommended_list))
 
     def run(self,evaluation):
         """
         Compute metric.
         """
-        print "---" #FIXME
+        return float(self.covered.size)/self.repository_size
 
 class Evaluation:
     """
@@ -158,8 +195,7 @@ class CrossValidation:
         if partition_proportion<1 and partition_proportion>0:
             self.partition_proportion = partition_proportion
         else:
-            logging.critical("Partition proportion must be a value in the
-                              interval [0,1].")
+            logging.critical("Partition proportion must be a value in the interval [0,1].")
             raise Error
         self.rounds = rounds
         self.recommender = rec
@@ -195,7 +231,6 @@ class CrossValidation:
         """
         cross_item_score = dict.fromkeys(user.pkg_profile,1)
         partition_size = int(len(cross_item_score)*self.partition_proportion)
-        #cross_item_score = user.item_score.copy()
         for r in range(self.rounds):
             round_partition = {}
             for j in range(partition_size):

@@ -26,7 +26,7 @@ from datetime import timedelta
 from config import *
 from data import *
 from evaluation import *
-from similarity_measure import *
+from similarity import *
 from recommender import *
 from strategy import *
 from user import *

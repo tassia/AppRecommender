@@ -19,8 +19,10 @@
 
 # Get project version from git repository
 TAG=$(git describe --tags --abbrev=0)
+echo "Generating documentation for git tag $TAG"
 sed -i "s/^PROJECT_NUMBER.*$/PROJECT_NUMBER\t\t= $TAG/" ../doc/doxy_config
 rm -Rf ../doc/html
-../doc/doxygen ../doc/doxy_config
-#scp -r html/* tassia@www.ime.usp.br:public_html/ 
+../doc/doxygen-1.7.3 ../doc/doxy_config
+scp -r html/ tassia@eclipse.ime.usp.br:
+echo "---> Remember to place doc in the right location on server side."
 mv html/ ../doc/

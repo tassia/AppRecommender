@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-#  similarity-measure - python module for classes and methods related to
-#                       measuring similarity between two sets of data.
+#  similarity - python module for classes and methods related to similarity
+#               measuring between two sets of data.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #

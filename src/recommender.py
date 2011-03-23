@@ -61,7 +61,8 @@ class Recommender:
         try:
             strategy = "self."+cfg.strategy+"(cfg)"
             exec(strategy)
-        except (NameError, AttributeError, SyntaxError):
+        except (NameError, AttributeError, SyntaxError) as err:
+            print err
             logging.critical("Could not perform recommendation strategy '%s'" %
                               cfg.strategy)
             raise Error

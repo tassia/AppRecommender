@@ -77,11 +77,15 @@ class TagsXapianIndex(xapian.WritableDatabase,Singleton):
         self.db_path = os.path.expanduser(cfg.tags_db)
         self.debtags_db = debtags.DB()
 
-        db = open(self.db_path)
+        try:
+            db_file = open(self.db_path)
+        except IOError:
+            logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
+            raise Error
         md5 = hashlib.md5()
-        md5.update(db.read())
+        md5.update(db_file.read())
         self.db_md5 = md5.hexdigest()
-
+        db_file.close()
         self.load_index(cfg.reindex)
 
     def load_db(self):
@@ -92,8 +96,9 @@ class TagsXapianIndex(xapian.WritableDatabase,Singleton):
         try:
             db_file = open(self.db_path, "r")
             self.debtags_db.read(db_file,lambda x: not tag_filter.match(x))
-        except IOError:  #FIXME try is not catching this
-            logging.error("Could not load DebtagsDB from %s." % self.db_path)
+            db_file.close()
+        except:
+            logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
             raise Error
 
     def relevant_tags_from_db(self,pkgs_list,qtd_of_tags):
