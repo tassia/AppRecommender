@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-#  AppRecommender - A GNU/Linux application recommender
+#  evaluation - python module for classes and methods related to recommenders
+#               evaluation.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #
@@ -25,30 +26,57 @@ from user import *
 from recommender import *
 
 class Metric:
-    """  """
+    """
+    Base class for metrics. Strategy design pattern.
+    """
+    pass
 
 class Precision(Metric):
-    """  """
+    """
+    Accuracy evaluation metric defined as the percentage of relevant itens
+    among the predicted ones.
+    """
     def __init__(self):
+        """
+        Set metric description.
+        """
         self.desc = " Precision "
 
     def run(self,evaluation):
+        """
+        Compute metric.
+        """
         return float(len(evaluation.predicted_real))/len(evaluation.predicted_relevant)
 
 class Recall(Metric):
-    """  """
+    """
+    Accuracy evaluation metric defined as the percentage of relevant itens
+    which were predicted as so.
+    """
     def __init__(self):
+        """
+        Set metric description.
+        """
         self.desc = "   Recall  "
 
     def run(self,evaluation):
+        """
+        Compute metric.
+        """
         return float(len(evaluation.predicted_real))/len(evaluation.real_relevant)
 
 class F1(Metric):
     """  """
     def __init__(self):
+        """
+        Set metric description.
+        """
         self.desc = "     F1    "
 
     def run(self,evaluation):
+        """
+        Compute metric.
+        """
         p = Precision().run(evaluation)
         r = Recall().run(evaluation)
         return float((2*p*r)/(p+r))
@@ -56,80 +84,110 @@ class F1(Metric):
 class MAE(Metric):
     """  """
     def __init__(self):
+        """
+        Set metric description.
+        """
         self.desc = "    MAE    "
 
     def run(self,evaluation):
-        print "run"
+        """
+        Compute metric.
+        """
+        print "---" #FIXME
 
 class MSE(Metric):
     """  """
     def __init__(self):
+        """
+        Set metric description.
+        """
         self.desc = "    MSE    "
 
     def run(self,evaluation):
-        print "run"
+        """
+        Compute metric.
+        """
+        print "---" #FIXME
 
 class Coverage(Metric):
     """  """
     def __init__(self):
+        """
+        Set metric description.
+        """
         self.desc = "  Coverage "
 
     def run(self,evaluation):
-        print "run"
+        """
+        Compute metric.
+        """
+        print "---" #FIXME
 
 class Evaluation:
-    """  """
+    """
+    Class designed to perform prediction evaluation, given data and metric.
+    """
     def __init__(self,predicted_result,real_result):
-        """  """
+        """
+        Set initial parameters.
+        """
         self.predicted_item_scores = predicted_result.item_score
         self.predicted_relevant = predicted_result.get_prediction()
         self.real_item_scores = real_result.item_score
         self.real_relevant = real_result.get_prediction()
         self.predicted_real = [v for v in self.predicted_relevant if v in
                                self.real_relevant]
-        print len(self.predicted_relevant)
-        print len(self.real_relevant)
-        print len(self.predicted_real)
+        #print len(self.predicted_relevant)
+        #print len(self.real_relevant)
+        #print len(self.predicted_real)
 
     def run(self,metric):
+        """
+        Perform the evaluation with the given metric.
+        """
         return metric.run(self)
 
 class CrossValidation:
     """
-    Cross-validation method
+    Class designed to perform cross-validation process.
     """
     def __init__(self,partition_proportion,rounds,rec,metrics_list):
         """
-        Set defaults: partition_size, rounds, recommender and metrics_list
+        Set initial parameters.
         """
         if partition_proportion<1 and partition_proportion>0:
             self.partition_proportion = partition_proportion
         else:
-            logging.critical("A proporcao de particao deve ser um avalor ente 0 e 1.")
+            logging.critical("Partition proportion must be a value in the
+                              interval [0,1].")
             raise Error
         self.rounds = rounds
         self.recommender = rec
         self.metrics_list = metrics_list
         self.cross_results = defaultdict(list)
 
-    def print_result(self):
-        print ""
+    def __str__(self):
+        """
+        String representation of the object.
+        """
+        str = "\n"
         metrics_desc = ""
         for metric in self.metrics_list:
             metrics_desc += "%s|" % (metric.desc)
-        print "| Round |%s" % metrics_desc
+        str += "| Round |%s\n" % metrics_desc
         for r in range(self.rounds):
             metrics_result = ""
             for metric in self.metrics_list:
                 metrics_result += ("    %.2f   |" %
                                    (self.cross_results[metric.desc][r]))
-            print "|   %d   |%s" % (r,metrics_result)
+            str += "|   %d   |%s\n" % (r,metrics_result)
         metrics_mean = ""
         for metric in self.metrics_list:
             mean = float(sum(self.cross_results[metric.desc]) /
                          len(self.cross_results[metric.desc]))
             metrics_mean += "    %.2f   |" % (mean)
-        print "|  Mean |%s" % (metrics_mean)
+        str += "|  Mean |%s\n" % (metrics_mean)
+        return str
 
     def run(self,user):
         """
@@ -144,7 +202,7 @@ class CrossValidation:
                 if len(cross_item_score)>0:
                     random_key = random.choice(cross_item_score.keys())
                 else:
-                    logging.critical("cross_item_score vazio")
+                    logging.critical("Empty cross_item_score.")
                     raise Error
                 round_partition[random_key] = cross_item_score.pop(random_key)
             round_user = User(cross_item_score)
@@ -157,5 +215,4 @@ class CrossValidation:
             while len(round_partition)>0:
                 item,score = round_partition.popitem()
                 cross_item_score[item] = score
-        self.print_result()
 

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#  AppRecommender - A GNU/Linux application recommender
+#  user - python module for classes and methods related to recommenders' users.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #
@@ -23,6 +23,9 @@ import logging
 import apt
 
 class FilterTag(xapian.ExpandDecider):
+    """
+    Extend xapian.ExpandDecider to consider only tag terms.
+    """
     def __call__(self, term):
         """
         Return true if the term is a tag, else false.
@@ -30,29 +33,28 @@ class FilterTag(xapian.ExpandDecider):
         return term[:2] == "XT"
 
 class User:
-    """  """
+    """
+    Define a user of a recommender.
+    """
     def __init__(self,item_score,user_id=0,demographic_profile=0):
-        """  """
+        """
+        Set initial parameters.
+        """
         self.id = user_id
         self.item_score = item_score
         self.pkg_profile = self.item_score.keys()
         self.demographic_profile = demographic_profile
 
     def items(self):
+        """
+        Return dictionary relating items and repective scores.
+        """
         return self.item_score.keys()
 
-    def maximal_pkg_profile(self):
-        cache = apt.Cache()
-        old_profile_size = len(self.pkg_profile)
-        for p in self.pkg_profile[:]:     #iterate list copy
-            pkg = cache[p]
-            if pkg.is_auto_installed:
-                self.pkg_profile.remove(p)
-        profile_size = len(self.pkg_profile)
-        logging.info("Reduced packages profile size from %d to %d." %
-                     (old_profile_size, profile_size))
-
     def axi_tag_profile(self,apt_xapian_index,profile_size):
+        """
+        Return most relevant tags for a list of packages based on axi.
+        """
         terms = []
         for item in self.pkg_profile:
             terms.append("XP"+item)
@@ -70,15 +72,38 @@ class User:
         return profile
 
     def txi_tag_profile(self,tags_xapian_index,profile_size):
+        """
+        Return most relevant tags for a list of packages based on tags index.
+        """
         return tags_xapian_index.relevant_tags_from_db(self.pkg_profile,
                                                        profile_size)
 
 class LocalSystem(User):
-    """  """
+    """
+    Extend the class User to consider the packages installed on the local
+    system as the set of selected itens.
+    """
     def __init__(self):
+        """
+        Set initial parameters.
+        """
         item_score = {}
         dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
         for line in dpkg_output.splitlines():
             pkg = line.split('\t')[0]
             item_score[pkg] = 1
         User.__init__(self,item_score)
+
+    def maximal_pkg_profile(self):
+        """
+        Return list of packages voluntarily installed.
+        """
+        cache = apt.Cache()
+        old_profile_size = len(self.pkg_profile)
+        for p in self.pkg_profile[:]:     #iterate list copy
+            pkg = cache[p]
+            if pkg.is_auto_installed:
+                self.pkg_profile.remove(p)
+        profile_size = len(self.pkg_profile)
+        logging.info("Reduced packages profile size from %d to %d." %
+                     (old_profile_size, profile_size))

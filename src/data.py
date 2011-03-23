@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#  AppRecommender - A GNU/Linux application recommender
+#  data - python module for data sources classes and methods.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #
@@ -29,32 +29,50 @@ import hashlib
 from error import Error
 
 class Item:
-    """  """
+    """
+    Generic item definition.
+    """
 
 class Package(Item):
-    """  """
+    """
+    Definition of a GNU/Linux application as a recommender item.
+    """
     def __init__(self,package_name):
-        """  """
+        """
+        Set initial attributes.
+        """
         self.package_name  = package_name
-
-    def load_package_info(self):
-        """  """
-        print "debian pkg",self.id
 
 def normalize_tags(string):
     """
-    Normalize tag string so that it can be indexed and retrieved.
+    Substitute string characters : by _ and - by '.
+    Examples:
+        admin::package-management   ->   admin__package'management
+        implemented-in::c++         ->   implemented-in__c++
     """
     return string.replace(':','_').replace('-','\'')
 
 class Singleton(object):
+    """
+    Base class for inheritance of only-one-instance classes.
+    Singleton design pattern.
+    """
     def __new__(cls, *args, **kwargs):
+        """
+        Creates a new instance of the class only if none already exists.
+        """
         if '_inst' not in vars(cls):
             cls._inst = object.__new__(cls)
         return cls._inst
 
 class TagsXapianIndex(xapian.WritableDatabase,Singleton):
+    """
+    Data source for tags info defined as a singleton xapian database.
+    """
     def __init__(self,cfg):
+        """
+        Set initial attributes.
+        """
         self.path = os.path.expanduser(cfg.tags_index)
         self.db_path = os.path.expanduser(cfg.tags_db)
         self.debtags_db = debtags.DB()
@@ -67,6 +85,9 @@ class TagsXapianIndex(xapian.WritableDatabase,Singleton):
         self.load_index(cfg.reindex)
 
     def load_db(self):
+        """
+        Load debtags database from the source file.
+        """
         tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
         try:
             db_file = open(self.db_path, "r")

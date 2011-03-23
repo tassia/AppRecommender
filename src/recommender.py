@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#  AppRecommender - A GNU/Linux application recommender
+#  recommender - python module for classes related to recommenders.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #
@@ -23,11 +23,20 @@ from strategy import *
 from error import Error
 
 class RecommendationResult:
+    """
+    Class designed to describe a recommendation result: items and scores.
+    """
     def __init__(self,item_score,size):
+        """
+        Set initial parameters.
+        """
         self.item_score = item_score
         self.size = size
 
     def __str__(self):
+        """
+        String representation of the object.
+        """
         result = self.get_prediction()
         str = "\n"
         for i in range(len(result)):
@@ -35,12 +44,20 @@ class RecommendationResult:
         return str
 
     def get_prediction(self):
+        """
+        Return prediction based on recommendation size (number of items).
+        """
         sorted_result = sorted(self.item_score.items(), key=itemgetter(1))
         return sorted_result[:self.size]
 
 class Recommender:
-    """  """
+    """
+    Class designed to play the role of recommender.
+    """
     def __init__(self,cfg):
+        """
+        Set initial parameters.
+        """
         try:
             strategy = "self."+cfg.strategy+"(cfg)"
             exec(strategy)
@@ -50,17 +67,28 @@ class Recommender:
             raise Error
 
     def ct(self,cfg):
+        """
+        Perform content-based recommendation using tags index as source data.
+        """
         self.items_repository = TagsXapianIndex(cfg)
         self.strategy = ContentBasedStrategy()
 
     def cta(self,cfg):
+        """
+        Perform content-based recommendation using apt-xapian-index as source
+        data.
+        """
         self.items_repository = xapian.Database(cfg.axi)
         self.strategy = AxiContentBasedStrategy()
 
     def set_strategy(self,strategy):
-        """  """
+        """
+        Set the recommendation strategy.
+        """
         self.strategy = strategy
 
     def get_recommendation(self,user):
-        """  """
+        """
+        Produces recommendation using previously loaded strategy.
+        """
         return self.strategy.run(self,user)

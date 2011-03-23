@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-#  AppRecommender - A GNU/Linux application recommender
+#  strategy - python module for classes and methods related to recommendation
+#             strategies.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #
@@ -26,40 +27,51 @@ class ReputationHeuristic:
     """
     Abstraction for diferent reputation heuristics.
     """
+    pass
 
 class BugsHeuristic(ReputationHeuristic):
     """
     Reputation heuristic based on quantity of open bugs.
     """
+    pass
 
 class RCBugsHeuristic(ReputationHeuristic):
     """
     Reputation heuristic based on quantity of RC bugs.
     """
+    pass
 
 class PopularityHeuristic(ReputationHeuristic):
     """
     Reputation heuristic based on popularity of packages.
     """
+    pass
 
 
 class PkgMatchDecider(xapian.MatchDecider):
     """
-    Extends xapian.MatchDecider to disconsider installed packages.
+    Extend xapian.MatchDecider to not consider installed packages.
     """
 
     def __init__(self, installed_pkgs):
+        """
+        Set initial parameters.
+        """
         xapian.MatchDecider.__init__(self)
         self.installed_pkgs = installed_pkgs
 
     def __call__(self, doc):
+        """
+        True if the package is not already installed.
+        """
         return doc.get_data() not in self.installed_pkgs
 
 
 class RecommendationStrategy:
     """
-    Abstraction for diferent recommendation strategy.
+    Base class for recommendation strategies.
     """
+    pass
 
 class ItemReputationStrategy(RecommendationStrategy):
     """

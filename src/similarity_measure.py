@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-#  AppRecommender - A GNU/Linux application recommender
+#  similarity-measure - python module for classes and methods related to
+#                       measuring similarity between two sets of data.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #

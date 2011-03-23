@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#  AppRecommender - A GNU/Linux application recommender
+#  config - python module for configuration options.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #
@@ -144,6 +144,9 @@ class Config():
                 assert False, "unhandled option"
 
     def set_logger(self):
+        """
+        Configure application logger and log level.
+        """
         self.logger = getLogger('')  # root logger is used by default
         self.logger.setLevel(DEBUG)
 

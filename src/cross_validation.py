@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-#  AppRecommender - A GNU/Linux application recommender
+#  CrossValidation - python module for classes and methods related to
+#                    recommenders evaluation.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #
@@ -47,6 +48,7 @@ if __name__ == '__main__':
         metrics.append(Recall())
         validation = CrossValidation(0.3,10,rec,metrics)
         validation.run(user)
+        print validation
 
         end_time = datetime.datetime.now()
         logging.debug("Cross-validation completed at %s" % end_time)

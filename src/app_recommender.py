@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#  AppRecommender - A GNU/Linux application recommender
+#  AppRecommender - a GNU/Linux application recommender.
 #
 #  Copyright (C) 2010  Tassia Camoes <tassia@gmail.com>
 #
