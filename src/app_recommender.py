@@ -37,7 +37,7 @@ if __name__ == '__main__':
         cfg = Config()
         rec = Recommender(cfg)
         user = LocalSystem()
-        user.maximal_pkg_profile()
+        user.no_auto_pkg_profile()
 
         begin_time = datetime.datetime.now()
         logging.debug("Recommendation computation started at %s" % begin_time)

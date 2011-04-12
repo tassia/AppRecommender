@@ -24,8 +24,9 @@ import logging
 
 from user import *
 from recommender import *
+from singleton import Singleton
 
-class Metric:
+class Metric(Singleton):
     """
     Base class for metrics. Strategy design pattern.
     """
@@ -40,7 +41,7 @@ class Precision(Metric):
         """
         Set metric description.
         """
-        self.desc = " Precision "
+        self.desc = "  Precision  "
 
     def run(self,evaluation):
         """
@@ -57,7 +58,7 @@ class Recall(Metric):
         """
         Set metric description.
         """
-        self.desc = "   Recall  "
+        self.desc = "    Recall   "
 
     def run(self,evaluation):
         """
@@ -74,7 +75,7 @@ class F1(Metric):
         """
         Set metric description.
         """
-        self.desc = "     F1    "
+        self.desc = "      F1     "
 
     def run(self,evaluation):
         """
@@ -92,7 +93,7 @@ class MAE(Metric):
         """
         Set metric description.
         """
-        self.desc = "    MAE    "
+        self.desc = "     MAE     "
 
     def get_errors(self,evaluation):
         """
@@ -125,7 +126,7 @@ class MSE(MAE):
         """
         Set metric description.
         """
-        self.desc = "    MSE    "
+        self.desc = "     MSE     "
 
     def run(self,evaluation):
         """
@@ -144,7 +145,7 @@ class Coverage(Metric):
         """
         Set initial parameters.
         """
-        self.desc = "  Coverage "
+        self.desc = "   Coverage  "
         self.repository_size = repository_size
         self.covered = set()
 
@@ -214,14 +215,14 @@ class CrossValidation:
         for r in range(self.rounds):
             metrics_result = ""
             for metric in self.metrics_list:
-                metrics_result += ("    %.2f   |" %
-                                   (self.cross_results[metric.desc][r]))
+                metrics_result += ("     %2.1f%%    |" %
+                                   (self.cross_results[metric.desc][r]*100))
             str += "|   %d   |%s\n" % (r,metrics_result)
         metrics_mean = ""
         for metric in self.metrics_list:
             mean = float(sum(self.cross_results[metric.desc]) /
                          len(self.cross_results[metric.desc]))
-            metrics_mean += "    %.2f   |" % (mean)
+            metrics_mean += "     %2.1f%%    |" % (mean*100)
         str += "|  Mean |%s\n" % (metrics_mean)
         return str
 

@@ -21,9 +21,10 @@
 import os, re
 import xapian
 from data import *
+from singleton import Singleton
 import recommender
 
-class ReputationHeuristic:
+class ReputationHeuristic(Singleton):
     """
     Abstraction for diferent reputation heuristics.
     """
