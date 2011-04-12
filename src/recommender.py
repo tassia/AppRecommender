@@ -69,15 +69,16 @@ class Recommender:
 
     def ct(self,cfg):
         """
-        Perform content-based recommendation using tags index as source data.
+        Set recommender attributes to perform content-based recommendation
+        using tags index as source data.
         """
         self.items_repository = TagsXapianIndex(cfg)
         self.strategy = ContentBasedStrategy()
 
     def cta(self,cfg):
         """
-        Perform content-based recommendation using apt-xapian-index as source
-        data.
+        Set recommender attributes to perform content-based recommendation
+        using apt-xapian-index as source data.
         """
         self.items_repository = xapian.Database(cfg.axi)
         self.strategy = AxiContentBasedStrategy()
