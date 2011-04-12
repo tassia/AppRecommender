@@ -78,6 +78,24 @@ class User:
         return tags_xapian_index.relevant_tags_from_db(self.pkg_profile,
                                                        profile_size)
 
+    def maximal_pkg_profile(self):
+        """
+        Return list of packages that are not dependence of any other package in
+        the list.
+        """
+        cache = apt.Cache()
+        old_profile_size = len(self.pkg_profile)
+        for p in self.pkg_profile[:]:     #iterate list copy
+            pkg = cache[p]
+            if pkg.candidate:
+                for dep in pkg.candidate.dependencies:
+                    for or_dep in dep.or_dependencies:
+                        if or_dep.name in self.pkg_profile:
+                            self.pkg_profile.remove(or_dep.name)
+        profile_size = len(self.pkg_profile)
+        logging.info("Reduced packages profile size from %d to %d." %
+                     (old_profile_size, profile_size))
+
 class LocalSystem(User):
     """
     Extend the class User to consider the packages installed on the local
@@ -94,7 +112,7 @@ class LocalSystem(User):
             item_score[pkg] = 1
         User.__init__(self,item_score)
 
-    def maximal_pkg_profile(self):
+    def no_auto_pkg_profile(self):
         """
         Return list of packages voluntarily installed.
         """
