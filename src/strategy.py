@@ -48,7 +48,6 @@ class PopularityHeuristic(ReputationHeuristic):
     """
     pass
 
-
 class PkgMatchDecider(xapian.MatchDecider):
     """
     Extend xapian.MatchDecider to not consider installed packages.
@@ -67,6 +66,64 @@ class PkgMatchDecider(xapian.MatchDecider):
         """
         return doc.get_data() not in self.installed_pkgs
 
+class UserMatchDecider(xapian.MatchDecider):
+    """
+    Extend xapian.MatchDecider to match similar profiles.
+    """
+
+    def __init__(self, profile):
+        """
+        Set initial parameters.
+        """
+        xapian.MatchDecider.__init__(self)
+        self.profile = profile
+        print "mdecider:",profile
+
+    def __call__(self, doc):
+        """
+        True if the user has more the half of packages from profile.
+        """
+        profile_size = len(self.profile)
+        pkg_match=0
+        for term in doc:
+            if term.term in self.profile:
+                pkg_match = pkg_match+1
+        print "id",doc.get_docid(),"match",pkg_match
+        return pkg_match >= profile_size/2 
+
+class PkgExpandDecider(xapian.ExpandDecider):
+    """
+    Extend xapian.ExpandDecider to consider packages only.
+    """
+
+    def __init__(self):
+        """
+        Call base class init.
+        """
+        xapian.ExpandDecider.__init__(self)
+
+    def __call__(self, term):
+        """
+        True if the term is a package.
+        """
+        return not term.startswith("XT")
+
+class TagExpandDecider(xapian.ExpandDecider):
+    """
+    Extend xapian.ExpandDecider to consider tags only.
+    """
+
+    def __init__(self, profile):
+        """
+        Call base class init.
+        """
+        xapian.ExpandDecider.__init__(self)
+
+    def __call__(self, doc):
+        """
+        True if the user has more the half of packages from profile.
+        """
+        return term.startswith("XT")
 
 class RecommendationStrategy:
     """
@@ -82,7 +139,8 @@ class ItemReputationStrategy(RecommendationStrategy):
         """
         Perform recommendation strategy.
         """
-        return RecomendationResult()
+        logging.critical("Item reputation recommendation strategy is not yet implemented.")
+        raise Error
 
 class ContentBasedStrategy(RecommendationStrategy):
     """
@@ -133,15 +191,41 @@ class AxiContentBasedStrategy(RecommendationStrategy):
             item_score[m.document.get_data()] = m.rank
         return recommender.RecommendationResult(item_score,20)
 
-class ColaborativeStrategy(RecommendationStrategy):
+class CollaborativeStrategy(RecommendationStrategy):
     """
     Colaborative recommendation strategy.
     """
-    def run(self,user,users_repository,similarity_measure):
+    #def run(self,rec,user,similarity_measure):
+    def run(self,rec,user):
         """
         Perform recommendation strategy.
         """
-        return RecomendationResult()
+        profile = user.maximal_pkg_profile()
+        query = xapian.Query(xapian.Query.OP_OR,profile)
+        enquire = xapian.Enquire(rec.users_repository)
+        enquire.set_query(query)
+
+        try:
+            #mset = enquire.get_mset(0, 182, None, UserMatchDecider(profile))
+            mset = enquire.get_mset(0, 20)
+        except xapian.DatabaseError as error:
+            logging.critical(error.get_msg())
+            raise Error
+
+        rset = xapian.RSet()
+        for m in mset:
+            rset.add_document(m.document.get_docid())
+            logging.debug("Counting as relevant submission %s" %
+                           m.document.get_data())
+
+        eset = enquire.get_eset(20,rset,PkgExpandDecider())
+        rank = 0
+        item_score = {}
+        for term in eset:
+            item_score[term.term] = rank
+            rank = rank+1
+
+        return recommender.RecommendationResult(item_score,20)
 
 class KnowledgeBasedStrategy(RecommendationStrategy):
     """
@@ -151,7 +235,8 @@ class KnowledgeBasedStrategy(RecommendationStrategy):
         """
         Perform recommendation strategy.
         """
-        return RecomendationResult()
+        logging.critical("Knowledge-based recommendation strategy is not yet implemented.")
+        raise Error
 
 class DemographicStrategy(RecommendationStrategy):
     """
@@ -161,4 +246,5 @@ class DemographicStrategy(RecommendationStrategy):
         """
         Perform recommendation strategy.
         """
-        return RecomendationResult()
+        logging.critical("Demographic recommendation strategy is not yet implemented.")
+        raise Error

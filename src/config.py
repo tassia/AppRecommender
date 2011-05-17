@@ -41,6 +41,8 @@ class Config():
         self.tags_index = "~/.app-recommender/debtags_index"
         self.axi = "/var/lib/apt-xapian-index/index"
         self.axi_values = "/var/lib/apt-xapian-index/values"
+        self.popcon_index = "~/.app-recommender/popcon_index"
+        self.popcon_dir = "~/.app-recommender/popcon_dir"
         self.strategy = "ct"    # defaults to the cheapest one
         self.reindex = 0
         self.load_options()
@@ -62,6 +64,8 @@ class Config():
         print "  -i, --tagsindex=PATH    Path to debtags dedicated index."
         print "  -r, --force-reindex     Force reindexing debtags database."
         print "  -a, --axi=PATH          Path to Apt-xapian-index."
+        print "  -p, --popconindex=PATH  Path to popcon dedicated index."
+        print "  -m, --popcondir=PATH    Path to popcon submissions dir."
         print "  -s, --strategy=OPTION   Recommendation strategy."
         print ""
         print " [ strategy options ] "
@@ -104,10 +108,13 @@ class Config():
         self.tags_index = self.read_option('recommender', 'tags_index')
         self.reindex = self.read_option('recommender', 'reindex')
         self.axi = self.read_option('recommender', 'axi')
+        self.popcon_index = self.read_option('recommender', 'popcon_index')
+        self.popcon_dir = self.read_option('recommender', 'popcon_dir')
 
-        short_options = "hdvo:c:t:i:ra:s:"
+        short_options = "hdvo:c:t:i:ra:p:m:s:"
         long_options = ["help", "debug", "verbose", "output=", "config=",
-                        "tagsdb=", "tagsindex=", "reindex", "axi=", "strategy="]
+                        "tagsdb=", "tagsindex=", "reindex", "axi=",
+                        "popconindex=", "popcondir=", "strategy="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
@@ -138,6 +145,10 @@ class Config():
             elif o in ("-a", "--axi"):
                 self.axi = p + "/index"
                 self.axi_values = p + "/values"
+            elif o in ("-p", "--popconindex"):
+                self.popcon_index = p
+            elif o in ("-p", "--popcondir"):
+                self.popcon_dir = p
             elif o in ("-s", "--strategy"):
                 self.strategy = p
             else:

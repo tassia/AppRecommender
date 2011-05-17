@@ -95,6 +95,7 @@ class User:
         profile_size = len(self.pkg_profile)
         logging.info("Reduced packages profile size from %d to %d." %
                      (old_profile_size, profile_size))
+        return self.pkg_profile
 
 class LocalSystem(User):
     """

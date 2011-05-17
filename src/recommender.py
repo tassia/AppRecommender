@@ -83,6 +83,14 @@ class Recommender:
         self.items_repository = xapian.Database(cfg.axi)
         self.strategy = AxiContentBasedStrategy()
 
+    def col(self,cfg):
+        """
+        Set recommender attributes to perform collaborative recommendation
+        using popcon-xapian-index as source data.
+        """
+        self.users_repository = PopconXapianIndex(cfg)
+        self.strategy = CollaborativeStrategy()
+
     def set_strategy(self,strategy):
         """
         Set the recommendation strategy.
