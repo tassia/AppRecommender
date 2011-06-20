@@ -18,6 +18,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import math
 import random
 from collections import defaultdict
 import logging
@@ -30,7 +31,21 @@ class Metric(Singleton):
     """
     Base class for metrics. Strategy design pattern.
     """
-    pass
+    def get_errors(self,evaluation):
+        """
+        Compute prediction errors.
+        """
+        keys = evaluation.predicted_item_scores.keys()
+        keys.extend(evaluation.real_item_scores.keys())
+        errors = []
+        for k in keys:
+            if k not in evaluation.real_item_scores:
+                evaluation.real_item_scores[k] = 0.0
+            if k not in evaluation.predicted_item_scores:
+                evaluation.predicted_item_scores[k] = 0.0
+            errors.append(float(evaluation.predicted_item_scores[k]-
+                          evaluation.real_item_scores[k]))
+        return errors
 
 class Precision(Metric):
     """
@@ -95,22 +110,6 @@ class MAE(Metric):
         """
         self.desc = "     MAE     "
 
-    def get_errors(self,evaluation):
-        """
-        Compute prediction errors.
-        """
-        keys = evaluation.predicted_item_scores.keys()
-        keys.extend(evaluation.real_item_scores.keys())
-        errors = []
-        for k in keys:
-            if k not in evaluation.real_item_scores:
-                evaluation.real_item_scores[k] = 0.0
-            if k not in evaluation.predicted_item_scores:
-                evaluation.predicted_item_scores[k] = 0.0
-            errors.append(float(evaluation.predicted_item_scores[k]-
-                          evaluation.real_item_scores[k]))
-        return errors
-
     def run(self,evaluation):
         """
         Compute metric.
@@ -118,7 +117,7 @@ class MAE(Metric):
         errors = self.get_errors(evaluation)
         return sum(errors)/len(errors)
 
-class MSE(MAE):
+class MSE(Metric):
     """
     Prediction accuracy metric defined as the mean square error. 
     """
@@ -135,6 +134,22 @@ class MSE(MAE):
         errors = self.get_errors(evaluation)
         square_errors = [pow(x,2) for x in errors]
         return sum(square_errors)/len(square_errors)
+
+class RMSE(MSE):
+    """
+    Prediction accuracy metric defined as the root mean square error. 
+    """
+    def __init__(self):
+        """
+        Set metric description.
+        """
+        self.desc = "     RMSE     "
+
+    def run(self,evaluation):
+        """
+        Compute metric.
+        """
+        return math.sqrt(MSE.run(evaluation))
 
 class Coverage(Metric):
     """
