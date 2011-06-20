@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/env bash
 #
 #  generate_doc.sh - shell script to generate documentation using doxygen.
 #
