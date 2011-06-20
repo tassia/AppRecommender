@@ -29,6 +29,8 @@ import hashlib
 
 from error import Error
 from singleton import Singleton
+import cluster
+from similarity import *
 
 class Item:
     """
@@ -258,3 +260,152 @@ class PopconXapianIndex(xapian.WritableDatabase,Singleton):
         	gc.collect()
         # flush to disk database changes
         self.flush()
+
+class PopconSubmission():
+    def __init__(self,submission_hash):
+        self.hash = submission_hash
+        self.pkgs_list = []
+
+    def add_pkg(self,pkg):
+        self.pkgs_list.append(pkg)
+
+class PopconClusteredData(Singleton):
+    """
+    Data source for popcon submissions defined as a singleton xapian database.
+    """
+    def __init__(self,cfg):
+        """
+        Set initial attributes.
+        """
+        self.popcon_dir = os.path.expanduser(cfg.popcon_dir)
+        self.clusters_dir = os.path.expanduser(cfg.clusters_dir)
+        self.submissions = []
+        self.clustering()
+
+    def parse_submission(self,submission_path,binary=1):
+    	"""
+    	Parse a popcon submission, generating the names of the valid packages
+        in the vote.
+    	"""
+        submission_file = open(submission_path)
+    	for line in submission_file:
+            if not line.startswith("POPULARITY"):
+                if not line.startswith("END-POPULARITY"):
+                    data = line[:-1].split(" ")
+                    if len(data) > 3:
+                        if binary:
+                            # every installed package has the same weight
+                            yield data[2], 1
+                        elif data[3] == '<NOFILES>':
+                            # No executable files to track
+                            yield data[2], 1
+                        elif len(data) == 4:
+                            # Recently used packages
+                            yield data[2], 10
+                        elif data[4] == '<OLD>':
+                            # Unused packages
+                            yield data[2], 3
+                        elif data[4] == '<RECENT-CTIME>':
+                            # Recently installed packages
+                            yield data[2], 8
+
+    def clustering(self):
+        """
+        called by init
+        Create a xapian index for popcon submissions at 'popcon_dir' and
+        place it at 'self.path'.
+        """
+        if not os.path.exists(self.clusters_dir):
+            os.makedirs(self.clusters_dir)
+
+        logging.info("Clustering popcon submissions from \'%s\'" %
+                     self.popcon_dir)
+        logging.info("Clusters will be placed at \'%s\'" % self.clusters_dir)
+
+        for root, dirs, files in os.walk(self.popcon_dir):
+            for submission_hash in files:
+                s = PopconSubmission(submission_hash)
+                submission_path = os.path.join(root, submission_hash)
+                logging.debug("Parsing popcon submission \'%s\'" %
+                              submission_hash)
+                for pkg, freq in self.parse_submission(submission_path):
+                    s.add_pkg(pkg)
+                self.submissions.append(s)
+
+        distanceFunction = JaccardIndex()
+        cl = cluster.HierarchicalClustering(self.submissions,lambda x,y: distanceFunction(x.pkgs_list,y.pkgs_list))
+        clusters = cl.getlevel(0.5)
+        for c in clusters:
+            print "cluster"
+            for submission in c:
+                print submission.hash
+        #cl = KMeansClusteringPopcon(self.submissions,
+        #                            lambda x,y: distanceFunction(x.pkgs_list,y.pkgs_list))
+        #clusters = cl.getclusters(2)
+        #medoids = cl.getMedoids(2)
+
+class KMedoidsClusteringPopcon(cluster.KMeansClustering):
+
+    def __init__(self,data,distance):
+        cluster.KMeansClustering.__init__(self, data, distance)
+        self.distanceMatrix = {}
+        for submission in self._KMeansClustering__data:
+            self.distanceMatrix[submission.hash] = {}
+
+    def loadDistanceMatrix(self,cluster):
+        for i in range(len(cluster)-1):
+            for j in range(i+1,len(cluster)):
+                try:
+                    d = self.distanceMatrix[cluster[i].hash][cluster[j].hash]
+                    logging.debug("Using d[%d,%d]" % (i,j))
+                except:
+                    d = self.distance(cluster[i],cluster[j])
+                    self.distanceMatrix[cluster[i].hash][cluster[j].hash] = d
+                    self.distanceMatrix[cluster[j].hash][cluster[i].hash] = d
+                    logging.debug("d[%d,%d] = %.2f" % (i,j,d))
+
+    def getMedoid(self,cluster):
+        """
+        Return the medoid popcon submission of a given a cluster, based on
+        the distance function.
+        """
+        logging.debug("Cluster size: %d" % len(cluster))
+        self.loadDistanceMatrix(cluster)
+        medoidDistance = sys.maxint
+        for i in range(len(cluster)):
+            totalDistance = sum(self.distanceMatrix[cluster[i].hash].values())
+            print "totalDistance[",i,"]=",totalDistance
+            if totalDistance < centroidDistance:
+                medoidDistance = totalDistance
+                medoid = i
+            print "medoidDistance:",medoidDistance
+        logging.debug("Cluster medoid: [%d] %s" % (medoid, cluster[medoid].hash))
+        return cluster[medoid]
+
+    def assign_item(self, item, origin):
+        """
+        Assigns an item from a given cluster to the closest located cluster
+
+        PARAMETERS
+           item   - the item to be moved
+           origin - the originating cluster
+        """
+        closest_cluster = origin
+        for cluster in self._KMeansClustering__clusters:
+            if self.distance(item,self.getMedoid(cluster)) < self.distance(item,self.getMedoid(closest_cluster)):
+                closest_cluster = cluster
+
+        if closest_cluster != origin:
+            self.move_item(item, origin, closest_cluster)
+            logging.debug("Item changed cluster: %s" % item.hash)
+            return True
+        else:
+            return False
+
+    def getMedoids(self,n):
+        """
+        Generate n clusters and return their medoids.
+        """
+        medoids = [self.getMedoid(cluster) for cluster in self.getclusters(n)]
+        logging.info("Clustering completed and the following centroids were found: %s" % [c.hash for c in medoids])
+        return medoids
