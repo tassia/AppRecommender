@@ -43,6 +43,7 @@ class Config():
         self.axi_values = "/var/lib/apt-xapian-index/values"
         self.popcon_index = "~/.app-recommender/popcon_index"
         self.popcon_dir = "~/.app-recommender/popcon_dir"
+        self.clusters_dir = "~/.app-recommender/clusters_dir"
         self.strategy = "ct"    # defaults to the cheapest one
         self.reindex = 0
         self.load_options()
@@ -66,6 +67,7 @@ class Config():
         print "  -a, --axi=PATH          Path to Apt-xapian-index."
         print "  -p, --popconindex=PATH  Path to popcon dedicated index."
         print "  -m, --popcondir=PATH    Path to popcon submissions dir."
+        print "  -l, --clustersdir=PATH  Path to popcon clusters dir."
         print "  -s, --strategy=OPTION   Recommendation strategy."
         print ""
         print " [ strategy options ] "
@@ -110,11 +112,13 @@ class Config():
         self.axi = self.read_option('recommender', 'axi')
         self.popcon_index = self.read_option('recommender', 'popcon_index')
         self.popcon_dir = self.read_option('recommender', 'popcon_dir')
+        self.clusters_dir = self.read_option('recommender', 'clusters_dir')
 
         short_options = "hdvo:c:t:i:ra:p:m:s:"
         long_options = ["help", "debug", "verbose", "output=", "config=",
                         "tagsdb=", "tagsindex=", "reindex", "axi=",
-                        "popconindex=", "popcondir=", "strategy="]
+                        "popconindex=", "popcondir=", "clustersdir=",
+                        "strategy="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
@@ -147,7 +151,9 @@ class Config():
                 self.axi_values = p + "/values"
             elif o in ("-p", "--popconindex"):
                 self.popcon_index = p
-            elif o in ("-p", "--popcondir"):
+            elif o in ("-m", "--popcondir"):
+                self.popcon_dir = p
+            elif o in ("-l", "--clustersdir"):
                 self.popcon_dir = p
             elif o in ("-s", "--strategy"):
                 self.strategy = p
