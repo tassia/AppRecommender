@@ -1,0 +1,10 @@
+aaphoto: implemented-in::c, interface::commandline, role::program, use::editing, works-with::image
+dia: implemented-in::c, interface::x11, role::program, scope::application, suite::gnu, uitoolkit::gtk, use::editing, works-with::image, works-with::image:vector, x11::application
+eog: implemented-in::c, interface::x11, role::program, scope::application, suite::gnome, uitoolkit::gtk, use::viewing, works-with-format::jpg, works-with-format::png, works-with::image, works-with::image:raster, works-with::image:vector, x11::application
+emacs: devel::editor, role::dummy, role::metapackage, special::meta, suite::emacs, suite::gnu, use::editing
+ferret: devel::modelling, role::program, scope::application, suite::gnu, works-with::db
+festival: accessibility::speech, devel::interpreter, implemented-in::scheme, interface::text-mode, network::client, network::server, role::program, sound::speech, uitoolkit::ncurses, works-with::audio
+file: admin::forensics, implemented-in::c, interface::commandline, role::program, scope::utility, use::analysing, use::scanning, works-with::file
+gimp: implemented-in::c, interface::x11, role::program, scope::application, suite::gimp, suite::gnu, uitoolkit::gtk, use::editing, works-with-format::gif, works-with-format::jpg, works-with-format::pdf, works-with-format::png, works-with-format::tiff, works-with::image, works-with::image:raster, works-with::text, x11::application
+inkscape: implemented-in::c, implemented-in::c++, interface::x11, role::program, scope::application, uitoolkit::gtk, use::editing, works-with-format::pdf, works-with-format::postscript, works-with-format::svg, works-with-format::tex, works-with::image, works-with::image:vector, x11::application
+xpdf: implemented-in::c++, interface::x11, role::program, scope::application, uitoolkit::motif, use::viewing, works-with-format::pdf, works-with::text, x11::application
