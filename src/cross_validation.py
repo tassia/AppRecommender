@@ -29,7 +29,7 @@ from datetime import timedelta
 from config import *
 from data import *
 from evaluation import *
-from similarity import *
+from dissimilarity import *
 from recommender import *
 from strategy import *
 from user import *

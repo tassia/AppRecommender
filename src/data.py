@@ -28,36 +28,38 @@ import axi
 from debian import debtags
 import logging
 import hashlib
+import random
 
 from error import Error
 from singleton import Singleton
 import cluster
-from similarity import *
+from dissimilarity import *
 
-class Item:
-    """
-    Generic item definition.
-    """
+#class Item:
+#    """
+#    Generic item definition.
+#    """
+#
+#class Package(Item):
+#    """
+#    Definition of a GNU/Linux application as a recommender item.
+#    """
+#    def __init__(self,package_name):
+#        """
+#        Set initial attributes.
+#        """
+#        self.package_name  = package_name
+#
+#def normalize_tags(string):
+#    """
+#    Substitute string characters : by _ and - by '.
+#    Examples:
+#        admin::package-management   ->   admin__package'management
+#        implemented-in::c++         ->   implemented-in__c++
+#    """
+#    return string.replace(':','_').replace('-','\'')
 
-class Package(Item):
-    """
-    Definition of a GNU/Linux application as a recommender item.
-    """
-    def __init__(self,package_name):
-        """
-        Set initial attributes.
-        """
-        self.package_name  = package_name
-
-def normalize_tags(string):
-    """
-    Substitute string characters : by _ and - by '.
-    Examples:
-        admin::package-management   ->   admin__package'management
-        implemented-in::c++         ->   implemented-in__c++
-    """
-    return string.replace(':','_').replace('-','\'')
-
+#[FIXME] get pkg tags from axi and remove load_debtags_db method
 def load_debtags_db(db_path):
     """
     Load debtags database from the source file.
@@ -73,105 +75,105 @@ def load_debtags_db(db_path):
         logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
         raise Error
 
-class TagsXapianIndex(xapian.WritableDatabase,Singleton):
-    """
-    Data source for tags info defined as a singleton xapian database.
-    """
-    def __init__(self,cfg):
-        """
-        Set initial attributes.
-        """
-        self.path = os.path.expanduser(cfg.tags_index)
-        self.db_path = os.path.expanduser(cfg.tags_db)
-        self.debtags_db = debtags.DB()
-
-        try:
-            db_file = open(self.db_path)
-        except IOError:
-            logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
-            raise Error
-        md5 = hashlib.md5()
-        md5.update(db_file.read())
-        self.db_md5 = md5.hexdigest()
-        db_file.close()
-        self.load_index(cfg.reindex)
-
-#    def load_db(self):
+#class TagsXapianIndex(xapian.WritableDatabase,Singleton):
+#    """
+#    Data source for tags info defined as a singleton xapian database.
+#    """
+#    def __init__(self,cfg):
 #        """
-#        Load debtags database from the source file.
+#        Set initial attributes.
 #        """
-#        tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
+#        self.path = os.path.expanduser(cfg.tags_index)
+#        self.db_path = os.path.expanduser(cfg.tags_db)
+#        self.debtags_db = debtags.DB()
 #        try:
-#            db_file = open(self.db_path, "r")
-#            self.debtags_db.read(db_file,lambda x: not tag_filter.match(x))
-#            db_file.close()
-#        except:
+#            db_file = open(self.db_path)
+#        except IOError:
 #            logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
 #            raise Error
-
-    def relevant_tags_from_db(self,pkgs_list,qtd_of_tags):
-        """
-        Return most relevant tags considering a list of packages.
-        """
-        if not self.debtags_db.package_count():
-            self.debtags_db = load_debtags_db(self.db_path)
-        relevant_db = self.debtags_db.choose_packages(pkgs_list)
-        relevance_index = debtags.relevance_index_function(self.debtags_db,
-                                                           relevant_db)
-        sorted_relevant_tags = sorted(relevant_db.iter_tags(),
-                                      lambda a, b: cmp(relevance_index(a),
-                                      relevance_index(b)))
-        return normalize_tags(' '.join(sorted_relevant_tags[-qtd_of_tags:]))
-
-    def load_index(self,reindex):
-        """
-        Load an existing debtags index.
-        """
-        if not reindex:
-            try:
-                logging.info("Opening existing debtags xapian index at \'%s\'"
-                              % self.path)
-                xapian.Database.__init__(self,self.path)
-                md5 = self.get_metadata("md5")
-                if not md5 == self.db_md5:
-                    logging.info("Index must be updated.")
-                    reindex = 1
-            except xapian.DatabaseError:
-                logging.info("Could not open debtags index.")
-                reindex =1
-
-        if reindex:
-            self.new_index()
-
-    def new_index(self):
-        """
-        Create a xapian index for debtags info based on 'debtags_db' and
-        place it at 'self.path'.
-        """
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
-
-        try:
-            logging.info("Indexing debtags info from \'%s\'" %
-                         self.db_path)
-            logging.info("Creating new xapian index at \'%s\'" %
-                         self.path)
-            xapian.WritableDatabase.__init__(self,self.path,
-                                             xapian.DB_CREATE_OR_OVERWRITE)
-        except xapian.DatabaseError:
-            logging.critical("Could not create xapian index.")
-            raise Error
-
-        self.debtags_db = load_debtags_db(self.db_path)
-        self.set_metadata("md5",self.db_md5)
-
-        for pkg,tags in self.debtags_db.iter_packages_tags():
-            doc = xapian.Document()
-            doc.set_data(pkg)
-            for tag in tags:
-                doc.add_term(normalize_tags(tag))
-            doc_id = self.add_document(doc)
-            logging.debug("Debtags Xapian: Indexing doc %d",doc_id)
+#        md5 = hashlib.md5()
+#        md5.update(db_file.read())
+#        self.db_md5 = md5.hexdigest()
+#        db_file.close()
+#        self.load_index(cfg.reindex)
+#
+##    def load_db(self):
+##        """
+##        Load debtags database from the source file.
+##        """
+##        tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
+##        try:
+##            db_file = open(self.db_path, "r")
+##            self.debtags_db.read(db_file,lambda x: not tag_filter.match(x))
+##            db_file.close()
+##        except:
+##            logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
+##            raise Error
+#
+#    def relevant_tags_from_db(self,pkgs_list,qtd_of_tags):
+#        """
+#        Return most relevant tags considering a list of packages.
+#        """
+#        if not self.debtags_db.package_count():
+#            #print "index vazio"
+#            self.debtags_db = load_debtags_db(self.db_path)
+#        relevant_db = self.debtags_db.choose_packages(pkgs_list)
+#        relevance_index = debtags.relevance_index_function(self.debtags_db,
+#                                                           relevant_db)
+#        sorted_relevant_tags = sorted(relevant_db.iter_tags(),
+#                                      lambda a, b: cmp(relevance_index(a),
+#                                      relevance_index(b)))
+#        return normalize_tags(' '.join(sorted_relevant_tags[-qtd_of_tags:]))
+#
+#    def load_index(self,reindex):
+#        """
+#        Load an existing debtags index.
+#        """
+#        if not reindex:
+#            try:
+#                logging.info("Opening existing debtags xapian index at \'%s\'"
+#                              % self.path)
+#                xapian.Database.__init__(self,self.path)
+#                md5 = self.get_metadata("md5")
+#                if not md5 == self.db_md5:
+#                    logging.info("Index must be updated.")
+#                    reindex = 1
+#            except xapian.DatabaseError:
+#                logging.info("Could not open debtags index.")
+#                reindex =1
+#
+#        if reindex:
+#            self.new_index()
+#
+#    def new_index(self):
+#        """
+#        Create a xapian index for debtags info based on 'debtags_db' and
+#        place it at 'self.path'.
+#        """
+#        if not os.path.exists(self.path):
+#            os.makedirs(self.path)
+#
+#        try:
+#            logging.info("Indexing debtags info from \'%s\'" %
+#                         self.db_path)
+#            logging.info("Creating new xapian index at \'%s\'" %
+#                         self.path)
+#            xapian.WritableDatabase.__init__(self,self.path,
+#                                             xapian.DB_CREATE_OR_OVERWRITE)
+#        except xapian.DatabaseError:
+#            logging.critical("Could not create xapian index.")
+#            raise Error
+#
+#        self.debtags_db = load_debtags_db(self.db_path)
+#        self.set_metadata("md5",self.db_md5)
+#
+#        for pkg,tags in self.debtags_db.iter_packages_tags():
+#            doc = xapian.Document()
+#            doc.set_data(pkg)
+#            for tag in tags:
+#                doc.add_term(normalize_tags(tag))
+#            doc_id = self.add_document(doc)
+#            logging.debug("Debtags Xapian: Indexing doc %d",doc_id)
 
 class PopconXapianIndex(xapian.WritableDatabase,Singleton):
     """
@@ -232,7 +234,7 @@ class PopconXapianIndex(xapian.WritableDatabase,Singleton):
         """
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-        debtags_db = load_debtags_db(self.debtags_path)
+        debtags_db = load_debtags_db(self.debtags_path) #[FIXME]
 
         try:
             logging.info("Indexing popcon submissions from \'%s\'" %
@@ -254,6 +256,7 @@ class PopconXapianIndex(xapian.WritableDatabase,Singleton):
                               submission_path)
                 for pkg, freq in self.parse_submission(submission_path):
                     doc.add_term(pkg,freq)
+                    #[FIXME] get tags from axi
                     for tag in debtags_db.tags_of_package(pkg):
                         doc.add_term("XT"+tag,freq)
                 doc_id = self.add_document(doc)
@@ -334,22 +337,27 @@ class PopconClusteredData(Singleton):
                     s.add_pkg(pkg)
                 self.submissions.append(s)
 
-        distanceFunction = JaccardIndex()
-        cl = cluster.HierarchicalClustering(self.submissions,lambda x,y: distanceFunction(x.pkgs_list,y.pkgs_list))
-        clusters = cl.getlevel(0.5)
-        for c in clusters:
-            print "cluster"
-            for submission in c:
-                print submission.hash
-        #cl = KMeansClusteringPopcon(self.submissions,
-        #                            lambda x,y: distanceFunction(x.pkgs_list,y.pkgs_list))
+        distanceFunction = JaccardDistance()
+       # cl = cluster.HierarchicalClustering(self.submissions,lambda x,y: distanceFunction(x.pkgs_list,y.pkgs_list))
+       # clusters = cl.getlevel(0.5)
+       # for c in clusters:
+       #     print "cluster"
+       #     for submission in c:
+       #         print submission.hash
+        cl = KMedoidsClusteringPopcon(self.submissions, lambda x,y: \
+                                      distanceFunction(x.pkgs_list,y.pkgs_list))
         #clusters = cl.getclusters(2)
-        #medoids = cl.getMedoids(2)
+        medoids = cl.getMedoids(2)
+        print "medoids"
+        for m in medoids:
+            print m.hash
 
 class KMedoidsClusteringPopcon(cluster.KMeansClustering):
 
     def __init__(self,data,distance):
-        cluster.KMeansClustering.__init__(self, data, distance)
+        if len(data)>100:
+            data_sample = random.sample(data,100)
+        cluster.KMeansClustering.__init__(self, data_sample, distance)
         self.distanceMatrix = {}
         for submission in self._KMeansClustering__data:
             self.distanceMatrix[submission.hash] = {}
@@ -377,7 +385,7 @@ class KMedoidsClusteringPopcon(cluster.KMeansClustering):
         for i in range(len(cluster)):
             totalDistance = sum(self.distanceMatrix[cluster[i].hash].values())
             print "totalDistance[",i,"]=",totalDistance
-            if totalDistance < centroidDistance:
+            if totalDistance < medoidDistance:
                 medoidDistance = totalDistance
                 medoid = i
             print "medoidDistance:",medoidDistance

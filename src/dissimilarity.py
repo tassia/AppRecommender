@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-    similarity - python module for classes and methods related to similarity
-                 measuring between two sets of data.
+    dissimilarity - python module for classes and methods related to similarity
+                    measuring between two sets of data.
 """
 __author__ = "Tassia Camoes Araujo <tassia@gmail.com>"
 __copyright__ = "Copyright (C) 2011 Tassia Camoes Araujo"

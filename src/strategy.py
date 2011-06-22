@@ -144,30 +144,30 @@ class ItemReputationStrategy(RecommendationStrategy):
         logging.critical("Item reputation recommendation strategy is not yet implemented.")
         raise Error
 
-class ContentBasedStrategy(RecommendationStrategy):
-    """
-    Content-based recommendation strategy.
-    """
-    def run(self,rec,user):
-        """
-        Perform recommendation strategy.
-        """
-        profile = user.txi_tag_profile(rec.items_repository,50)
-        qp = xapian.QueryParser()
-        query = qp.parse_query(profile)
-        enquire = xapian.Enquire(rec.items_repository)
-        enquire.set_query(query)
-
-        try:
-            mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
-        except xapian.DatabaseError as error:
-            logging.critical(error.get_msg())
-            raise Error
-
-        item_score = {}
-        for m in mset:
-            item_score[m.document.get_data()] = m.rank
-        return recommender.RecommendationResult(item_score,20)
+#class ContentBasedStrategy(RecommendationStrategy):
+#    """
+#    Content-based recommendation strategy.
+#    """
+#    def run(self,rec,user):
+#        """
+#        Perform recommendation strategy.
+#        """
+#        profile = user.txi_tag_profile(rec.items_repository,50)
+#        qp = xapian.QueryParser()
+#        query = qp.parse_query(profile)
+#        enquire = xapian.Enquire(rec.items_repository)
+#        enquire.set_query(query)
+#
+#        try:
+#            mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
+#        except xapian.DatabaseError as error:
+#            logging.critical(error.get_msg())
+#            raise Error
+#
+#        item_score = {}
+#        for m in mset:
+#            item_score[m.document.get_data()] = m.rank
+#        return recommender.RecommendationResult(item_score,20)
 
 class AxiContentBasedStrategy(RecommendationStrategy):
     """

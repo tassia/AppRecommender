@@ -19,10 +19,12 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import random
 import commands
 import xapian
 import logging
 import apt
+from singleton import Singleton
 
 class FilterTag(xapian.ExpandDecider):
     """
@@ -34,51 +36,84 @@ class FilterTag(xapian.ExpandDecider):
         """
         return term[:2] == "XT"
 
+class DemographicProfile(Singleton):
+    def __init__(self):
+        self.admin   = set(["admin", "hardware", "mail", "protocol",
+                            "network", "security", "web", "interface::web"])
+        self.devel   = set(["devel", "role::devel-lib", "role::shared-lib"])
+        self.desktop = set(["x11", "accessibility", "game", "junior", "office",
+                            "interface::x11"])
+        self.art     = set(["field::arts", "sound"])
+        self.science = set(["science", "biology", "field::astronomy",
+                            "field::aviation",  "field::biology",
+                            "field::chemistry", "field::eletronics",
+                            "field::finance", "field::geography",
+                            "field::geology", "field::linguistics",
+                            "field::mathematics", "field::medicine",
+                            "field::meteorology", "field::physics",
+                            "field::statistics"])
+
+    def __call__(self,profiles_set):
+        demographic_profile = set()
+        for profile in profiles_set:
+            demographic_profile = (demographic_profile | eval("self."+profile,{},{"self":self}))
+        return demographic_profile
+
 class User:
     """
     Define a user of a recommender.
     """
-    def __init__(self,item_score,user_id=0,demographic_profile=0):
+    def __init__(self,item_score,user_id=0,profiles_set=0):
         """
-        Set initial parameters.
+        Set initial user attributes. If no user_id was passed as parameter, a
+        random md5-hash is generated for that purpose. If the demographic
+        profile was not defined, it defaults to 'desktop'
         """
-        self.id = user_id
         self.item_score = item_score
+        if user_id:
+            self.id = user_id
+        else:
+            random.seed()
+            self.id = random.getrandbits(128)
         self.pkg_profile = self.item_score.keys()
-        self.demographic_profile = demographic_profile
+        if not profiles_set:
+            profiles_set = set(["desktop"])
+        self.set_demographic_profile(profiles_set)
+
+    def set_demographic_profile(self,profiles_set):
+        self.demographic_profile = DemographicProfile()(profiles_set)
 
     def items(self):
         """
-        Return dictionary relating items and repective scores.
+        Return the set of user items.
         """
-        return self.item_score.keys()
+        return set(self.item_score.keys())
 
     def axi_tag_profile(self,apt_xapian_index,profile_size):
         """
         Return most relevant tags for a list of packages based on axi.
         """
-        terms = []
-        for item in self.pkg_profile:
-            terms.append("XP"+item)
+        terms = ["XP"+item for item in self.pkg_profile]
         query = xapian.Query(xapian.Query.OP_OR, terms)
         enquire = xapian.Enquire(apt_xapian_index)
         enquire.set_query(query)
         rset = xapian.RSet()
-        for m in enquire.get_mset(0,30000): #consider all matches
+        for m in enquire.get_mset(0,apt_xapian_index.get_doccount()):
              rset.add_document(m.docid)
+        # statistically good differentiators between relevant and non-relevant
         eset = enquire.get_eset(profile_size, rset, FilterTag())
         profile = []
         for res in eset:
             profile.append(res.term)
-            logging.debug("%.2f %s" % (res.weight,res.term[2:]))
+            logging.debug("%.2f %s" % (res.weight,res.term.lstrip("XT")))
         return profile
 
-    def txi_tag_profile(self,tags_xapian_index,profile_size):
-        """
-        Return most relevant tags for a list of packages based on tags index.
-        """
-        return tags_xapian_index.relevant_tags_from_db(self.pkg_profile,
-                                                       profile_size)
+    #def txi_tag_profile(self,tags_xapian_index,profile_size):
+    #    """
+    #    Return most relevant tags for a list of packages based on tags index.
+    #    """
+    #    return tags_xapian_index.relevant_tags_from_db(self.pkg_profile,
+    #                                                   profile_size)
 
     def maximal_pkg_profile(self):
         """

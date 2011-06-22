@@ -26,7 +26,7 @@ from datetime import timedelta
 
 from config import *
 from data import *
-from similarity import *
+from dissimilarity import *
 from error import Error
 
 if __name__ == '__main__':
