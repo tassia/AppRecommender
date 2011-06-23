@@ -1,0 +1,9 @@
+*.pyc
+TODO
+doc/doxygen-1.7.3
+doc/html/
+popcon-data.tgz
+popcon-data/
+psql-out
+udd-import.log
+udd.sql.gz
