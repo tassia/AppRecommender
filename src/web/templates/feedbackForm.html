@@ -1,0 +1,50 @@
+$def with (action, method, recommends, form)
+$var title: Feedback
+$var mod = 'feedback';
+
+        <div class="index_include">
+
+
+<center>
+                <h1>Results</h1>
+</center>
+
+<p>Results index:</p>
+
+<ul class="toc">
+$for list in recommends:
+    <li><a href="#$list[0]">$list[0]</a></li>
+<li><a href="#feedback">Your feedback is appreciated!</a></li>
+</ul>
+
+<form action="$action" method="$method">
+$for list in recommends:
+    <h2><a name="$list[0]" id="$list[0]">$list[0]</a></h2>
+    $for p in list[1:]:
+        <div class="line">
+        <div class="item col50">
+        <image src="http://screenshots.debian.net/screenshot/$p" width="300">
+        </div>
+        <div class="item col50 lastcol">
+	<script>loadPackage("$p");</script>
+	<b id="pack-$p"></b><div id="desc-$p"> </div>
+	<ul>
+	<li id="maint-$p"></li>
+	<li id="homepage-$p"></li>
+	</ul>
+        </div>
+        <div class="clear"></div>
+        </div>
+    <hr />
+
+<h2><a name="feedback" id="feedback">Feedback</a></h2>
+
+$if not form.valid: <p>Try again, AmeriCAN:</p>
+$:form.render()
+<br />
+<input type="submit" />
+</form>
+
+
+</div>
+
