@@ -1,0 +1,161 @@
+$def with (content)
+$ url_base = "http://localhost:8080/"
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>AppRecommender - $content.title</title>
+	<link rel="stylesheet" href="/static/debian.css" type="text/css" />
+	<link rel="stylesheet" href="/static/local.css" type="text/css" />
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+<script>
+
+function loadPackage(packagename)
+{
+        $$.getJSON("http://dde.debian.net/dde/q/udd/packages/prio-debian-unstable/"+packagename,
+          {
+            t: "json"
+          },
+          function(json) {
+                $$("#pack-"+packagename).html(json.r.package);
+                $$("#desc-"+packagename).html(json.r.description);
+                $$("#maint-"+packagename).html('<a href="http://qa.debian.org/developer.php?login='+json.r.maintainer+'">'+json.r.maintainer+'</a>');
+                $$("#homepage-"+packagename).html('<a href="http://qa.debian.org/developer.php?login='+json.r.homepage+'">'+json.r.homepage+'</a>');
+                $$("#pts-"+packagename).html(json.r.homepage);
+                $$("#bts-"+packagename).html(json.r.homepage);
+          });
+
+}
+
+
+</script>
+
+</head>
+<body>
+
+<div id="header">
+        <div id="upperheader">
+                <div id="logo">
+                        <a href="http://www.debian.org/" title="Debian Home"><img src="/static/Pics/openlogo-50.png" alt="Debian" width="50" height="61" /></a>
+                </div>
+                <p class="section">AppR</p>
+
+        </div>
+
+        <div id="navbar">
+
+                <p class="hidecss"><a href="#inner">Skip Quicknav</a></p>
+                <ul>
+                   <li><a href="http://www.debian.org/intro/about">About Debian</a></li>
+                   <li><a href="http://www.debian.org/distrib/">Getting Debian</a></li>
+                   <li><a href="http://www.debian.org/support">Support</a></li>
+                   <li><a href="http://www.debian.org/devel/">Developers'&nbsp;Corner</a></li>
+
+                </ul>
+        </div>
+	<p id="breadcrumbs">$content.mod</p>
+</div>
+
+
+<div id="content">
+
+$:content
+
+</div>
+<p>&nbsp;</p>
+
+	<div id="footer">
+		<div id="pageinfo">
+
+<p>Back to the <a href="http://www.debian.org/../">Debian Project homepage</a>.</p>
+<hr/>
+<div id="footermap">
+<!--UdmComment-->
+<p><strong><a href="http://www.debian.org">Home</a></strong></p>
+    <ul id="footermap-cola">
+		<li><a href="http://www.debian.org/intro/about">About</a>
+		  <ul>
+
+		  <li><a href="http://www.debian.org/social_contract">Social&nbsp;Contract</a></li>
+		  <li><a href="http://www.debian.org/intro/free">Free&nbsp;Software</a></li>
+		  <li><a href="http://www.debian.org/partners/">Partners</a></li>
+		  <li><a href="http://www.debian.org/donations">Donations</a></li>
+		  <li><a href="http://www.debian.org/contact">Contact&nbsp;Us</a></li>
+
+		  </ul>
+		</li>
+	</ul>
+	<ul id="footermap-colb">
+			<li><a href="http://www.debian.org/distrib/">Getting Debian</a>
+			  <ul>
+			  <li><a href="http://www.debian.org/CD/vendors/">CD vendors</a></li>
+			  <li><a href="http://www.debian.org/CD/">CD ISO images</a></li>
+
+			  <li><a href="http://www.debian.org/distrib/netinst">Network install</a></li>
+			  <li><a href="http://www.debian.org/distrib/pre-installed">Pre-installed</a></li>
+			  </ul>
+			</li>
+    <li><a href="http://www.debian.org/distrib/packages">Debian&nbsp;Packages</a></li>
+	</ul>
+	<ul id="footermap-colc">
+
+		<li><a href="http://www.debian.org/News/">News</a>
+		  <ul>
+		  <li><a href="http://www.debian.org/News/project/">Project&nbsp;News</a></li>
+		  <li><a href="http://www.debian.org/events/">Events</a></li>
+		  </ul>
+		</li>
+    <li><a href="http://www.debian.org/doc/">Documentation</a>
+
+      <ul>
+      <li><a href="http://www.debian.org/releases/">Release&nbsp;Info</a></li>
+      <li><a href="http://www.debian.org/releases/stable/installmanual">Installation&nbsp;manual</a></li>
+      <li><a href="http://www.debian.org/doc/books">Debian&nbsp;Books</a></li>
+      </ul>
+    </li>
+
+   </ul>
+   <ul id="footermap-cold">
+    <li><a href="http://www.debian.org/../support">Support</a>
+	  <ul>
+			  <li><a href="http://www.debian.org/international/">Debian&nbsp;International</a></li>
+			  <li><a href="http://www.debian.org/security/">Security&nbsp;Information</a></li>
+
+			  <li><a href="http://www.debian.org/Bugs/">Bug reports</a></li>
+			  <li><a href="http://www.debian.org/MailingLists/">Mailing&nbsp;Lists</a></li>
+			  <li><a href="http://www.debian.org/http://lists.debian.org/">Mailing&nbsp;List&nbsp;Archives</a></li>
+			  <li><a href="http://www.debian.org/ports/">Ports/Architectures</a></li>
+      </ul>
+
+    </li>
+</ul>
+<ul id="footermap-cole">
+    <li><a href="http://www.debian.org/../misc/">Miscellaneous</a></li>
+    <li><a href="http://www.debian.org/../intro/help">Help Debian</a></li>
+    <li><a href="http://www.debian.org/../devel/">Developers'&nbsp;Corner</a></li>
+    <li><a href="http://www.debian.org/../sitemap">Site map</a></li>
+
+    <li><a href="http://www.debian.org/http://search.debian.org/">Search</a></li>
+</ul>
+<!--/UdmComment-->
+</div> <!-- end footermap -->
+<div id="fineprint">
+  <p>To report a problem with the web site, e-mail <a
+  href="mailto:tassia@gmail.com">tassia@gmail.com</a>.</p>
+<p>
+Last Modified: <span class="date">Mon 09 May 2011 04:08:40 AM UTC</span>
+  <br />
+  Copyright &copy; 2011
+ <a href="$url_base">AppRecommender</a>.<br />
+ Source and binary forms released under the terms of the GNU General Public
+ License version 2.
+</p>
+</div>
+</div> <!-- end footer -->
+
+</div>
+</div>
+</body>
+</html>

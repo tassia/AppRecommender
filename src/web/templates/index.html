@@ -1,0 +1,25 @@
+$def with (action, method, form)
+$var title: Home
+$var mod = 'index';
+
+        <div class="index_include">
+<center>
+                <h1>Welcome to AppRecommender</h1>
+</center>
+
+<div class="align-right"><img alt="AppRecommender logo" src="/static/Pics/AppRecommender-logo.jpg" /></div>
+
+<p>AppRecommender is a project in development that aims to provide solutions
+for application recommendation at the GNU/Linux world. It was initially thought
+as a Debian package recommender, but considering the multi-distro effort in
+providing platform independent solutions, it should also follow this
+principle.</p>
+
+<form action="$action" enctype="multipart/form-data" method="$method">
+$if not form.valid: <p>Try again, AmeriCAN:</p>
+$:form.render()
+<p>&nbsp;</p>
+<input type="submit" />
+</form>
+
+</div>
