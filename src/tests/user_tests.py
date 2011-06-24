@@ -37,7 +37,7 @@ class UserTests(unittest2.TestCase):
     @classmethod
     def setUpClass(self):
         cfg = Config()
-        self.axi = xapian.Database(cfg.axi)
+        #self.axi = xapian.Database(cfg.axi)
         self.user = User({"gimp":1,"aaphoto":1,"eog":1,"emacs":1})
         self.pxi = PkgXapianIndex()
 
@@ -104,35 +104,42 @@ class UserTests(unittest2.TestCase):
         self.assertEqual(self.user.items(),set(["gimp","aaphoto","eog","emacs"]))
 
     def test_axi_tag_profile(self):
-        enquire = xapian.Enquire(self.pxi)
-        relevant_dict = {}
-        non_relevant_dict = {}
         package_terms = ["XP"+package for package in self.user.items()]
+        enquire = xapian.Enquire(self.pxi)
         enquire.set_query(xapian.Query(xapian.Query.OP_OR,package_terms))
-        mset = enquire.get_mset(0, self.pxi.get_doccount(), None, None)
-        tag_terms = set()
-        for m in mset:
-            tag_terms = [x.term for x in m.document.termlist()
-                         if x.term.startswith("XT")]
-            for tag in tag_terms:
-                if tag in relevant_dict:
-                    relevant_dict[tag] = relevant_dict[tag]+1
-                else:
-                    relevant_dict[tag] = 1
-        rank = {}
-        for tag,count in relevant_dict.items():
-            non_relevant_dict[tag] = self.pxi.get_termfreq(tag)-count
-            if non_relevant_dict[tag]>0:
-                rank[tag] = relevant_dict[tag]/float(non_relevant_dict[tag])
-        #print "relevant",relevant_dict
-        #print "non_relevant",non_relevant_dict
+        user_packages = enquire.get_mset(0, self.pxi.get_doccount(), None, None)
+        tag_terms = []
+        for p in user_packages:
+            tag_terms = tag_terms + [x.term for x in p.document.termlist() \
+                                     if x.term.startswith("XT")]
+        relevant_count = dict([(tag,tag_terms.count(tag)) \
+                               for tag in set(tag_terms)])
+        #rank = {}
+        #non_relevant_count = dict()
+        #for tag,count in relevant_count.items():
+        #    non_relevant_count[tag] = self.pxi.get_termfreq(tag)-count
+        #    if non_relevant_count[tag]>0:
+        #        rank[tag] = relevant_count[tag]/float(non_relevant_count[tag])
+        #print "relevant",relevant_count
+        #print "non_relevant",non_relevant_count
         #print sorted(rank.items(), key=operator.itemgetter(1))
         #[FIXME] get ths value based on real ranking
+        #print set(self.user.axi_tag_profile(self.pxi,4))
         self.assertEqual(set(self.user.axi_tag_profile(self.pxi,4)),
                          set(["XTuse::editing", "XTworks-with::image",
                               "XTworks-with-format::png",
                               "XTworks-with-format::jpg"]))
 
+    def test_maximal_pkg_profile(self):
+        old_pkg_profile = self.user.items()
+        aaphoto_deps = ["libc6", "libgomp1", "libjasper1", "libjpeg62",
+                        "libpng12-0"]
+        libc6_deps = ["libc-bin", "libgcc1"]
+
+        for pkg in aaphoto_deps+libc6_deps:
+            self.user.item_score[pkg] = 1
+
+        self.assertEqual(old_pkg_profile,self.user.maximal_pkg_profile())
 
 if __name__ == '__main__':
         unittest2.main()

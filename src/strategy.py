@@ -173,6 +173,9 @@ class AxiContentBasedStrategy(RecommendationStrategy):
     """
     Content-based recommendation strategy based on Apt-xapian-index.
     """
+    def __init__(self):
+        self.description = "Content-based"
+
     def run(self,rec,user):
         """
         Perform recommendation strategy.
@@ -190,8 +193,8 @@ class AxiContentBasedStrategy(RecommendationStrategy):
 
         item_score = {}
         for m in mset:
-            item_score[m.document.get_data()] = m.rank
-        return recommender.RecommendationResult(item_score,20)
+            item_score[m.document.get_data()] = m.weight
+        return recommender.RecommendationResult(item_score)
 
 class CollaborativeStrategy(RecommendationStrategy):
     """
@@ -227,7 +230,7 @@ class CollaborativeStrategy(RecommendationStrategy):
             item_score[term.term] = rank
             rank = rank+1
 
-        return recommender.RecommendationResult(item_score,20)
+        return recommender.RecommendationResult(item_score)
 
 class KnowledgeBasedStrategy(RecommendationStrategy):
     """

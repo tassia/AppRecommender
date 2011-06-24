@@ -46,7 +46,7 @@ class Config():
         self.popcon_index = "~/.app-recommender/popcon_index"
         self.popcon_dir = "~/.app-recommender/popcon_dir"
         self.clusters_dir = "~/.app-recommender/clusters_dir"
-        self.strategy = "ct"    # defaults to the cheapest one
+        self.strategy = "cta"    # defaults to the cheapest one
         self.reindex = 0
         self.load_options()
         self.set_logger()

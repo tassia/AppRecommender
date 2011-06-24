@@ -28,12 +28,11 @@ class RecommendationResult:
     """
     Class designed to describe a recommendation result: items and scores.
     """
-    def __init__(self,item_score,size):
+    def __init__(self,item_score):
         """
         Set initial parameters.
         """
         self.item_score = item_score
-        self.size = size
 
     def __str__(self):
         """
@@ -45,12 +44,12 @@ class RecommendationResult:
             str += "%2d: %s\n" % (i,result[i][0])
         return str
 
-    def get_prediction(self):
+    def get_prediction(self,size=20):
         """
         Return prediction based on recommendation size (number of items).
         """
         sorted_result = sorted(self.item_score.items(), key=itemgetter(1))
-        return sorted_result[:self.size]
+        return reversed(sorted_result[:size])
 
 class Recommender:
     """
