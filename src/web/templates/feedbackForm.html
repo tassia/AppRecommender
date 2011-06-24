@@ -6,31 +6,31 @@ $var mod = 'feedback';
 
 
 <center>
-                <h1>Results</h1>
+                <h1>Recommendations</h1>
 </center>
 
-<p>Results index:</p>
+<p>Results per strategy:</p>
 
 <ul class="toc">
-$for list in recommends:
-    <li><a href="#$list[0]">$list[0]</a></li>
+$for strategy, result in recommends.items():
+    <li><a href="#$strategy">$strategy</a></li>
 <li><a href="#feedback">Your feedback is appreciated!</a></li>
 </ul>
 
 <form action="$action" method="$method">
-$for list in recommends:
-    <h2><a name="$list[0]" id="$list[0]">$list[0]</a></h2>
-    $for p in list[1:]:
+$for strategy, result in recommends.items():
+    <h2><a name="$strategy" id="$strategy">$strategy</a></h2>
+    $for pkg in result:
         <div class="line">
         <div class="item col50">
-        <image src="http://screenshots.debian.net/screenshot/$p" width="300">
+        <image src="http://screenshots.debian.net/screenshot/$pkg" width="300">
         </div>
         <div class="item col50 lastcol">
-	<script>loadPackage("$p");</script>
-	<b id="pack-$p"></b><div id="desc-$p"> </div>
+	<script>loadPackage("$pkg");</script>
+	<b id="pack-$pkg"></b><div id="desc-$pkg"> </div>
 	<ul>
-	<li id="maint-$p"></li>
-	<li id="homepage-$p"></li>
+	<li id="maint-$pkg"></li>
+	<li id="homepage-$pkg"></li>
 	</ul>
         </div>
         <div class="clear"></div>
