@@ -1,5 +1,5 @@
 AppRecommender - Application recommender for GNU/Linux systems
 
-Depends: python debian-python apt-xapian-index python-stats
+Depends: python debian-python apt-xapian-index python-stats python-webpy python-cluster
 
 More info: https://github.com/tassia/AppRecommender/wiki
