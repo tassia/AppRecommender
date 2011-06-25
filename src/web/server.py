@@ -14,9 +14,9 @@ from user import *
 class RequestForm(form.Form):
     def __init__(self):
         form.Form.__init__(self, \
-            form.File("pkgs_file", description="Upload file"),
+            form.File("pkgs_file", size=35, description="Upload file"),
             form.Textarea("pkgs_list", description="Packages",
-                          rows="4", cols="40"),
+                          rows="4", cols="52"),
             form.Dropdown('limit', [(5, '05'), (10, '10'), (20, '20')],
                           description = "Limit"),
             form.Checkbox("strategy_cb", value=1, checked=False,
