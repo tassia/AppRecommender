@@ -21,6 +21,7 @@ __license__ = """
 
 import os
 import sys
+sys.path.insert(0,'../')
 import logging
 import datetime
 from datetime import timedelta
