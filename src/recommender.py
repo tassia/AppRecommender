@@ -49,7 +49,7 @@ class RecommendationResult:
         Return prediction based on recommendation size (number of items).
         """
         sorted_result = sorted(self.item_score.items(), key=itemgetter(1))
-        return reversed(sorted_result[:size])
+        return reversed(sorted_result[-size:])
 
 class Recommender:
     """

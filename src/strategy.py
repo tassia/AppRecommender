@@ -20,6 +20,7 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import string
 import os, re
 import xapian
 from data import *
@@ -181,7 +182,8 @@ class AxiContentBasedStrategy(RecommendationStrategy):
         Perform recommendation strategy.
         """
         profile = user.axi_tag_profile(rec.items_repository,50)
-        query = xapian.Query(xapian.Query.OP_OR,profile)
+        #profile_str = string.join(list(profile),' ')
+        query = xapian.Query(xapian.Query.OP_OR,list(profile))
         enquire = xapian.Enquire(rec.items_repository)
         enquire.set_query(query)
 
@@ -200,13 +202,17 @@ class CollaborativeStrategy(RecommendationStrategy):
     """
     Colaborative recommendation strategy.
     """
+    def __init__(self):
+        self.description = "Collaborative"
+
     #def run(self,rec,user,similarity_measure):
     def run(self,rec,user):
         """
         Perform recommendation strategy.
         """
         profile = user.maximal_pkg_profile()
-        query = xapian.Query(xapian.Query.OP_OR,profile)
+        #profile_str = string.join(list(profile),' ')
+        query = xapian.Query(xapian.Query.OP_OR,list(profile))
         enquire = xapian.Enquire(rec.users_repository)
         enquire.set_query(query)
 
@@ -236,6 +242,9 @@ class KnowledgeBasedStrategy(RecommendationStrategy):
     """
     Knowledge-based recommendation strategy.
     """
+    def __init__(self):
+        self.description = "Knowledge-based"
+
     def run(self,user,knowledge_repository):
         """
         Perform recommendation strategy.
@@ -247,6 +256,9 @@ class DemographicStrategy(RecommendationStrategy):
     """
     Recommendation strategy based on demographic data.
     """
+    def __init__(self):
+        self.description = "Demographic"
+
     def run(self,user,items_repository):
         """
         Perform recommendation strategy.

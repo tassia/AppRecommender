@@ -1,0 +1,23 @@
+$def with (form)
+$var title: Error
+$var mod = 'error';
+
+<div class="index_include">
+<center>
+    <h1>Welcome to AppRecommender</h1>
+</center>
+
+<div class="align-right"><img alt="AppRecommender logo" src="/static/Pics/AppRecommender-logo.jpg" /></div>
+
+Your request could not be proccessed due to the following error(s): 
+
+<ul>
+$for v in form.validators:
+    <b><li>$v.msg</li></b>
+</ul>
+
+<p><a href="/">Go back</a> and try again. </p>
+<p>If you believe it is a bug, please report to <a
+href="mailto:tassia@gamil.com">tassia@gmail.com</a>.</p>
+
+</div>
