@@ -68,10 +68,18 @@ class AppRecommender:
                 user_pkgs_list = request_info['pkgs_list'].encode('utf8').split()
                 print user_pkgs_list
 
-            if request_info.has_key('pkgs_file'):
+            if request_info['pkgs_file'].value:
                 f = open(outputdir + "/packages_list", "wb")
-                for line in request_info['pkgs_file'].file:
-                    user_pkgs_list.append(line.split()[0])
+                lines = request_info['pkgs_file'].file.readlines()
+                print lines
+                if lines[0].startswith('POPULARITY-CONTEST'):
+                    del lines[0]
+                    del lines[-1]
+                    package_name_field = 2
+                else:
+                    package_name_field = 0
+                for line in lines:
+                    user_pkgs_list.append(line.split()[package_name_field])
                     f.write(line)
                 f.close()
 
