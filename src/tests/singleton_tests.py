@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-    tests - execution of the whole set of tests suites.
+    singletonTests - Singleton class test case
 """
 __author__ = "Tassia Camoes Araujo <tassia@gmail.com>"
 __copyright__ = "Copyright (C) 2011 Tassia Camoes Araujo"
@@ -20,9 +20,18 @@ __license__ = """
 """
 
 import unittest2
-import user_tests
-import singleton_tests
+import sys
+sys.path.insert(0,'../')
+from singleton import Singleton
 
-runner = unittest2.TextTestRunner()
-runner.run(user_tests.suite())
-runner.run(singleton_tests.suite())
+def suite():
+    return unittest2.TestLoader().loadTestsFromTestCase(SingletonTests)
+
+class SingletonTests(unittest2.TestCase):
+    def test_creation(self):
+        object_1 = Singleton()
+        object_2 = Singleton()
+        self.assertEqual(id(object_1),id(object_2))
+
+if __name__ == '__main__':
+        unittest2.main()

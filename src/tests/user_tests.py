@@ -28,7 +28,6 @@ sys.path.insert(0,'../')
 from user import *
 from config import *
 from data import *
-from pxi import *
 
 def suite():
     return unittest2.TestLoader().loadTestsFromTestCase(UserTests)
@@ -39,7 +38,7 @@ class UserTests(unittest2.TestCase):
         cfg = Config()
         #self.axi = xapian.Database(cfg.axi)
         self.user = User({"gimp":1,"aaphoto":1,"eog":1,"emacs":1})
-        self.pxi = PkgXapianIndex()
+        self.pxi = PkgXapianIndex("package-xapian-index")
 
     def test_hash(self):
         new_user = User(dict())
