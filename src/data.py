@@ -35,29 +35,44 @@ from singleton import Singleton
 import cluster
 from dissimilarity import *
 
-#class Item:
-#    """
-#    Generic item definition.
-#    """
-#
-#class Package(Item):
-#    """
-#    Definition of a GNU/Linux application as a recommender item.
-#    """
-#    def __init__(self,package_name):
-#        """
-#        Set initial attributes.
-#        """
-#        self.package_name  = package_name
-#
-#def normalize_tags(string):
-#    """
-#    Substitute string characters : by _ and - by '.
-#    Examples:
-#        admin::package-management   ->   admin__package'management
-#        implemented-in::c++         ->   implemented-in__c++
-#    """
-#    return string.replace(':','_').replace('-','\'')
+def axi_search_pkgs(axi,pkgs_list):
+    terms = ["XP"+item for item in pkgs_list]
+    query = xapian.Query(xapian.Query.OP_OR, terms)
+    enquire = xapian.Enquire(axi)
+    enquire.set_query(query)
+    matches = enquire.get_mset(0,axi.get_doccount())
+    return matches
+
+def axi_search_pkg_tags(axi,pkg):
+    query = xapian.Query(xapian.Query.OP_OR, "XP"+pkg)
+    enquire = xapian.Enquire(axi)
+    enquire.set_query(query)
+    matches = enquire.get_mset(0,1)
+    for m in matches:
+        tags = [term.term for term in axi.get_document(m.docid).termlist() if
+                term.term.startswith("XT")]
+    return tags
+
+class SampleAptXapianIndex(xapian.WritableDatabase):
+    """
+    Sample data source for packages information, mainly useful for tests.
+    """
+    def __init__(self,pkgs_list,axi):
+        xapian.WritableDatabase.__init__(self,".sample_axi",
+                                         xapian.DB_CREATE_OR_OVERWRITE)
+        sample = axi_search_pkgs(axi,pkgs_list)
+        self.all_docs = []
+        for package in sample:
+            doc_id = self.add_document(axi.get_document(package.docid))
+            self.all_docs.append(doc_id)
+
+    def _print(self):
+        print "---"
+        print xapian.WritableDatabase.__repr__(self)
+        print "---"
+        for doc_id in self.all_docs:
+            print [term.term for term in self.get_document(doc_id).termlist()]
+            print "---"
 
 #[FIXME] get pkg tags from axi and remove load_debtags_db method
 def load_debtags_db(db_path):
@@ -74,106 +89,6 @@ def load_debtags_db(db_path):
     except:
         logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
         raise Error
-
-#class TagsXapianIndex(xapian.WritableDatabase,Singleton):
-#    """
-#    Data source for tags info defined as a singleton xapian database.
-#    """
-#    def __init__(self,cfg):
-#        """
-#        Set initial attributes.
-#        """
-#        self.path = os.path.expanduser(cfg.tags_index)
-#        self.db_path = os.path.expanduser(cfg.tags_db)
-#        self.debtags_db = debtags.DB()
-#        try:
-#            db_file = open(self.db_path)
-#        except IOError:
-#            logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
-#            raise Error
-#        md5 = hashlib.md5()
-#        md5.update(db_file.read())
-#        self.db_md5 = md5.hexdigest()
-#        db_file.close()
-#        self.load_index(cfg.reindex)
-#
-##    def load_db(self):
-##        """
-##        Load debtags database from the source file.
-##        """
-##        tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
-##        try:
-##            db_file = open(self.db_path, "r")
-##            self.debtags_db.read(db_file,lambda x: not tag_filter.match(x))
-##            db_file.close()
-##        except:
-##            logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
-##            raise Error
-#
-#    def relevant_tags_from_db(self,pkgs_list,qtd_of_tags):
-#        """
-#        Return most relevant tags considering a list of packages.
-#        """
-#        if not self.debtags_db.package_count():
-#            #print "index vazio"
-#            self.debtags_db = load_debtags_db(self.db_path)
-#        relevant_db = self.debtags_db.choose_packages(pkgs_list)
-#        relevance_index = debtags.relevance_index_function(self.debtags_db,
-#                                                           relevant_db)
-#        sorted_relevant_tags = sorted(relevant_db.iter_tags(),
-#                                      lambda a, b: cmp(relevance_index(a),
-#                                      relevance_index(b)))
-#        return normalize_tags(' '.join(sorted_relevant_tags[-qtd_of_tags:]))
-#
-#    def load_index(self,reindex):
-#        """
-#        Load an existing debtags index.
-#        """
-#        if not reindex:
-#            try:
-#                logging.info("Opening existing debtags xapian index at \'%s\'"
-#                              % self.path)
-#                xapian.Database.__init__(self,self.path)
-#                md5 = self.get_metadata("md5")
-#                if not md5 == self.db_md5:
-#                    logging.info("Index must be updated.")
-#                    reindex = 1
-#            except xapian.DatabaseError:
-#                logging.info("Could not open debtags index.")
-#                reindex =1
-#
-#        if reindex:
-#            self.new_index()
-#
-#    def new_index(self):
-#        """
-#        Create a xapian index for debtags info based on 'debtags_db' and
-#        place it at 'self.path'.
-#        """
-#        if not os.path.exists(self.path):
-#            os.makedirs(self.path)
-#
-#        try:
-#            logging.info("Indexing debtags info from \'%s\'" %
-#                         self.db_path)
-#            logging.info("Creating new xapian index at \'%s\'" %
-#                         self.path)
-#            xapian.WritableDatabase.__init__(self,self.path,
-#                                             xapian.DB_CREATE_OR_OVERWRITE)
-#        except xapian.DatabaseError:
-#            logging.critical("Could not create xapian index.")
-#            raise Error
-#
-#        self.debtags_db = load_debtags_db(self.db_path)
-#        self.set_metadata("md5",self.db_md5)
-#
-#        for pkg,tags in self.debtags_db.iter_packages_tags():
-#            doc = xapian.Document()
-#            doc.set_data(pkg)
-#            for tag in tags:
-#                doc.add_term(normalize_tags(tag))
-#            doc_id = self.add_document(doc)
-#            logging.debug("Debtags Xapian: Indexing doc %d",doc_id)
 
 class PopconXapianIndex(xapian.WritableDatabase,Singleton):
     """

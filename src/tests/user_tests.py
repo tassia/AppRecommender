@@ -36,9 +36,12 @@ class UserTests(unittest2.TestCase):
     @classmethod
     def setUpClass(self):
         cfg = Config()
-        #self.axi = xapian.Database(cfg.axi)
+        self.axi = xapian.Database(cfg.axi)
+        sample_packages = ["gimp","aaphoto","eog","emacs","dia","ferret",
+                           "festival","file","inkscape","xpdf"]
+        self.sample_axi = SampleAptXapianIndex(sample_packages,self.axi)
         self.user = User({"gimp":1,"aaphoto":1,"eog":1,"emacs":1})
-        self.pxi = PkgXapianIndex("package-xapian-index")
+        #self.sample_axi._print()
 
     def test_hash(self):
         new_user = User(dict())
@@ -100,34 +103,34 @@ class UserTests(unittest2.TestCase):
         self.assertEqual(self.user.demographic_profile,desktop_art_admin)
 
     def test_items(self):
-        self.assertEqual(self.user.items(),set(["gimp","aaphoto","eog","emacs"]))
+        self.assertEqual(set(self.user.items()),
+                         set(["gimp","aaphoto","eog","emacs"]))
 
-    def test_axi_tag_profile(self):
-        package_terms = ["XP"+package for package in self.user.items()]
-        enquire = xapian.Enquire(self.pxi)
-        enquire.set_query(xapian.Query(xapian.Query.OP_OR,package_terms))
-        user_packages = enquire.get_mset(0, self.pxi.get_doccount(), None, None)
-        tag_terms = []
-        for p in user_packages:
-            tag_terms = tag_terms + [x.term for x in p.document.termlist() \
-                                     if x.term.startswith("XT")]
-        relevant_count = dict([(tag,tag_terms.count(tag)) \
-                               for tag in set(tag_terms)])
-        #rank = {}
-        #non_relevant_count = dict()
-        #for tag,count in relevant_count.items():
-        #    non_relevant_count[tag] = self.pxi.get_termfreq(tag)-count
-        #    if non_relevant_count[tag]>0:
-        #        rank[tag] = relevant_count[tag]/float(non_relevant_count[tag])
-        #print "relevant",relevant_count
-        #print "non_relevant",non_relevant_count
-        #print sorted(rank.items(), key=operator.itemgetter(1))
-        #[FIXME] get ths value based on real ranking
-        #print set(self.user.axi_tag_profile(self.pxi,4))
-        self.assertEqual(set(self.user.axi_tag_profile(self.pxi,4)),
-                         set(["XTuse::editing", "XTworks-with::image",
-                              "XTworks-with-format::png",
-                              "XTworks-with-format::jpg"]))
+    def test_profile(self):
+        self.assertEqual(self.user.profile(self.sample_axi,"tag",10),
+                         self.user.tag_profile(self.sample_axi,10))
+        self.assertEqual(self.user.profile(self.sample_axi,"desc",10),
+                         self.user.desc_profile(self.sample_axi,10))
+        self.assertEqual(self.user.profile(self.sample_axi,"full",10),
+                         self.user.full_profile(self.sample_axi,10))
+
+    def test_tag_profile(self):
+        self.assertEqual(self.user.tag_profile(self.sample_axi,10),
+                         ['XTuse::editing', 'XTworks-with::image:raster',
+                          'XTworks-with-format::png', 'XTworks-with-format::jpg',
+                          'XTworks-with::image','XTimplemented-in::c',
+                          'XTsuite::gnome', 'XTsuite::emacs',
+                          'XTrole::metapackage', 'XTdevel::editor'])
+
+    def test_desc_profile(self):
+        self.assertEqual(self.user.desc_profile(self.sample_axi,10),
+                         ['image', 'the', 'which', 'manipulation', 'program',
+                          'input', 'a', 'gnu', 'images', 'this'])
+
+    def test_full_profile(self):
+        self.assertEqual(self.user.full_profile(self.sample_axi,10),
+                         (self.user.tag_profile(self.sample_axi,5)+
+                          self.user.desc_profile(self.sample_axi,5)))
 
     def test_maximal_pkg_profile(self):
         old_pkg_profile = self.user.items()
