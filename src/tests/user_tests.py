@@ -32,6 +32,21 @@ from data import *
 def suite():
     return unittest2.TestLoader().loadTestsFromTestCase(UserTests)
 
+class FilterTagTests(unittest2.TestCase):
+    def test_call_true(self):
+        self.assertTrue(FilterTag()("XTrole::program"))
+
+    def test_call_false(self):
+        self.assertFalse(FilterTag()("role::program"))
+
+class FilterDescriptionTests(unittest2.TestCase):
+    def test_call_true(self):
+        self.assertTrue(FilterDescription()("program"))
+        #self.assertTrue(FilterDescription()("Zprogram"))
+
+    def test_call_false(self):
+        self.assertFalse(FilterDescription()("XTprogram"))
+
 class UserTests(unittest2.TestCase):
     @classmethod
     def setUpClass(self):

@@ -45,7 +45,7 @@ class FilterDescription(xapian.ExpandDecider):
         """
         Return true if the term is a tag, else false.
         """
-        return (term.islower())
+        return term.islower() #or term.startswith("Z")
 
 class DemographicProfile(Singleton):
     def __init__(self):
