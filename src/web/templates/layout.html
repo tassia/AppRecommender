@@ -11,6 +11,7 @@ $ url_base = "http://localhost:8080/"
         <link href="/static/css/style.css" media="screen" rel="stylesheet" type="text/css" />
         <link href="/static/css/local.css" media="screen" rel="stylesheet" type="text/css" />
         <link href="/static/css/thickbox.css" media="screen" rel="stylesheet" type="text/css" />
+        <link href="/static/css/voting.css" media="screen" rel="stylesheet" type="text/css" />
 
         <script src="/static/js/jquery.js" type="text/javascript"></script>
         <script src="/static/js/jquery.autocomplete.js" type="text/javascript"></script>
@@ -22,6 +23,74 @@ $ url_base = "http://localhost:8080/"
         <script src="/static/js/local.js" type="text/javascript"></script>
 
         <script type="text/javascript" src="/static/js/thickbox.js"></script>
+
+        <script type="text/javascript" src="/static/js/jquery.livequery.js"></script>
+
+<script type="text/javascript">
+ $$(document).ready(function() {
+        $$('.like_button').mouseenter(function(e) {
+                $$('.tooltip').show();
+                $$('.ilikethis').fadeIn(200);
+        }).mouseleave(function(e) {
+                $$('.ilikethis').fadeOut(200);
+                $$('.tooltip').hide();
+        });
+        $$('.dislike_button').mouseenter(function(e) {
+                $$('.tooltip2').show();
+                $$('.idislikethis').fadeIn(200);
+        }).mouseleave(function(e) {
+           $$('.tooltip2').hide();
+                $$('.idislikethis').fadeOut(200);
+        });
+        
+        $$('.totalstatsbutton').livequery("mouseenter", function(e){
+                $$('.greenBar').css("background-color","#AADA37");
+                $$('.redbar').css("background-color","#CF362F");
+                $$('.tooltip3').show();
+                $$('.totalstats').fadeIn(200);
+        }).livequery("mouseleave", function(e){
+                $$('.tooltip3').hide();
+                $$('.greenBar').css("background-color","#DDDDDD");
+                $$('.redbar').css("background-color","#DDDDDD");
+                $$('.totalstats').fadeOut(200);
+        });
+});
+
+$$(document).ready(function(){   
+        //$('#voting_result').fadeOut();
+        $$('button').click(function(){
+                var a = $$(this).attr("id");
+                
+                $$.post("voting.php?value="+a, {
+                }, function(response){
+                        $$('#voting_result').fadeIn();
+                        $$('#voting_result').html($$(response).fadeIn('slow'));
+                        // now update box bar                   
+                        $$.post("update_box.php", {
+                        }, function(update){
+                                $$('#update_count').html(unescape(update));                              
+                        });
+                        ////////////
+                        // now update tooltip count                     
+                        $$.post("update_tooltip.php", {
+                        }, function(updates){
+                                $$('.tooltip3').html(unescape(updates));                         
+                        });
+                        ////////////
+                });
+        });     
+});     
+function hideMesg(){
+
+        $$('.rating_message').fadeOut();
+        $$.post("rating.php?show=1", {
+        }, function(response){
+                $$('#inner').html(unescape(response));
+                $$('#inner').fadeIn('slow');
+        });
+}       
+</script>
+
 
 <!--
 	<link rel="stylesheet" href="/static/cluetip/jquery.cluetip.css" type="text/css" />

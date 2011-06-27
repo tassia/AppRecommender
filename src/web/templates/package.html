@@ -45,4 +45,20 @@ $for facet, tags in pkg['tag'].items():
 
 </tr></table>
 </div>
+        <div>
+                <button type="button" class="like_button" onclick=";return false;" id="like-$pkg" >
+                <img src="/static/images/pixel-vfl73.gif" alt=""> 
+                <span>Like</span></button>
+                &nbsp;
+                <button  type="button" class="dislike_button" onclick=";return false;" id="dislike-$pkg" >
+                <img src="/static/images/pixel-vfl73.gif" alt=""> 
+                </button>
+                &nbsp;
+                <div id="update_count" style="float:left;">
+                        <?php include ('update_box.php')?>
+                </div>
+                <br clear="all" />
+                <div id="voting_result">
+                </div>
+        </div>
 

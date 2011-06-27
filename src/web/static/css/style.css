@@ -468,6 +468,10 @@ div.jGrowl div.jGrowl-closer {
     margin-bottom: 10px;
 }
 
+.imgcaption .smaller {
+    font-size: 80%;
+}
+
 .smaller {
     font-size: 80%;
 }
