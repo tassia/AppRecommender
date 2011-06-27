@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-    tests - execution of the whole set of tests suites.
+    runner - Run the whole set of test cases suites.
 """
 __author__ = "Tassia Camoes Araujo <tassia@gmail.com>"
 __copyright__ = "Copyright (C) 2011 Tassia Camoes Araujo"
@@ -20,9 +20,30 @@ __license__ = """
 """
 
 import unittest2
-import user_tests
-import singleton_tests
+from user_tests import UserTests, FilterTagTests, FilterDescriptionTests
+from recommender_tests import RecommendationResultTests, RecommenderTests
+from strategy_tests import (PkgMatchDeciderTests, UserMatchDeciderTests,
+     PkgExpandDeciderTests, TagExpandDeciderTests, ContentBasedStrategyTests,
+     CollaborativeStrategyTests, DemographicStrategyTests,
+     KnowledgeBasedStrategyTests, ItemReputationStrategyTests)
+from singleton_tests import SingletonTests
+
+def load_tests(test_cases):
+    suite = unittest2.TestSuite()
+    for test_class in test_cases:
+        tests = unittest2.TestLoader().loadTestsFromTestCase(test_class)
+        suite.addTests(tests)
+    return suite
+
+test_lists = [[UserTests, FilterTagTests, FilterDescriptionTests],
+              [RecommendationResultTests, RecommenderTests],
+              [PkgMatchDeciderTests, UserMatchDeciderTests,
+               PkgExpandDeciderTests, TagExpandDeciderTests,
+               ContentBasedStrategyTests, CollaborativeStrategyTests,
+               DemographicStrategyTests, KnowledgeBasedStrategyTests,
+               ItemReputationStrategyTests],
+              [SingletonTests]]
 
 runner = unittest2.TextTestRunner()
-runner.run(user_tests.suite())
-runner.run(singleton_tests.suite())
+for module in test_lists:
+    runner.run(load_tests(module))
