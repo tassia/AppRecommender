@@ -1,48 +1,51 @@
-$def with (action, method, recommends, form)
+$def with (recommends, pkg_summaries, form)
 $var title: Feedback
 $var mod = 'feedback';
 
-        <div class="index_include">
 
+<script type="application/x-javascript">
+$$(document).ready(function() {
+    inithandlers();
 
-<center>
-                <h1>Recommendations</h1>
-</center>
+    $$('input[name=search]').focus();
+});
+</script>
 
-<p>Results per strategy:</p>
-
+<div class="graybox">
+    <h1>Results per strategy</h1>
 <ul class="toc">
 $for strategy, result in recommends.items():
     <li><a href="#$strategy">$strategy</a></li>
-<li><a href="#feedback">Your feedback is appreciated!</a></li>
 </ul>
-
-<form action="$action" method="$method">
-$for strategy, result in recommends.items():
-    <h2><a name="$strategy" id="$strategy">$strategy</a></h2>
-    $for pkg in result:
-        <div class="line">
-        <div class="item col50">
-        <image src="http://screenshots.debian.net/screenshot/$pkg" width="300">
-        </div>
-        <div class="item col50 lastcol">
-	<script>loadPackage("$pkg");</script>
-	<b id="pack-$pkg"></b><div id="desc-$pkg"> </div>
-	<ul>
-	<li id="maint-$pkg"></li>
-	<li id="homepage-$pkg"></li>
-	</ul>
-        </div>
-        <div class="clear"></div>
-        </div>
-    <hr />
-
-<h2><a name="feedback" id="feedback">Feedback</a></h2>
-
-$:form.render()
-<input type="submit" />
-</form>
-
-
 </div>
 
+<form action="/thanks" method="post">
+<table>
+<tbody>
+$for strategy, result in recommends.items():
+    <h2><a name="$strategy" id="$strategy">$strategy</a></h2>
+    <tr>
+    $ count = 0
+    $for pkg in result:
+        $ count = count + 1
+        <td style="text-align: center; border: 4px solid rgb(255, 255, 255); min-width: 160px;">
+            <p><a href="package/$pkg?height=350&width=650" class="thickbox" title="General information for package $pkg"><div class="smaller"><b>$pkg</b></div></a></p>
+            <div class="screenshots cycle" style="height: 120px">
+                <a class="image" href="http://screenshots.debian.net/screenshot/$pkg" title="Screenshot of package $pkg">
+                    <img src="http://screenshots.debian.net/thumbnail/$pkg" alt="Screenshot" />
+                </a>
+            </div>
+
+            <div class="imgcaption">
+                <p class="smaller">$pkg_summaries[pkg]</p>
+            </div>
+        </td>
+        $if count == 5:
+            $ count = 0
+            </tr>
+            <tr>
+    </tr>
+
+</tbody>
+</table>
+</form>

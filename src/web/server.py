@@ -4,6 +4,8 @@ import web
 from web import form
 import tempfile
 import sys
+import simplejson as json
+import apt
 
 sys.path.insert(0,"../")
 
@@ -11,12 +13,14 @@ from config import *
 from recommender import *
 from user import *
 
+import urllib
+
 class RequestForm(form.Form):
     def __init__(self):
         form.Form.__init__(self, \
-            form.File("pkgs_file", description="Upload file"),
+            form.File("pkgs_file", size=35, description="Upload file"),
             form.Textarea("pkgs_list", description="Packages",
-                          rows="4", cols="40"),
+                          rows="4", cols="52"),
             form.Dropdown('limit', [(5, '05'), (10, '10'), (20, '20')],
                           description = "Limit"),
             form.Checkbox("strategy_cb", value=1, checked=False,
@@ -53,6 +57,44 @@ class Index:
 class Thanks:
     def POST(self):
         return render.thanks()
+
+class Package:
+    def GET(self, pkg):
+        json_source = "http://dde.debian.net/dde/q/udd/packages/all/%s?t=json" % pkg #FIXME: url goes to config
+        json_data = json.load(urllib.urlopen(json_source))
+        # parsing tags:
+        tags = self._debtags_list_to_dict(json_data['r']['tag'])
+        json_data['r']['tag'] = tags
+        # formatting long description
+        json_data['r']['long_description'] = json_data['r']['long_description'].replace(' .\n','').replace('\n','<br />')
+        return render_plain.package(json_data['r'])
+
+    def _debtags_list_to_dict(self, debtags_list):
+        """ in:
+        	['use::editing',
+                'works-with-format::gif',
+                'works-with-format::jpg',
+                'works-with-format::pdf']
+            out:
+                {'use': [editing],
+                'works-with-format': ['gif', 'jpg', 'pdf']'
+                }
+        """
+        debtags = {}
+        subtags = []
+        for tag in debtags_list:
+            match = re.search(r'^(.*)::(.*)$', tag)
+            if not match:
+                log.error("Could not parse debtags format from tag: %s", tag)
+            facet, subtag = match.groups()
+            subtags.append(subtag)
+            if facet not in debtags:
+               debtags[facet] = subtags
+            else:
+               debtags[facet].append(subtag)
+            subtags = []
+        return debtags
+
 
 class AppRecommender:
     def POST(self):
@@ -91,11 +133,28 @@ class AppRecommender:
                 strategies.append("hybrid")
             if request_info.has_key('strategy_hybrid_plus'):
                 strategies.append("hybrid_plus")
+            recommends = self._recommends(user_id,user_pkgs_list,strategies, int(request_info['limit']))
+            ### Getting package summary (short description) ###
+            pkg_summaries = {}
+            cache = apt.Cache()
+            for strategy, result in recommends.items():
+                for pkg in result:
+                    pkg_summaries[pkg] = cache[pkg].candidate.summary
+            return render.apprec(recommends, pkg_summaries, FeedbackForm(strategies))
 
-            return render.apprec("/thanks", "post",
-                                 self._recommends(user_id,user_pkgs_list,
-                                 strategies, int(request_info['limit'])),
-                                 FeedbackForm(strategies))
+# parsing json from screenshots - can be usefull in the future...
+#    def _packages_attrs(self, recommends): #recommends is result of _recommends()
+#        all_recommended_packages = []
+#        recommended_pkgs_attrs = {}
+#        json_file_path = 'static/json/screenshots.json' #FIXME: go to config file
+#        json_file = open(json_file_path)
+#        json_data = json.load(json_file)
+#        for strategy, result in recommends.items():
+#            all_recommended_packages.extend(result)
+#        for pkg_attrs_dict in json_data['screenshots']:
+#            if pkg_attrs_dict['name'] in all_recommended_packages:
+#                recommended_pkgs_attrs[pkg_attrs_dict['name']] = pkg_attrs_dict
+#        return recommended_pkgs_attrs
 
     def _recommends(self,user_id,user_pkgs_list,strategies,limit):
         user = User(dict.fromkeys(user_pkgs_list,1),user_id)
@@ -120,10 +179,12 @@ def add_global_hook():
     return _wrapper
 
 render = web.template.render('templates/', base='layout')
+render_plain = web.template.render('templates/')
 
-urls = ('/',    		'Index',
-        '/apprec',  	'AppRecommender',
-        '/thanks',  	'Thanks'
+urls = ('/',   			'Index',
+        '/apprec',	  	'AppRecommender',
+        '/thanks',   		'Thanks',
+        '/package/(.*)',  	'Package'
        )
 
 web.webapi.internalerror = web.debugerror
