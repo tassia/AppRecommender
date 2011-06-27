@@ -95,15 +95,17 @@ class ContentBasedStrategy(RecommendationStrategy):
     """
     Content-based recommendation strategy based on Apt-xapian-index.
     """
-    def __init__(self,content):
+    def __init__(self,content,profile_size=50):
         self.description = "Content-based"
         self.content = content
+        self.profile_size = profile_size
 
     def run(self,rec,user,limit):
         """
         Perform recommendation strategy.
         """
-        profile = user.profile(rec.items_repository,self.content,50)
+        profile = user.profile(rec.items_repository,self.content,
+                               self.profile_size)
         # prepair index for querying user profile
         query = xapian.Query(xapian.Query.OP_OR,profile)
         enquire = xapian.Enquire(rec.items_repository)
@@ -129,7 +131,7 @@ class CollaborativeStrategy(RecommendationStrategy):
         self.clustering = clustering
         self.neighbours = k
 
-    def run(self,rec,user,limit):
+    def run(self,rec,user,result_size):
         """
         Perform recommendation strategy.
         """
@@ -153,7 +155,7 @@ class CollaborativeStrategy(RecommendationStrategy):
             rset.add_document(m.document.get_docid())
             logging.debug(m.document.get_data())
         # retrieve most relevant packages
-        eset = enquire.get_eset(limit,rset,PkgExpandDecider())
+        eset = enquire.get_eset(result_size,rset,PkgExpandDecider())
         # compose result dictionary
         item_score = {}
         for package in eset:

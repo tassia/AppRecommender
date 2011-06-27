@@ -33,6 +33,7 @@ class RecommendationResult:
         Set initial parameters.
         """
         self.item_score = item_score
+        self.size = len(item_score)
 
     def __str__(self):
         """
@@ -44,14 +45,14 @@ class RecommendationResult:
             str += "%2d: %s\n" % (i,result[i][0])
         return str
 
-    def get_prediction(self,size=20):
+    def get_prediction(self,limit=20):
         """
         Return prediction based on recommendation size (number of items).
         """
-        if size > len(self.item_score): size = len(self.item_score)
+        if limit > self.size: limit = self.size
         sorted_result = sorted(self.item_score.items(),
                                key=operator.itemgetter(1))
-        return list(reversed(sorted_result[-size:]))
+        return list(reversed(sorted_result[-limit:]))
 
 class Recommender:
     """
@@ -83,8 +84,8 @@ class Recommender:
         if strategy_str == "col":
             self.strategy = strategy.CollaborativeStrategy(20)
 
-    def get_recommendation(self,user,limit=20):
+    def get_recommendation(self,user,result_size=20):
         """
         Produces recommendation using previously loaded strategy.
         """
-        return self.strategy.run(self,user,limit)
+        return self.strategy.run(self,user,result_size)
