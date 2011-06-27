@@ -26,6 +26,15 @@ $ url_base = "http://localhost:8080/"
 
         <script type="text/javascript" src="/static/js/jquery.livequery.js"></script>
 
+        <script type="text/javascript" src="/static/js/FormManager.js"></script>
+
+<!-- Dynamic form -->
+<script type="text/javascript">
+window.onload = function() {
+    setupDependencies('weboptions'); //name of form(s). Seperate each with a comma (ie: 'weboptions', 'myotherform' )
+  };
+</script>
+
 <script type="text/javascript">
  $$(document).ready(function() {
         $$('.like_button').mouseenter(function(e) {
