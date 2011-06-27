@@ -1,7 +1,6 @@
-$def with (recommends, pkg_summaries, form)
+$def with (recommends, pkg_summaries, form, request)
 $var title: Feedback
 $var mod = 'feedback';
-
 
 <script type="application/x-javascript">
 $$(document).ready(function() {
@@ -12,18 +11,19 @@ $$(document).ready(function() {
 </script>
 
 <div class="graybox">
-    <h1>Results per strategy</h1>
-<ul class="toc">
+    <h1>Details of recommendation strategy</h1>
+    $request.get_strategy_details()
+<!--<ul class="toc">
 $for strategy, result in recommends.items():
     <li><a href="#$strategy">$strategy</a></li>
 </ul>
-</div>
+</div>-->
 
-<form action="/thanks" method="post">
+<form action="/thanks" method="post" enctype="multipart/form-data">
 <table>
 <tbody>
 $for strategy, result in recommends.items():
-    <h2><a name="$strategy" id="$strategy">$strategy</a></h2>
+    <!--<h2><a name="$strategy" id="$strategy">$strategy</a></h2>-->
     <tr>
     $ count = 0
     $for pkg in result:

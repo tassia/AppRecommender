@@ -1,50 +1,60 @@
-$def with (action, method, form)
 $var title: Home
 $var mod = 'index';
 
 <div class="graybox">
-    <h1>What is this?</h1>
-<p>AppRecommender is a project in development that aims to provide solutions
-for application recommendation at the GNU/Linux world. It was initially thought
-as a Debian package recommender, but considering the multi-distro effort in
-providing platform independent solutions, it should also follow this
-principle.</p>
+<h1>You might also like these packages...</h1>
+
+<p>Provide a list of packages or upload a popcon submission file and you'll get
+a list of suggested packages automatically computed by AppRecommender. You can
+customize the recommender setup or let it randomly choose a setup for you.</p>
+
+<p>Please fill in the form that follows the recommendation results. Your
+feedback is very much appreciated!</p>
+
+<p>Enjoy it :)</p>
 </div>
 
-<div class="align-right"><img alt="AppRecommender logo" src="/static/images/AppRecommender-logo.jpg" width="320" /></div>
+<!--<div class="align-right"><img alt="AppRecommender logo"
+src="/static/images/AppRecommender-logo.jpg" width="320" /></div>-->
 
-
-
-
-<form action="" name="weboptions">
+<form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
   <p>
+    <label>Upload file:<input type="file" id="pkgs_file" name="pkgs_file" size="35"/></label><br />
+    <label>Packages list:<textarea rows="2" cols="40" name="pkgs_list" id="pkgs_list"></textarea><label><br />
     <label>Profile size: <input type="text" name="profile_size" value="10"></label><br />
-    <label>Recommendations: <input type="text" name="recommendation_size" value="10"></label><br />
-    <label>Weighting scheme:<br /><input type="radio" name="scheme" value="BM25">BM25</label><br />
-    <label><input type="radio" name="scheme" value="trad"></label>Traditional<br />
-    <label>Strategy: <br /><input type="radio" name="strategy" value="content"> Content-based</label><br />
-    <label><input type="radio" name="strategy" value="collab"> Collaborative</label><br />
-    <label><input type="radio" name="strategy" value="hybrid"> Hybrid</label><br />
+    <label>Recommendation size: <input type="text" name="limit" value="10"></label><br />
+    <label>Weighting scheme:<br />
+        <input type="radio" name="weight" value="BM25" checked >BM25<br />
+        <input type="radio" name="weight" value="trad">Traditional<br />
+    </label>
+    <label>Strategy: <br />
+        <input type="radio" name="strategy" value="content" checked> Content-based<br />
+        <input type="radio" name="strategy" value="collab"> Collaborative<br />
+        <input type="radio" name="strategy" value="hybrid"> Hybrid<br />
+    </label>
  <!--   <label>Password:<input type="password" name="pass"></label> -->
-    <label style="margin-bottom: 1em; padding-bottom: 1em; border-bottom: 3px silver groove;"><input type="hidden" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"></label>
-    <label><input type="checkbox" name="ssh" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> Tag</label>
-    <label><input type="checkbox" name="iis" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> Description</label>
-    <br /><label><input type="checkbox" name="asp" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> Clustering</label><br />
-    <label>Neighbours: <input type="text" name="neighbours" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid" value="50"></label><br />
-
-    <label>Personal profile: <br /><input type="checkbox" name="user_desktop" checked class="DEPENDS ON strategy BEING hybrid">Desktop</label>
-    <label><input type="checkbox" name="neighbours" class="DEPENDS ON strategy BEING hybrid">Admin</label>
-    <label><input type="checkbox" name="neighbours" class="DEPENDS ON strategy BEING hybrid">Devel</label>
-    <label><input type="checkbox" name="neighbours" class="DEPENDS ON strategy BEING hybrid">Science</label>
-    <label><input type="checkbox" name="neighbours" class="DEPENDS ON strategy BEING hybrid">Arts</label>
+ <!--   <label style="margin-bottom: 1em; padding-bottom: 1em; border-bottom: 3px silver groove;"><input type="hidden" class="DEPENDS ON strategy BEING  content OR strategy BEING hybrid"></label> -->
+ </p><p>
+    <label>Content attributes:
+        <input type="radio" name="content" value="tag" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid" checked> tag
+        <input type="radio" name="content" value="desc" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> description
+        <input type="radio" name="content" value="full" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> both
+    </label><br />
+    <label>Clustering
+        <input type="radio" name="cluster" value="True" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid" checked> Yes
+        <input type="radio" name="cluster" value="False" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> No
+    </label><br />
+    <label>Neighbours:
+        <input type="text" name="neighbours" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid" value="50">
+    </label><br />
+    <label>Personal profile:
+        <input type="checkbox" name="profile_desktop" class="DEPENDS ON strategy BEING hybrid" checked>Desktop
+        <input type="checkbox" name="profile_admin" class="DEPENDS ON strategy BEING hybrid">Admin
+        <input type="checkbox" name="profile_devel" class="DEPENDS ON strategy BEING hybrid">Devel
+        <input type="checkbox" name="profile_science" class="DEPENDS ON strategy BEING hybrid">Science
+        <input type="checkbox" name="profile_arts" class="DEPENDS ON strategy BEING hybrid">Arts
+    </label>
   </p>
 <input type="submit" />
 </form>
 
-<!--
-<form action="$action" enctype="multipart/form-data" method="$method">
-$:form.render()
-<br />
-<input type="submit" />
-</form>
--->

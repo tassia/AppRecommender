@@ -1,4 +1,4 @@
-$def with (form)
+$def with (error_msgs)
 $var title: Error
 $var mod = 'error';
 
@@ -11,10 +11,10 @@ $var mod = 'error';
 
 Your request could not be proccessed due to the following error(s): 
 
-<ul>
-$for v in form.validators:
-    <b><li>$v.msg</li></b>
-</ul>
+<p><ul>
+$for e in error_msgs:
+    <b><li>$e</li></b>
+</ul></p>
 
 <p><a href="/">Go back</a> and try again. </p>
 <p>If you believe it is a bug, please report to <a
