@@ -51,8 +51,8 @@ body {
 
 td {
     border: 1px solid #d0d0d0;
-    padding: 2px 2px;
     vertical-align: top;
+    padding: 2px 2px;
 }
 
 td.noborder {
@@ -468,7 +468,7 @@ div.jGrowl div.jGrowl-closer {
     margin-bottom: 10px;
 }
 
-.imgcaption .smaller {
+.smaller {
     font-size: 80%;
 }
 

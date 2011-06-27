@@ -1,0 +1,44 @@
+$def with (pkg)
+
+<div class="graybox">
+<table><tr><td class="noborder">
+<h2>Details</h2>
+<ul>
+    <li><b>Description</b>: $pkg['long_description']</li>
+    $if pkg['homepage']:
+        <li><b>Homepage</b>:<a href="$pkg['homepage']">$pkg['homepage']</a></li>
+    $if pkg['task']:
+        <li><b>Tasks</b>: $pkg['task']</li>
+    <li><b>Section</b>: $pkg['section']</li>
+    $if pkg['recommends']:
+        <li><b>Recommends</b>: $pkg['recommends']</li>
+    $if pkg['suggests']:
+        <li><b>Suggests</b>: $pkg['suggests']</li>
+    $if pkg['origin']:
+        <li><b>Origin</b>: $pkg['origin']</li>
+    <li><b>Maintainer</b>: $pkg['maintainer']</li>
+</ul>
+<h2>Debian resources:</h2>
+    <ul>
+        <li><a href="http://packages.debian.org/$pkg['package']">Package page on debian.org</a></li>
+        <li><a href="http://bugs.debian.org/$pkg['package']">Bug reports</a></li>
+        <li><a href="http://patch-tracker.debian.org/package/$pkg['package']">Debian patch tracking system</a></li>
+        <li><a href="http://packages.qa.debian.org/$pkg['package']">Debian package tracking system</a></li>
+        <li><a href="http://qa.debian.org/popcon.php?package=$pkg['package']">Popularity contest statistics</a></li>
+    </ul>
+</td>
+<td class="noborder">
+<h2>Debtags</h2>
+<ul>
+$for facet, tags in pkg['tag'].items():
+    <li><b>$facet: </b></li>
+    <ul>
+    $for tag in tags:
+        <li>$tag</li>
+    </ul>
+</ul>
+</td>
+
+</tr></table>
+</div>
+
