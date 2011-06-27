@@ -5,6 +5,7 @@ from web import form
 import tempfile
 import sys
 import simplejson as json
+import apt
 
 sys.path.insert(0,"../")
 
@@ -66,7 +67,6 @@ class Package:
         json_data['r']['tag'] = tags
         # formatting long description
         json_data['r']['long_description'] = json_data['r']['long_description'].replace(' .\n','').replace('\n','<br />')
-        print json_data['r']['long_description']
         return render_plain.package(json_data['r'])
 
     def _debtags_list_to_dict(self, debtags_list):
@@ -134,7 +134,13 @@ class AppRecommender:
             if request_info.has_key('strategy_hybrid_plus'):
                 strategies.append("hybrid_plus")
             recommends = self._recommends(user_id,user_pkgs_list,strategies, int(request_info['limit']))
-            return render.apprec("/thanks", "post", recommends, FeedbackForm(strategies))
+            ### Getting package summary (short description) ###
+            pkg_summaries = {}
+            cache = apt.Cache()
+            for strategy, result in recommends.items():
+                for pkg in result:
+                    pkg_summaries[pkg] = cache[pkg].candidate.summary
+            return render.apprec(recommends, pkg_summaries, FeedbackForm(strategies))
 
 # parsing json from screenshots - can be usefull in the future...
 #    def _packages_attrs(self, recommends): #recommends is result of _recommends()
@@ -149,9 +155,6 @@ class AppRecommender:
 #            if pkg_attrs_dict['name'] in all_recommended_packages:
 #                recommended_pkgs_attrs[pkg_attrs_dict['name']] = pkg_attrs_dict
 #        return recommended_pkgs_attrs
-
-    def _get_pkg_attrs(self, pkg_name):
-        pass
 
     def _recommends(self,user_id,user_pkgs_list,strategies,limit):
         user = User(dict.fromkeys(user_pkgs_list,1),user_id)

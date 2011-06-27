@@ -1,4 +1,4 @@
-$def with (action, method, recommends, form)
+$def with (recommends, pkg_summaries, form)
 $var title: Feedback
 $var mod = 'feedback';
 
@@ -37,7 +37,7 @@ $for strategy, result in recommends.items():
 
             <div class="imgcaption">
                 <a href="http://screenshots.debian.net/package/$pkg">
-                <p class="smaller">short description</p>
+                <p class="smaller">$pkg_summaries[pkg]</p>
             </div>
         </td>
         $if count == 5:
