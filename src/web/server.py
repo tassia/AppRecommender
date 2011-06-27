@@ -59,37 +59,37 @@ class Thanks:
 
 class Package:
     def GET(self, pkg):
-        json_source = "http://dde.debian.net/dde/q/udd/packages/all/%s?t=json" % pkg #FIXME: go to config
+        json_source = "http://dde.debian.net/dde/q/udd/packages/all/%s?t=json" % pkg #FIXME: url goes to config
         json_data = json.load(urllib.urlopen(json_source))
-        tags = debtags_list_to_dict(json_data['r']['tag'])
+        tags = self._debtags_list_to_dict(json_data['r']['tag'])
         json_data['r']['tag'] = tags
         return render_plain.package(json_data['r'])
 
-def debtags_list_to_dict(debtags_list):
-    """ in:
-    	['use::editing',
-            'works-with-format::gif',
-            'works-with-format::jpg',
-            'works-with-format::pdf']
-        out:
-            {'use': [editing],
-            'works-with-format': ['gif', 'jpg', 'pdf']'
-            }
-    """
-    debtags = {}
-    subtags = []
-    for tag in debtags_list:
-        match = re.search(r'^(.*)::(.*)$', tag)
-        if not match:
-            log.error("Could not parse debtags format from tag: %s", tag)
-        facet, subtag = match.groups()
-        subtags.append(subtag)
-        if facet not in debtags:
-           debtags[facet] = subtags
-        else:
-           debtags[facet].append(subtag)
+    def _debtags_list_to_dict(self, debtags_list):
+        """ in:
+        	['use::editing',
+                'works-with-format::gif',
+                'works-with-format::jpg',
+                'works-with-format::pdf']
+            out:
+                {'use': [editing],
+                'works-with-format': ['gif', 'jpg', 'pdf']'
+                }
+        """
+        debtags = {}
         subtags = []
-    return debtags
+        for tag in debtags_list:
+            match = re.search(r'^(.*)::(.*)$', tag)
+            if not match:
+                log.error("Could not parse debtags format from tag: %s", tag)
+            facet, subtag = match.groups()
+            subtags.append(subtag)
+            if facet not in debtags:
+               debtags[facet] = subtags
+            else:
+               debtags[facet].append(subtag)
+            subtags = []
+        return debtags
 
 
 class AppRecommender:
