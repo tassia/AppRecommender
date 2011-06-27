@@ -4,7 +4,7 @@ $def with (pkg)
 <table><tr><td class="noborder">
 <h2>Details</h2>
 <ul>
-    <li><b>Description</b>: $pkg['long_description']</li>
+    <li><b>Description</b>: <br />$:pkg['long_description']</li>
     $if pkg['homepage']:
         <li><b>Homepage</b>:<a href="$pkg['homepage']">$pkg['homepage']</a></li>
     $if pkg['task']:
@@ -21,11 +21,15 @@ $def with (pkg)
 <h2>Debian resources:</h2>
     <ul>
         <li><a href="http://packages.debian.org/$pkg['package']">Package page on debian.org</a></li>
-        <li><a href="http://bugs.debian.org/$pkg['package']">Bug reports</a></li>
+        <li><a href="http://bugs.debian.org/$pkg['package']">Debian bug tracking system (BTS)</a></li>
+        <li><a href="http://packages.qa.debian.org/$pkg['package']">Debian package tracking system (PTS)</a></li>
+        <li><a href="http://qa.debian.org/popcon.php?package=$pkg['package']">Popularity contest statistics (Popcon)</a></li>
         <li><a href="http://patch-tracker.debian.org/package/$pkg['package']">Debian patch tracking system</a></li>
-        <li><a href="http://packages.qa.debian.org/$pkg['package']">Debian package tracking system</a></li>
-        <li><a href="http://qa.debian.org/popcon.php?package=$pkg['package']">Popularity contest statistics</a></li>
+        <li><a href="http://screenshots.debian.net/package/$pkg['package']">Screenshots</a></li>
     </ul>
+</td>
+<td class="noborder">
+<p>&nbsp;</p>
 </td>
 <td class="noborder">
 <h2>Debtags</h2>

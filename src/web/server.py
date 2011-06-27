@@ -61,8 +61,12 @@ class Package:
     def GET(self, pkg):
         json_source = "http://dde.debian.net/dde/q/udd/packages/all/%s?t=json" % pkg #FIXME: url goes to config
         json_data = json.load(urllib.urlopen(json_source))
+        # parsing tags:
         tags = self._debtags_list_to_dict(json_data['r']['tag'])
         json_data['r']['tag'] = tags
+        # formatting long description
+        json_data['r']['long_description'] = json_data['r']['long_description'].replace(' .\n','').replace('\n','<br />')
+        print json_data['r']['long_description']
         return render_plain.package(json_data['r'])
 
     def _debtags_list_to_dict(self, debtags_list):
