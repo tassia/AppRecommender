@@ -13,9 +13,38 @@ principle.</p>
 
 <div class="align-right"><img alt="AppRecommender logo" src="/static/images/AppRecommender-logo.jpg" width="320" /></div>
 
+
+
+
+<form action="" name="weboptions">
+  <p>
+    <label>Profile size: <input type="text" name="profile_size" value="10"></label><br />
+    <label>Recommendations: <input type="text" name="recommendation_size" value="10"></label><br />
+    <label>Weighting scheme:<br /><input type="radio" name="scheme" value="BM25">BM25</label><br />
+    <label><input type="radio" name="scheme" value="trad"></label>Traditional<br />
+    <label>Strategy: <br /><input type="radio" name="strategy" value="content"> Content-based</label><br />
+    <label><input type="radio" name="strategy" value="collab"> Collaborative</label><br />
+    <label><input type="radio" name="strategy" value="hybrid"> Hybrid</label><br />
+ <!--   <label>Password:<input type="password" name="pass"></label> -->
+    <label style="margin-bottom: 1em; padding-bottom: 1em; border-bottom: 3px silver groove;"><input type="hidden" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"></label>
+    <label><input type="checkbox" name="ssh" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> Tag</label>
+    <label><input type="checkbox" name="iis" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> Description</label>
+    <br /><label><input type="checkbox" name="asp" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> Clustering</label><br />
+    <label>Neighbours: <input type="text" name="neighbours" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid" value="50"></label><br />
+
+    <label>Personal profile: <br /><input type="checkbox" name="user_desktop" checked class="DEPENDS ON strategy BEING hybrid">Desktop</label>
+    <label><input type="checkbox" name="neighbours" class="DEPENDS ON strategy BEING hybrid">Admin</label>
+    <label><input type="checkbox" name="neighbours" class="DEPENDS ON strategy BEING hybrid">Devel</label>
+    <label><input type="checkbox" name="neighbours" class="DEPENDS ON strategy BEING hybrid">Science</label>
+    <label><input type="checkbox" name="neighbours" class="DEPENDS ON strategy BEING hybrid">Arts</label>
+  </p>
+<input type="submit" />
+</form>
+
+<!--
 <form action="$action" enctype="multipart/form-data" method="$method">
 $:form.render()
 <br />
 <input type="submit" />
 </form>
-</table>
+-->
