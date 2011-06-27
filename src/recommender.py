@@ -19,10 +19,10 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from operator import itemgetter
-from data import *
-from strategy import *
-from error import Error
+import xapian
+import operator
+import data
+import strategy
 
 class RecommendationResult:
     """
@@ -40,7 +40,7 @@ class RecommendationResult:
         """
         result = self.get_prediction()
         str = "\n"
-        for i in range(len(result)):
+        for i in range(len((list(result)))):
             str += "%2d: %s\n" % (i,result[i][0])
         return str
 
@@ -48,8 +48,10 @@ class RecommendationResult:
         """
         Return prediction based on recommendation size (number of items).
         """
-        sorted_result = sorted(self.item_score.items(), key=itemgetter(1))
-        return reversed(sorted_result[-size:])
+        if size > len(self.item_score): size = len(self.item_score)
+        sorted_result = sorted(self.item_score.items(),
+                               key=operator.itemgetter(1))
+        return list(reversed(sorted_result[-size:]))
 
 class Recommender:
     """
@@ -59,47 +61,30 @@ class Recommender:
         """
         Set initial parameters.
         """
-        try:
-            strategy = "self."+cfg.strategy+"(cfg)"
-            exec(strategy)
-        except (NameError, AttributeError, SyntaxError) as err:
-            print err
-            logging.critical("Could not perform recommendation strategy '%s'" %
-                              cfg.strategy)
-            raise Error
-
-    def ct(self,cfg):
-        """
-        Set recommender attributes to perform content-based recommendation
-        using tags index as source data.
-        """
-        self.items_repository = TagsXapianIndex(cfg)
-        self.strategy = ContentBasedStrategy()
-
-    def cta(self,cfg):
-        """
-        Set recommender attributes to perform content-based recommendation
-        using apt-xapian-index as source data.
-        """
         self.items_repository = xapian.Database(cfg.axi)
-        self.strategy = AxiContentBasedStrategy()
+        self.users_repository = data.PopconXapianIndex(cfg) #[FIXME] only cfg fields
+        self.clustered_users_repository = data.PopconXapianIndex(cfg) #[FIXME]
+        self.set_strategy(cfg.strategy)
+        if cfg.weight == "bm25":
+            self.weight = xapian.BM25Weight()
+        else:
+            self.weight = xapian.TradWeight()
 
-    def col(self,cfg):
-        """
-        Set recommender attributes to perform collaborative recommendation
-        using popcon-xapian-index as source data.
-        """
-        self.users_repository = PopconXapianIndex(cfg)
-        self.strategy = CollaborativeStrategy()
-
-    def set_strategy(self,strategy):
+    def set_strategy(self,strategy_str):
         """
         Set the recommendation strategy.
         """
-        self.strategy = strategy
+        if strategy_str == "cb":
+            self.strategy = strategy.ContentBasedStrategy("full")
+        if strategy_str == "cbt":
+            self.strategy = strategy.ContentBasedStrategy("tag")
+        if strategy_str == "cbd":
+            self.strategy = strategy.ContentBasedStrategy("desc")
+        if strategy_str == "col":
+            self.strategy = strategy.CollaborativeStrategy(20)
 
-    def get_recommendation(self,user):
+    def get_recommendation(self,user,limit=20):
         """
         Produces recommendation using previously loaded strategy.
         """
-        return self.strategy.run(self,user)
+        return self.strategy.run(self,user,limit)
