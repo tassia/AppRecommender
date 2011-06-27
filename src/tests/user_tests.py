@@ -19,18 +19,13 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import operator
-import math
 import unittest2
 import xapian
 import sys
 sys.path.insert(0,'../')
-from user import *
-from config import *
-from data import *
-
-def suite():
-    return unittest2.TestLoader().loadTestsFromTestCase(UserTests)
+from user import User, FilterTag, FilterDescription
+from config import Config
+from data import SampleAptXapianIndex
 
 class FilterTagTests(unittest2.TestCase):
     def test_call_true(self):

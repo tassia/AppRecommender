@@ -24,9 +24,6 @@ import sys
 sys.path.insert(0,'../')
 from singleton import Singleton
 
-def suite():
-    return unittest2.TestLoader().loadTestsFromTestCase(SingletonTests)
-
 class SingletonTests(unittest2.TestCase):
     def test_creation(self):
         object_1 = Singleton()
