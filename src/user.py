@@ -169,11 +169,10 @@ class User:
                                 if or_dep.name in self.pkg_profile:
                                     self.pkg_profile.remove(or_dep.name)
             except:
-                logging.debug("Disconsidering package not found in cache: %s"
-                              % p)
+                logging.debug("Package not found in cache: %s" % p)
         profile_size = len(self.pkg_profile)
-        logging.info("Reduced packages profile size from %d to %d." %
-                     (old_profile_size, profile_size))
+        logging.debug("Maximal package profile: reduced packages profile size \
+                       from %d to %d." % (old_profile_size, profile_size))
         return self.pkg_profile
 
 class LocalSystem(User):
@@ -205,8 +204,9 @@ class LocalSystem(User):
                     if pkg.is_auto_installed:
                         self.pkg_profile.remove(p)
             except:
-                logging.debug("Disconsidering package not found in cache: %s"
-                              % p)
+                logging.debug("Package not found in cache: %s" % p)
         profile_size = len(self.pkg_profile)
-        logging.info("Reduced packages profile size from %d to %d." %
-                     (old_profile_size, profile_size))
+        logging.debug("No auto-intalled package profile: reduced packages \
+                       profile size from %d to %d." %
+                       (old_profile_size, profile_size))
+        return self.pkg_profile
