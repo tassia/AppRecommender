@@ -20,12 +20,175 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import string
-import os, re
 import xapian
-from data import *
 from singleton import Singleton
 import recommender
+from data import *
+
+class PkgMatchDecider(xapian.MatchDecider):
+    """
+    Extend xapian.MatchDecider to not consider installed packages.
+    """
+    def __init__(self, pkgs_list):
+        """
+        Set initial parameters.
+        """
+        xapian.MatchDecider.__init__(self)
+        self.pkgs_list = pkgs_list
+
+    def __call__(self, doc):
+        """
+        True if the package is not already installed.
+        """
+        return doc.get_data() not in self.pkgs_list
+
+class UserMatchDecider(xapian.MatchDecider):
+    """
+    Extend xapian.MatchDecider to match similar profiles.
+    """
+
+    def __init__(self, profile):
+        """
+        Set initial parameters.
+        """
+        xapian.MatchDecider.__init__(self)
+        self.profile = profile
+
+    def __call__(self, doc):
+        """
+        True if the user has more the half of packages from profile.
+        """
+        match=0
+        for term in doc:
+            if term.term in self.profile:
+                match = match+1
+        return (match >= len(self.profile)/2)
+
+class PkgExpandDecider(xapian.ExpandDecider):
+    """
+    Extend xapian.ExpandDecider to consider packages only.
+    """
+    def __call__(self, term):
+        """
+        True if the term is a package.
+        """
+        # [FIXME] return term.startswith("XP")
+        return not term.startswith("XT")
+
+class TagExpandDecider(xapian.ExpandDecider):
+    """
+    Extend xapian.ExpandDecider to consider tags only.
+    """
+    def __call__(self, term):
+        """
+        True if the term is a tag.
+        """
+        return term.startswith("XT")
+
+class RecommendationStrategy:
+    """
+    Base class for recommendation strategies.
+    """
+    pass
+
+class ContentBasedStrategy(RecommendationStrategy):
+    """
+    Content-based recommendation strategy based on Apt-xapian-index.
+    """
+    def __init__(self,content):
+        self.description = "Content-based"
+        self.content = content
+
+    def run(self,rec,user,limit):
+        """
+        Perform recommendation strategy.
+        """
+        profile = user.profile(rec.items_repository,self.content,50)
+        # prepair index for querying user profile
+        query = xapian.Query(xapian.Query.OP_OR,profile)
+        enquire = xapian.Enquire(rec.items_repository)
+        enquire.set_weighting_scheme(rec.weight)
+        enquire.set_query(query)
+        try:
+            # retrieve matching packages
+            mset = enquire.get_mset(0, limit, None, PkgMatchDecider(user.items()))
+        except xapian.DatabaseError as error:
+            logging.critical("Content-based strategy: "+error.get_msg())
+        # compose result dictionary
+        item_score = {}
+        for m in mset:
+            item_score[m.document.get_data()] = m.weight
+        return recommender.RecommendationResult(item_score)
+
+class CollaborativeStrategy(RecommendationStrategy):
+    """
+    Colaborative recommendation strategy.
+    """
+    def __init__(self,k,clustering=1):
+        self.description = "Collaborative"
+        self.clustering = clustering
+        self.neighbours = k
+
+    def run(self,rec,user,limit):
+        """
+        Perform recommendation strategy.
+        """
+        profile = user.pkg_profile
+        # prepair index for querying user profile
+        query = xapian.Query(xapian.Query.OP_OR,profile)
+        if self.clustering:
+            enquire = xapian.Enquire(rec.clustered_users_repository)
+        else:
+            enquire = xapian.Enquire(rec.users_repository)
+        enquire.set_weighting_scheme(rec.weight)
+        enquire.set_query(query)
+        try:
+            # retrieve matching users
+            mset = enquire.get_mset(0, self.neighbours)
+        except xapian.DatabaseError as error:
+            logging.critical("Collaborative strategy: "+error.get_msg())
+        rset = xapian.RSet()
+        logging.debug("Neighborhood composed by the following users (by hash)")
+        for m in mset:
+            rset.add_document(m.document.get_docid())
+            logging.debug(m.document.get_data())
+        # retrieve most relevant packages
+        eset = enquire.get_eset(limit,rset,PkgExpandDecider())
+        # compose result dictionary
+        item_score = {}
+        for package in eset:
+            item_score[package.term.lstrip("XP")] = package.weight
+        return recommender.RecommendationResult(item_score)
+
+class DemographicStrategy(RecommendationStrategy):
+    """
+    Recommendation strategy based on demographic data.
+    """
+    def __init__(self):
+        self.description = "Demographic"
+        logging.debug("Demographic recommendation not yet implemented.")
+        raise Error
+
+    def run(self,user,items_repository):
+        """
+        Perform recommendation strategy.
+        """
+        pass
+
+class KnowledgeBasedStrategy(RecommendationStrategy):
+    """
+    Knowledge-based recommendation strategy.
+    """
+    def __init__(self):
+        self.description = "Knowledge-based"
+        logging.debug("Knowledge-based recommendation not yet implemented.")
+        raise Error
+
+    def run(self,user,knowledge_repository):
+        """
+        Perform recommendation strategy.
+        """
+        pass
 
 class ReputationHeuristic(Singleton):
     """
@@ -51,217 +214,17 @@ class PopularityHeuristic(ReputationHeuristic):
     """
     pass
 
-class PkgMatchDecider(xapian.MatchDecider):
-    """
-    Extend xapian.MatchDecider to not consider installed packages.
-    """
-
-    def __init__(self, installed_pkgs):
-        """
-        Set initial parameters.
-        """
-        xapian.MatchDecider.__init__(self)
-        self.installed_pkgs = installed_pkgs
-
-    def __call__(self, doc):
-        """
-        True if the package is not already installed.
-        """
-        return doc.get_data() not in self.installed_pkgs
-
-class UserMatchDecider(xapian.MatchDecider):
-    """
-    Extend xapian.MatchDecider to match similar profiles.
-    """
-
-    def __init__(self, profile):
-        """
-        Set initial parameters.
-        """
-        xapian.MatchDecider.__init__(self)
-        self.profile = profile
-        print "mdecider:",profile
-
-    def __call__(self, doc):
-        """
-        True if the user has more the half of packages from profile.
-        """
-        profile_size = len(self.profile)
-        pkg_match=0
-        for term in doc:
-            if term.term in self.profile:
-                pkg_match = pkg_match+1
-        print "id",doc.get_docid(),"match",pkg_match
-        return pkg_match >= profile_size/2 
-
-class PkgExpandDecider(xapian.ExpandDecider):
-    """
-    Extend xapian.ExpandDecider to consider packages only.
-    """
-
-    def __init__(self):
-        """
-        Call base class init.
-        """
-        xapian.ExpandDecider.__init__(self)
-
-    def __call__(self, term):
-        """
-        True if the term is a package.
-        """
-        return not term.startswith("XT")
-
-class TagExpandDecider(xapian.ExpandDecider):
-    """
-    Extend xapian.ExpandDecider to consider tags only.
-    """
-
-    def __init__(self, profile):
-        """
-        Call base class init.
-        """
-        xapian.ExpandDecider.__init__(self)
-
-    def __call__(self, doc):
-        """
-        True if the user has more the half of packages from profile.
-        """
-        return term.startswith("XT")
-
-class RecommendationStrategy:
-    """
-    Base class for recommendation strategies.
-    """
-    pass
-
 class ItemReputationStrategy(RecommendationStrategy):
     """
     Recommendation strategy based on items reputation.
     """
+    def __init__(self):
+        self.description = "Item reputation"
+        logging.debug("Item reputation recommendation not yet implemented.")
+        raise Error
+
     def run(self,items_list,heuristic):
         """
         Perform recommendation strategy.
         """
-        logging.critical("Item reputation recommendation strategy is not yet implemented.")
-        raise Error
-
-#class ContentBasedStrategy(RecommendationStrategy):
-#    """
-#    Content-based recommendation strategy.
-#    """
-#    def run(self,rec,user):
-#        """
-#        Perform recommendation strategy.
-#        """
-#        profile = user.txi_tag_profile(rec.items_repository,50)
-#        qp = xapian.QueryParser()
-#        query = qp.parse_query(profile)
-#        enquire = xapian.Enquire(rec.items_repository)
-#        enquire.set_query(query)
-#
-#        try:
-#            mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
-#        except xapian.DatabaseError as error:
-#            logging.critical(error.get_msg())
-#            raise Error
-#
-#        item_score = {}
-#        for m in mset:
-#            item_score[m.document.get_data()] = m.rank
-#        return recommender.RecommendationResult(item_score,20)
-
-class AxiContentBasedStrategy(RecommendationStrategy):
-    """
-    Content-based recommendation strategy based on Apt-xapian-index.
-    """
-    def __init__(self):
-        self.description = "Content-based"
-
-    def run(self,rec,user):
-        """
-        Perform recommendation strategy.
-        """
-        profile = user.axi_tag_profile(rec.items_repository,50)
-        #profile_str = string.join(list(profile),' ')
-        query = xapian.Query(xapian.Query.OP_OR,list(profile))
-        enquire = xapian.Enquire(rec.items_repository)
-        enquire.set_query(query)
-
-        try:
-            mset = enquire.get_mset(0, 20, None, PkgMatchDecider(user.items()))
-        except xapian.DatabaseError as error:
-            logging.critical(error.get_msg())
-            raise Error
-
-        item_score = {}
-        for m in mset:
-            item_score[m.document.get_data()] = m.weight
-        return recommender.RecommendationResult(item_score)
-
-class CollaborativeStrategy(RecommendationStrategy):
-    """
-    Colaborative recommendation strategy.
-    """
-    def __init__(self):
-        self.description = "Collaborative"
-
-    #def run(self,rec,user,similarity_measure):
-    def run(self,rec,user):
-        """
-        Perform recommendation strategy.
-        """
-        profile = user.maximal_pkg_profile()
-        #profile_str = string.join(list(profile),' ')
-        query = xapian.Query(xapian.Query.OP_OR,list(profile))
-        enquire = xapian.Enquire(rec.users_repository)
-        enquire.set_query(query)
-
-        try:
-            #mset = enquire.get_mset(0, 182, None, UserMatchDecider(profile))
-            mset = enquire.get_mset(0, 20)
-        except xapian.DatabaseError as error:
-            logging.critical(error.get_msg())
-            raise Error
-
-        rset = xapian.RSet()
-        for m in mset:
-            rset.add_document(m.document.get_docid())
-            logging.debug("Counting as relevant submission %s" %
-                           m.document.get_data())
-
-        eset = enquire.get_eset(20,rset,PkgExpandDecider())
-        rank = 0
-        item_score = {}
-        for term in eset:
-            item_score[term.term] = rank
-            rank = rank+1
-
-        return recommender.RecommendationResult(item_score)
-
-class KnowledgeBasedStrategy(RecommendationStrategy):
-    """
-    Knowledge-based recommendation strategy.
-    """
-    def __init__(self):
-        self.description = "Knowledge-based"
-
-    def run(self,user,knowledge_repository):
-        """
-        Perform recommendation strategy.
-        """
-        logging.critical("Knowledge-based recommendation strategy is not yet implemented.")
-        raise Error
-
-class DemographicStrategy(RecommendationStrategy):
-    """
-    Recommendation strategy based on demographic data.
-    """
-    def __init__(self):
-        self.description = "Demographic"
-
-    def run(self,user,items_repository):
-        """
-        Perform recommendation strategy.
-        """
-        logging.critical("Demographic recommendation strategy is not yet implemented.")
-        raise Error
+        pass
