@@ -6,7 +6,7 @@ Depends:
 
 Running server:
 
-	cd web
+	cd ./src/web
 	mkdir submissions
 	./servery.py
 	-> http://localhost:8080
