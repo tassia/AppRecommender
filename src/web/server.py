@@ -110,51 +110,107 @@ class Request:
 
         self.selected_strategies = []
         if web_input.has_key('strategy'):
-            if web_input['strategy'].encode('utf8') == "content":
+            if (web_input['strategy'].encode('utf8') == "content" or
+                web_input['strategy'].encode('utf8') == "hybrid"):
                 if (web_input.has_key('tag') and web_input.has_key('desc')):
                     self.selected_strategies.append("cb")
                 elif web_input.has_key('desc'):
                     self.selected_strategies.append("cbd")
                 else:
                     self.selected_strategies.append("cbt")
-            if web_input['strategy'].encode('utf8') == "collab":
+            if (web_input['strategy'].encode('utf8') == "collab" or
+                web_input['strategy'].encode('utf8') == "hybrid"):
                 self.selected_strategies.append("col")
-            if web_input['strategy'].encode('utf8') == "hybrid":
-                self.selected_strategies.append("hybrid")
 
         if web_input.has_key('cluster'):
-            self.cluster = bool(web_input.has_key['cluster'].encode('utf8'))
+            self.cluster = web_input['cluster'].encode('utf8')
 
         if web_input.has_key('neighbours'):
             self.neighbours = int(web_input['neighbours'])
 
         self.profiles_set = set()
         if web_input.has_key('profile_desktop'):
-            self.profiles = self.profiles.add("desktop")
+            self.profiles_set.add("desktop")
         if web_input.has_key('profile_admin'):
-            self.profiles = self.profiles.add("admin")
+            self.profiles_set.add("admin")
         if web_input.has_key('profile_devel'):
-            self.profiles = self.profiles.add("devel")
+            self.profiles_set.add("devel")
         if web_input.has_key('profile_science'):
-            self.profiles = self.profiles.add("science")
+            self.profiles_set.add("science")
         if web_input.has_key('profile_arts'):
-            self.profiles = self.profiles.add("arts")
+            self.profiles_set.add("arts")
 
     def __str__(self):
         return self.storage
 
     def validates(self):
         self.errors = []
-        if (not self.pkgs_list or not self.selected_strategies):
+        if not self.pkgs_list:
             self.errors.append("No upload file or packages list was provided.")
-            return False
         if not self.selected_strategies:
             self.errors.append("No strategy was selected.")
+        if self.errors:
             return False
         return True
 
-    def get_strategy_details(self):
-        return self.selected_strategies[0]
+    def get_details(self):
+        details = {}
+        details['User id'] = self.user_id
+        if len(self.pkgs_list)>10:
+            details['Packages list'] = (" ".join(self.pkgs_list[:5])
+                                        +" ... ("+str(len(self.pkgs_list)-10)
+                                        +" more)")
+        else:
+            details['Packages list'] = " ".join(self.pkgs_list)
+
+        if self.storage.has_key('pkgs_list') and self.storage['pkgs_file']:
+            details['User profile'] = "from upload file and packages list"
+        elif self.storage.has_key('pkgs_list'):
+            details['User profile'] = "from packages list"
+        else:
+            details['User profile'] = "from upload file"
+
+        if self.storage.has_key('limit'):
+            details['Recommendation size'] = self.limit
+        if self.storage.has_key('profile_size'):
+            details['Profile size'] = self.profile_size
+        if self.storage.has_key('weight'):
+            if self.weight == "trad":
+                details['weight'] = "traditional"
+            else:
+                details['weight'] = "BM25"
+
+        if self.profiles_set:
+            details['Personal profile'] = " ".join(list(self.profiles_set))
+
+        if len(self.selected_strategies) > 1: details['strategy'] = "Hybrid"
+        for strategy in self.selected_strategies:
+            if strategy == "col":
+                if not details.has_key('strategy'):
+                    details['Strategy'] = "Collaborative"
+                if self.storage.has_key('cluster'):
+                    details['Cluster'] = self.cluster
+                if self.storage.has_key('neighbours'):
+                    details['Neighbours'] = self.neighbours
+                if not details.has_key('strategy'):
+                    details['Strategy'] = "Collaborative"
+            else:
+                if not details.has_key('strategy'):
+                    details['Strategy'] = "Content-based"
+                if "cb" in self.selected_strategies:
+                    details['Content representation'] = "tags and descriptions"
+                elif "cbt" in self.selected_strategies:
+                    details['Content representation'] = "packages tags"
+                elif "cbd" in self.selected_strategies:
+                    details['Content representation'] = "packages descriptions"
+
+        print details
+        return details
+
+class RandomRequest(Request):
+    def __init__(self):
+        pass
+        #self.storage = web.Storage()
 
 class AppRecommender:
     def POST(self):

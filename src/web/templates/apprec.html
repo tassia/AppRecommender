@@ -11,12 +11,11 @@ $$(document).ready(function() {
 </script>
 
 <div class="graybox">
-    <h1>Details of recommendation strategy</h1>
-    $request.get_strategy_details()
-<!--<ul class="toc">
-$for strategy, result in recommends.items():
-    <li><a href="#$strategy">$strategy</a></li>
-</ul>-->
+    <h1>Recommendation strategy details</h1>
+    $for key, value in request.get_details().items():
+        <ul class="toc">
+        <li><b>$key:</b> $value</li>
+        </ul>
 </div>
 
 <form action="/thanks" method="post" enctype="multipart/form-data">
