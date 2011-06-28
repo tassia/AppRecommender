@@ -43,7 +43,7 @@ abbr, acronym {
 /*-----------------------------------------*/
 body {
     font-family: sans-serif;
-    font-size: 11pt;
+    font-size: 10.5pt;
     background-color: #ebedef;
     margin: 0;
     padding: 0;
@@ -464,11 +464,11 @@ div.jGrowl div.jGrowl-closer {
 }
 
 .imgcaption .smaller {
-    font-size: 80%;
+    font-size: 90%;
 }
 
 .smaller {
-    font-size: 80%;
+    font-size: 90%;
 }
 
 #debtags-area {
