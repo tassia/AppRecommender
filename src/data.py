@@ -74,22 +74,40 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
             print [term.term for term in self.get_document(doc_id).termlist()]
             print "---"
 
-#[FIXME] get pkg tags from axi and remove load_debtags_db method
-def load_debtags_db(db_path):
-    """
-    Load debtags database from the source file.
-    """
-    tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
-    try:
-        db_file = open(db_path, "r")
-        debtags_db = debtags.DB()
-        debtags_db.read(db_file,lambda x: not tag_filter.match(x))
-        db_file.close()
-        return debtags_db
-    except:
-        logging.error("Could not load DebtagsDB from '%s'." % self.db_path)
-        raise Error
+class PopconSubmission():
+    def __init__(self,submission_hash):
+        self.hash = submission_hash
+        self.pkgs_list = []
 
+    def add_pkg(self,pkg):
+        self.pkgs_list.append(pkg)
+
+    def parse_submission(self,submission_path,binary=1):
+    	"""
+    	Parse a popcon submission, generating the names of the valid packages
+        in the vote.
+    	"""
+        submission = open(submission_path)
+    	for line in submission:
+            if not line.startswith("POPULARITY"):
+                if not line.startswith("END-POPULARITY"):
+                    data = line[:-1].split(" ")
+                    if len(data) > 3:
+                        if binary:
+                            # every installed package has the same weight
+                            yield data[2], 1
+                        elif data[3] == '<NOFILES>':
+                            # No executable files to track
+                            yield data[2], 1
+                        elif len(data) == 4:
+                            # Recently used packages
+                            yield data[2], 10
+                        elif data[4] == '<OLD>':
+                            # Unused packages
+                            yield data[2], 3
+                        elif data[4] == '<RECENT-CTIME>':
+                            # Recently installed packages
+                            yield data[2], 8
 class PopconXapianIndex(xapian.WritableDatabase,Singleton):
     """
     Data source for popcon submissions defined as a singleton xapian database.
@@ -100,7 +118,8 @@ class PopconXapianIndex(xapian.WritableDatabase,Singleton):
         """
         self.path = os.path.expanduser(cfg.popcon_index)
         self.popcon_dir = os.path.expanduser(cfg.popcon_dir)
-        self.debtags_path = os.path.expanduser(cfg.tags_db)
+        #self.debtags_path = os.path.expanduser(cfg.tags_db)
+        self.axi = xapian.Database(cfg.axi)
         self.load_index()
 
     def parse_submission(self,submission_path,binary=1):
@@ -149,7 +168,6 @@ class PopconXapianIndex(xapian.WritableDatabase,Singleton):
         """
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-        debtags_db = load_debtags_db(self.debtags_path) #[FIXME]
 
         try:
             logging.info("Indexing popcon submissions from \'%s\'" %
@@ -170,24 +188,16 @@ class PopconXapianIndex(xapian.WritableDatabase,Singleton):
                 logging.debug("Parsing popcon submission at \'%s\'" %
                               submission_path)
                 for pkg, freq in self.parse_submission(submission_path):
-                    doc.add_term(pkg,freq)
-                    #[FIXME] get tags from axi
-                    for tag in debtags_db.tags_of_package(pkg):
-                        doc.add_term("XT"+tag,freq)
+                    doc.add_term("XP"+pkg,freq)
+                    for tag in axi_search_pkg_tags(self.axi,pkg):
+                        print tag
+                        doc.add_term(tag,freq)
                 doc_id = self.add_document(doc)
                 logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
             # python garbage collector
         	gc.collect()
         # flush to disk database changes
         self.flush()
-
-class PopconSubmission():
-    def __init__(self,submission_hash):
-        self.hash = submission_hash
-        self.pkgs_list = []
-
-    def add_pkg(self,pkg):
-        self.pkgs_list.append(pkg)
 
 class PopconClusteredData(Singleton):
     """
