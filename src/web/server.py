@@ -77,19 +77,18 @@ class Package:
         return debtags
 
 class Request:
-    def __init__(self,web_input,user_id):
+    def __init__(self,web_input):
+        outputdir = tempfile.mkdtemp(prefix='',dir='./submissions/')
+        user_id = outputdir.lstrip('./submissions/')
         self.user_id = user_id
         self.storage = web_input
 
         self.pkgs_list = []
         if web_input.has_key('pkgs_list'):
             self.pkgs_list = web_input['pkgs_list'].encode('utf8').split()
-            print self.pkgs_list
-        print web_input['pkgs_file']
-        if web_input['pkgs_file']:
+        if web_input['pkgs_file'].value:
             f = open(outputdir + "/packages_list", "wb")
             lines = web_input['pkgs_file'].file.readlines()
-            print lines
             if lines[0].startswith('POPULARITY-CONTEST'):
                 del lines[0]
                 del lines[-1]
@@ -214,11 +213,7 @@ class RandomRequest(Request):
 
 class AppRecommender:
     def POST(self):
-        print "post",web.input()
-        outputdir = tempfile.mkdtemp(prefix='',dir='./submissions/')
-        user_id = outputdir.lstrip('./submissions/')
-        print web.input(pkgs_file={})
-        request = Request(web.input(pkgs_file={}),user_id)
+        request = Request(web.input(pkgs_file={}))
         if not request.validates():
             return render.error(request.errors)
         else:
