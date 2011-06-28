@@ -66,7 +66,7 @@ function toggle() {
                             <label><input type="hidden">Weighting:</label>
                         </div>
 			<div>
-    			    <label class="special"><input type="radio" name="weight" value="BM25" checked > BM25</label>
+    			    <label class="special"><input type="radio" name="weight" value="BM25" > BM25</label>
 			</div>
 			<div>
     			    <label class="special"><input type="radio" name="weight" value="trad"> Traditional</label>
@@ -75,7 +75,7 @@ function toggle() {
                             <label><input type="hidden">Strategy:</label>
                         </div>
 			<div>
-    			    <label class="special"><input type="radio" name="strategy" value="content" checked> Content-based</label>
+    			    <label class="special"><input type="radio" name="strategy" value="content"> Content-based</label>
 			</div>
 			<div>
     			    <label class="special"><input type="radio" name="strategy" value="collab"> Collaborative</label>
@@ -90,7 +90,7 @@ function toggle() {
 			    <label><input type="hidden" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid">Content representation:</label>
 			</div>
 			<div>
-    			    <label class="special"><input type="radio" name="content" value="tag" checked class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> tag</label>
+    			    <label class="special"><input type="radio" name="content" value="tag" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> tag</label>
 			</div>
 			<div>
     			    <label class="special"><input type="radio" name="content" value="desc" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> description</label>
@@ -102,10 +102,10 @@ function toggle() {
 			    <label><input type="hidden" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid">Clustering:</label>
 			</div>
 			<div>
-    			    <label class="special"><input type="radio" name="cluster" checked value="True" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> yes</label>
+    			    <label class="special"><input type="radio" name="cluster" value="yes" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> yes</label>
 			</div>
 			<div>
-    			    <label class="special"><input type="radio" name="cluster" value="False" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> no</label>
+    			    <label class="special"><input type="radio" name="cluster" value="no" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> no</label>
 			</div>
 			<div>
 			    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Neighborhood:</label>
@@ -117,19 +117,19 @@ function toggle() {
 			    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Personal profile:</label>
 			</div>
 			<div>
-                        <label class=special><input type="checkbox" name="profile_desktop" class="DEPENDS ON strategy BEING hybrid" checked> Desktop</label>
+                        <label class=special><input type="checkbox" name="profile_desktop" class="DEPENDS ON strategy BEING hybrid" > Desktop</label>
 			</div>
 			<div>
-                        <label class=special><input type="checkbox" name="profile_admin" class="DEPENDS ON strategy BEING hybrid" checked> Admin</label>
+                        <label class=special><input type="checkbox" name="profile_admin" class="DEPENDS ON strategy BEING hybrid" > Admin</label>
 			</div>
 			<div>
-                        <label class=special><input type="checkbox" name="profile_devel" class="DEPENDS ON strategy BEING hybrid" checked> Devel</label>
+                        <label class=special><input type="checkbox" name="profile_devel" class="DEPENDS ON strategy BEING hybrid" > Devel</label>
 			</div>
 			<div>
-                        <label class=special><input type="checkbox" name="profile_science" class="DEPENDS ON strategy BEING hybrid" checked> Science</label>
+                        <label class=special><input type="checkbox" name="profile_science" class="DEPENDS ON strategy BEING hybrid" > Science</label>
 			</div>
 			<div>
-                        <label class=special><input type="checkbox" name="profile_arts" class="DEPENDS ON strategy BEING hybrid" checked> Arts</label>
+                        <label class=special><input type="checkbox" name="profile_arts" class="DEPENDS ON strategy BEING hybrid" > Arts</label>
 			</div>
 		</fieldset>
 </div>
