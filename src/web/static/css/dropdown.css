@@ -1,0 +1,66 @@
+.dropdown {
+	background:#dad9d4 url(../gfx/calendar.gif) no-repeat 2px 2px;
+	border:1px solid #cac9c2;
+	padding:0.2em;
+	cursor:default;
+	filter:alpha(opacity=90);
+	-moz-opacity:0.9;
+	opacity: 0.9;
+	-moz-border-radius:0 2em 0 0;
+	-khtml-border-radius:0 2em 0 0;
+	border-radius:0 2em 0 0;
+	width:21em;
+}
+
+.dropdown .month {
+	margin-left:48px;
+	width:37%;
+}
+.dropdown .year {
+	margin-left:1em;
+	width:25%;
+}
+.dropdown .close {
+	display:block;
+	overflow:hidden;
+	border:0;
+	position:absolute;
+	top:0.5em; right:1em;
+	background:url(../gfx/close.png) no-repeat 50% 50%;
+	width:16px; height:16px;
+	border:none;
+	text-indent:-9999px;
+}
+
+.dropdown table {
+	border-spacing:0;
+	table-layout:fixed;
+	empty-cells:show;
+	margin-top:0.5em;
+	width:100%;
+}
+.dropdown thead th {
+	width:14%;
+}
+
+.dropdown tbody td {
+	background:#fff;
+	text-align:center;
+	line-height:2;
+	border:1px solid #dad9d4;
+}
+.dropdown tbody td.hover {
+	background:#748098;
+	color:#fff;
+	cursor:pointer;
+}
+.dropdown .weekend {
+	color:#f00;
+}
+.dropdown .today {
+	border:1px solid #f00;
+}
+.dropdown .selected {
+	background:#748098;
+	color:#fff;
+}

@@ -1,0 +1,86 @@
+form {
+	background:#fff;
+	padding:1em;
+}
+fieldset div {
+	margin:0.3em 0;
+	clear:both;
+}
+form {
+	margin:1em;
+	width:33em;
+}
+label {
+	float:left;
+	width:10em;
+	text-align:right;
+	margin-right:1em;
+}
+
+.special {
+	float:right;
+	width:19.5em;
+	text-align:left;
+	margin-right:1em;
+}
+legend {
+    font-size: 120%;
+    margin: 0.5em 0 0.5em 0;
+    color: #757575;
+    font-weight: bolder;
+}
+legend span {
+	width:10em;
+	text-align:right;
+}
+input {
+	padding:0.15em;
+/*	width:10em; */
+	border:1px solid #ddd;
+	background:#fafafa;
+/*	font:bold 0.95em arial, sans-serif;
+	-moz-border-radius:0.4em;
+	-khtml-border-radius:0.4em;*/
+}
+input:hover, input:focus {
+	border-color:#c5c5c5;
+	background:#f6f6f6;
+}
+fieldset {
+	border:1px solid #ddd;
+	padding:0 0.5em 0.5em;
+}
+
+.radio fieldset, .date fieldset {
+	border:none;
+	width:auto;
+	padding:1px 0 0 11em;
+}
+.radio legend, .date legend {
+	font-size:1em;
+	color:#000;
+}
+.radio legend span, .date legend span {
+	position:absolute;
+	left:0;
+	top:0.3em;
+	width:10em;
+	display:block;
+}
+.radio label, .radio input {
+	vertical-align:middle;
+	display:inline;
+	float:none;
+	width:auto;
+	background:none;
+	border:none;
+}
+.radio div {
+	float:left;
+	white-space:nowrap;
+	clear:none;
+}
+
+input.default {
+	color:#bbb;
+}
