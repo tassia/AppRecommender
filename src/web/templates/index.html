@@ -8,53 +8,118 @@ $var mod = 'index';
 a list of suggested packages automatically computed by AppRecommender. You can
 customize the recommender setup or let it randomly choose a setup for you.</p>
 
-<p>Please fill in the form that follows the recommendation results. Your
-feedback is very much appreciated!</p>
-
 <p>Enjoy it :)</p>
 </div>
 
 <!--<div class="align-right"><img alt="AppRecommender logo"
 src="/static/images/AppRecommender-logo.jpg" width="320" /></div>-->
 
-<form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
-  <p>
-    <label>Upload file:<input type="file" id="pkgs_file" name="pkgs_file" size="35"/></label><br />
-    <label>Packages list:<textarea rows="2" cols="40" name="pkgs_list" id="pkgs_list"></textarea><label><br />
-    <label>Profile size: <input type="text" name="profile_size" value="10"></label><br />
-    <label>Recommendation size: <input type="text" name="limit" value="10"></label><br />
-    <label>Weighting scheme:<br />
-        <input type="radio" name="weight" value="BM25" checked >BM25<br />
-        <input type="radio" name="weight" value="trad">Traditional<br />
-    </label>
-    <label>Strategy: <br />
-        <input type="radio" name="strategy" value="content" checked> Content-based<br />
-        <input type="radio" name="strategy" value="collab"> Collaborative<br />
-        <input type="radio" name="strategy" value="hybrid"> Hybrid<br />
-    </label>
- <!--   <label>Password:<input type="password" name="pass"></label> -->
- <!--   <label style="margin-bottom: 1em; padding-bottom: 1em; border-bottom: 3px silver groove;"><input type="hidden" class="DEPENDS ON strategy BEING  content OR strategy BEING hybrid"></label> -->
- </p><p>
-    <label>Content attributes:
-        <input type="radio" name="content" value="tag" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid" checked> tag
-        <input type="radio" name="content" value="desc" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> description
-        <input type="radio" name="content" value="full" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> both
-    </label><br />
-    <label>Clustering
-        <input type="radio" name="cluster" value="True" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid" checked> Yes
-        <input type="radio" name="cluster" value="False" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> No
-    </label><br />
-    <label>Neighbours:
-        <input type="text" name="neighbours" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid" value="50">
-    </label><br />
-    <label>Personal profile:
-        <input type="checkbox" name="profile_desktop" class="DEPENDS ON strategy BEING hybrid" checked>Desktop
-        <input type="checkbox" name="profile_admin" class="DEPENDS ON strategy BEING hybrid">Admin
-        <input type="checkbox" name="profile_devel" class="DEPENDS ON strategy BEING hybrid">Devel
-        <input type="checkbox" name="profile_science" class="DEPENDS ON strategy BEING hybrid">Science
-        <input type="checkbox" name="profile_arts" class="DEPENDS ON strategy BEING hybrid">Arts
-    </label>
-  </p>
-<input type="submit" />
-</form>
+<script language="javascript">
+function toggle() {
+	var ele = document.getElementById("toggleText");
+	var text = document.getElementById("displayText");
+	if(ele.style.display == "block") {
+    		ele.style.display = "none";
+		text.innerHTML = "custom";
+  	}
+	else {
+		ele.style.display = "block";
+		text.innerHTML = "random";
+	}
+}
+</script>
 
+<p>Please fill in the form that follows the recommendation results. Your
+feedback is very much appreciated!</p> Or want to try a <a id="displayText"
+href="javascript:toggle();">custom</a> query setup...?
+
+<form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
+	<fieldset>
+		<legend>Your packages</legend>
+		<div>
+			<label>Upload file</label><input type="file" id="pkgs_file" name="pkgs_file" size="18"/>
+		</div>
+		<div>
+			<label>Packages list</label><textarea rows="2" cols="33" name="pkgs_list" id="pkgs_list"></textarea>
+		</div>
+		<div>
+			<label>Profile size</label><input type="text" name="profile_size" value="10" size="4">
+		</div>
+		<div>
+			<label>Recommendations</label><input type="text" name="limit" value="10" size="4">
+		</div>
+	</fieldset>
+
+<div id="toggleText" style="display: none">
+		<fieldset>
+    			<legend>Weighting scheme</legend>
+			<div>
+    			    <input type="radio" name="weight" value="BM25" checked ><label> BM25</label>
+			</div>
+			<div>
+    			    <input type="radio" name="weight" value="trad"><label> Traditional</label>
+			</div>
+		</fieldset>
+		<fieldset>
+    			<legend>Strategy</legend>
+			<div>
+    			    <input type="radio" name="strategy" value="content" checked><label> Content-based</label>
+			</div>
+			<div>
+    			    <input type="radio" name="strategy" value="collab"><label> Collaborative</label>
+			</div>
+			<div>
+    			    <input type="radio" name="strategy" value="hybrid"><label> Hybrid</label>
+			</div>
+		</fieldset>
+		<fieldset>
+    			<legend>Tuning up</legend>
+			<div>
+			    <label><input type="hidden" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"><b>Content representation:</b></label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="content" value="tag" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> tag</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="content" value="desc" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> description</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="content" value="full" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> both</label>
+			</div>
+			<div>
+			    <label><input type="hidden" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"><b>Clustering:</b></label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="cluster" value="True" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> yes</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="cluster" value="False" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> no</label>
+			</div>
+			<div>
+			    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid"><b>Neighborhood:</b></label>
+			</div>
+			<div>
+    			    <label class="special"><input type="text" name="neighbours" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid" value="50" size="4"></label>
+			</div>
+			<div>
+			    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid"><b>Personal profile:</b></label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_desktop" class="DEPENDS ON strategy BEING hybrid"> Desktop</label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_admin" class="DEPENDS ON strategy BEING hybrid"> Admin</label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_devel" class="DEPENDS ON strategy BEING hybrid"> Devel</label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_science" class="DEPENDS ON strategy BEING hybrid"> Science</label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_arts" class="DEPENDS ON strategy BEING hybrid"> Arts</label>
+			</div>
+		</fieldset>
+</div>
+		<div class="align-right"><input type="submit"></div>
+	</form>

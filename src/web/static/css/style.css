@@ -76,11 +76,6 @@ fieldset {
     background-color: #f0f0f0;
 }
 
-legend {
-    border: 1px solid #a0a0a0;
-    background-color: #f0f0f0;
-}
-
 input, textarea {
     border: 1px solid #a0a0a0;
 }
