@@ -206,7 +206,10 @@ class PopconXapianIndex(xapian.WritableDatabase):
             # python garbage collector
         	gc.collect()
         # flush to disk database changes
-        self.commit()
+        try:
+            self.commit()
+        except:
+            self.flush() # deprecated function, used for old lib version
 
     def get_submissions(self,submissions_dir):
         """
