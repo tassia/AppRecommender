@@ -21,7 +21,6 @@ __license__ = """
 """
 
 import math
-import stats
 
 def norm(x):
     """
