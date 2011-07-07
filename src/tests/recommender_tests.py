@@ -44,6 +44,9 @@ class RecommenderTests(unittest2.TestCase):
     @classmethod
     def setUpClass(self):
         cfg = Config()
+        cfg.popcon_index = "test_data/.sample_pxi"
+        cfg.popcon_dir = "test_data/popcon_dir"
+        cfg.clusters_dir = "test_data/clusters_dir"
         self.rec = Recommender(cfg)
 
     def test_set_strategy(self):

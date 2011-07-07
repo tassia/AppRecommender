@@ -22,6 +22,7 @@ __license__ = """
 import unittest2
 from user_tests import UserTests, FilterTagTests, FilterDescriptionTests
 from recommender_tests import RecommendationResultTests, RecommenderTests
+from data_tests import PopconSubmissionTests, PopconXapianIndexTests
 from strategy_tests import (PkgMatchDeciderTests, UserMatchDeciderTests,
      PkgExpandDeciderTests, TagExpandDeciderTests, ContentBasedStrategyTests,
      CollaborativeStrategyTests, DemographicStrategyTests,
@@ -37,6 +38,7 @@ def load_tests(test_cases):
 
 test_lists = [[UserTests, FilterTagTests, FilterDescriptionTests],
               [RecommendationResultTests, RecommenderTests],
+              [PopconSubmissionTests, PopconXapianIndexTests],
               [PkgMatchDeciderTests, UserMatchDeciderTests,
                PkgExpandDeciderTests, TagExpandDeciderTests,
                ContentBasedStrategyTests, CollaborativeStrategyTests,

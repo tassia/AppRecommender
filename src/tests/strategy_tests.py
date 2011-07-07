@@ -26,8 +26,7 @@ sys.path.insert(0,'../')
 from error import Error
 from user import User
 from recommender import RecommendationResult
-from config import *
-#from data import *
+from config import Config
 from strategy import (PkgMatchDecider, UserMatchDecider, PkgExpandDecider,
                       TagExpandDecider, ContentBasedStrategy,
                       CollaborativeStrategy, DemographicStrategy,
@@ -92,7 +91,6 @@ class TagExpandDeciderTests(unittest2.TestCase):
 class ContentBasedStrategyTests(unittest2.TestCase):
     @classmethod
     def setUpClass(self):
-        
         pass
 
 class CollaborativeStrategyTests(unittest2.TestCase):

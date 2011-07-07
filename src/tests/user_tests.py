@@ -47,11 +47,11 @@ class UserTests(unittest2.TestCase):
     def setUpClass(self):
         cfg = Config()
         self.axi = xapian.Database(cfg.axi)
-        sample_packages = ["gimp","aaphoto","eog","emacs","dia","ferret",
-                           "festival","file","inkscape","xpdf"]
-        self.sample_axi = SampleAptXapianIndex(sample_packages,self.axi)
+        packages = ["gimp","aaphoto","eog","emacs","dia","ferret",
+                    "festival","file","inkscape","xpdf"]
+        path = "test_data/.sample_axi"
+        self.sample_axi = SampleAptXapianIndex(packages,self.axi,path)
         self.user = User({"gimp":1,"aaphoto":1,"eog":1,"emacs":1})
-        #self.sample_axi._print()
 
     def test_hash(self):
         new_user = User(dict())
@@ -125,17 +125,12 @@ class UserTests(unittest2.TestCase):
                          self.user.full_profile(self.sample_axi,10))
 
     def test_tag_profile(self):
-        self.assertEqual(self.user.tag_profile(self.sample_axi,10),
-                         ['XTuse::editing', 'XTworks-with::image:raster',
-                          'XTworks-with-format::png', 'XTworks-with-format::jpg',
-                          'XTworks-with::image','XTimplemented-in::c',
-                          'XTsuite::gnome', 'XTsuite::emacs',
-                          'XTrole::metapackage', 'XTdevel::editor'])
+        self.assertEqual(self.user.tag_profile(self.sample_axi,2),
+                         ['XTuse::editing', 'XTworks-with-format::jpg'])
 
     def test_desc_profile(self):
-        self.assertEqual(self.user.desc_profile(self.sample_axi,10),
-                         ['image', 'the', 'which', 'manipulation', 'program',
-                          'input', 'a', 'gnu', 'images', 'this'])
+        self.assertEqual(self.user.desc_profile(self.sample_axi,2),
+                         ['image', 'the'])
 
     def test_full_profile(self):
         self.assertEqual(self.user.full_profile(self.sample_axi,10),
