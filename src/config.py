@@ -22,7 +22,7 @@ __license__ = """
 import getopt
 import sys
 import os
-from logging import *
+import logging
 import logging.handlers
 
 from ConfigParser import *
@@ -33,20 +33,19 @@ class Config():
     """
     def __init__(self):
         """
-        Set configuration options.
+        Set default configuration options.
         """
         self.debug = 0
         self.verbose = 0
         self.output = "/dev/null"
         self.config = None
-        self.tags_db = "/var/lib/debtags/package-tags"
-        self.tags_index = "~/.app-recommender/debtags_index"
         self.axi = "/var/lib/apt-xapian-index/index"
         self.axi_values = "/var/lib/apt-xapian-index/values"
-        self.popcon_index = "~/.app-recommender/popcon_index"
-        self.popcon_dir = "~/.app-recommender/popcon_dir"
-        self.clusters_dir = "~/.app-recommender/clusters_dir"
-        self.strategy = "cb"    # defaults to the cheapest one
+        self.popcon_index = os.path.expanduser("~/.app-recommender/popcon_index")
+        self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
+        self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters_dir")
+        self.clustering = 1
+        self.strategy = "cb"
         self.weight = "bm25"
         self.load_options()
         self.set_logger()
@@ -66,6 +65,7 @@ class Config():
         print "  -a, --axi=PATH          Path to Apt-xapian-index."
         print "  -p, --popconindex=PATH  Path to popcon dedicated index."
         print "  -m, --popcondir=PATH    Path to popcon submissions dir."
+        print "  -u, --clustering        If popcon data should be clustered."
         print "  -l, --clustersdir=PATH  Path to popcon clusters dir."
         print "  -w, --weight=OPTION     Search weighting scheme."
         print "  -s, --strategy=OPTION   Recommendation strategy."
@@ -113,14 +113,15 @@ class Config():
         self.axi = self.read_option('recommender', 'axi')
         self.popcon_index = self.read_option('recommender', 'popcon_index')
         self.popcon_dir = self.read_option('recommender', 'popcon_dir')
+        self.clustering = self.read_option('recommender', 'clustering')
         self.clusters_dir = self.read_option('recommender', 'clusters_dir')
         self.weight = self.read_option('recommender', 'weight')
         self.strategy = self.read_option('recommender', 'strategy')
 
-        short_options = "hdvo:c:a:p:m:l:w:s:"
+        short_options = "hdvo:c:a:p:m:ul:w:s:"
         long_options = ["help", "debug", "verbose", "output=", "config=",
-                        "axi=", "popconindex=", "popcondir=", "clustersdir=",
-                        "weight=", "strategy="]
+                        "axi=", "popconindex=", "popcondir=", "clustering",
+                        "clusters_dir=", "weight=", "strategy="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
@@ -149,8 +150,10 @@ class Config():
                 self.popcon_index = p
             elif o in ("-m", "--popcondir"):
                 self.popcon_dir = p
+            elif o in ("-u", "--clustering"):
+                self.clustering = 1
             elif o in ("-l", "--clustersdir"):
-                self.popcon_dir = p
+                self.clusters_dir = p
             elif o in ("-w", "--weight"):
                 self.weight = p
             elif o in ("-s", "--strategy"):
@@ -162,18 +165,18 @@ class Config():
         """
         Configure application logger and log level.
         """
-        self.logger = getLogger('')  # root logger is used by default
-        self.logger.setLevel(DEBUG)
+        self.logger = logging.getLogger('')  # root logger is used by default
+        self.logger.setLevel(logging.DEBUG)
 
         if self.debug == 1:
-            log_level = DEBUG
+            log_level = logging.DEBUG
         elif self.verbose == 1:
-            log_level = INFO
+            log_level = logging.INFO
         else:
-            log_level = WARNING
+            log_level = logging.WARNING
 
-        console_handler = StreamHandler(sys.stdout)
-        console_handler.setFormatter(Formatter('%(levelname)s: %(message)s'))
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
         console_handler.setLevel(log_level)
         self.logger.addHandler(console_handler)
 
@@ -181,6 +184,6 @@ class Config():
                                                             maxBytes=5000,
                                                             backupCount=5)
         log_format = '%(asctime)s AppRecommender %(levelname)-8s %(message)s'
-        file_handler.setFormatter(Formatter(log_format))
+        file_handler.setFormatter(logging.Formatter(log_format))
         file_handler.setLevel(log_level)
         self.logger.addHandler(file_handler)
