@@ -22,17 +22,14 @@ __license__ = """
 import os
 import sys
 import gc
-import re
 import xapian
-import axi
-from debian import debtags
 import logging
-import hashlib
 import random
+import cluster
+import shutil
 
 from error import Error
 from singleton import Singleton
-import cluster
 from dissimilarity import *
 
 def axi_search_pkgs(axi,pkgs_list):
@@ -53,101 +50,114 @@ def axi_search_pkg_tags(axi,pkg):
                 term.term.startswith("XT")]
     return tags
 
+def print_index(index):
+    output = "\n---\n" + xapian.Database.__repr__(index) + "\n---\n"
+    for term in index.allterms():
+        output += term.term+"\n"
+        output += str([index.get_document(posting.docid).get_data()
+                       for posting in index.postlist(term.term)])
+        output += "\n---"
+    return output
+
 class SampleAptXapianIndex(xapian.WritableDatabase):
     """
     Sample data source for packages information, mainly useful for tests.
     """
-    def __init__(self,pkgs_list,axi):
-        xapian.WritableDatabase.__init__(self,".sample_axi",
+    def __init__(self,pkgs_list,axi,path):
+        xapian.WritableDatabase.__init__(self,path,
                                          xapian.DB_CREATE_OR_OVERWRITE)
         sample = axi_search_pkgs(axi,pkgs_list)
-        self.all_docs = []
         for package in sample:
             doc_id = self.add_document(axi.get_document(package.docid))
-            self.all_docs.append(doc_id)
 
-    def _print(self):
-        print "---"
-        print xapian.WritableDatabase.__repr__(self)
-        print "---"
-        for doc_id in self.all_docs:
-            print [term.term for term in self.get_document(doc_id).termlist()]
-            print "---"
+    def __str__(self):
+        return print_index(self)
 
 class PopconSubmission():
-    def __init__(self,submission_hash):
-        self.hash = submission_hash
-        self.pkgs_list = []
+    def __init__(self,path,user_id=0):
+        self.packages = dict()
+        self.path = path
+        self.load()
+        if user_id:
+            self.user_id = user_id
 
-    def add_pkg(self,pkg):
-        self.pkgs_list.append(pkg)
+    def __str__(self):
+        output = "\nPopularity-contest submission ID "+self.user_id
+        for pkg, weight in self.packages.items():
+            output += "\n "+pkg+": "+str(weight)
+        return output
 
-    def parse_submission(self,submission_path,binary=1):
+    def load(self,binary=1):
     	"""
     	Parse a popcon submission, generating the names of the valid packages
         in the vote.
     	"""
-        submission = open(submission_path)
-    	for line in submission:
-            if not line.startswith("POPULARITY"):
-                if not line.startswith("END-POPULARITY"):
-                    data = line[:-1].split(" ")
-                    if len(data) > 3:
-                        if binary:
-                            # every installed package has the same weight
-                            yield data[2], 1
-                        elif data[3] == '<NOFILES>':
+        with open(self.path) as submission:
+    	    for line in submission:
+                if line.startswith("POPULARITY"):
+                    self.user_id = line.split()[2].lstrip("ID:")
+                elif not line.startswith("END-POPULARITY"):
+                    data = line.rstrip('\n').split()
+                    if len(data) > 2:
+                        pkg = data[2]
+                        if len(data) > 3:
+                            exec_file = data[3]
+                            # Binary weight
+                            if binary:
+                                self.packages[pkg] = 1
+                            # Weights inherited from Enrico's anapop
                             # No executable files to track
-                            yield data[2], 1
-                        elif len(data) == 4:
+                            elif exec_file == '<NOFILES>':
+                                self.packages[pkg] = 1
                             # Recently used packages
-                            yield data[2], 10
-                        elif data[4] == '<OLD>':
+                            elif len(data) == 4:
+                                self.packages[pkg] = 10
                             # Unused packages
-                            yield data[2], 3
-                        elif data[4] == '<RECENT-CTIME>':
+                            elif data[4] == '<OLD>':
+                                self.packages[pkg] = 3
                             # Recently installed packages
-                            yield data[2], 8
-class PopconXapianIndex(xapian.WritableDatabase,Singleton):
+                            elif data[4] == '<RECENT-CTIME>':
+                                self.packages[pkg] = 8
+
+class PopconXapianIndex(xapian.WritableDatabase):
     """
     Data source for popcon submissions defined as a singleton xapian database.
     """
-    def __init__(self,cfg):
+    def __init__(self,cfg,reindex=0,recluster=0):
         """
         Set initial attributes.
         """
-        self.path = os.path.expanduser(cfg.popcon_index)
-        self.popcon_dir = os.path.expanduser(cfg.popcon_dir)
-        #self.debtags_path = os.path.expanduser(cfg.tags_db)
         self.axi = xapian.Database(cfg.axi)
-        self.load_index()
+        self.path = os.path.expanduser(cfg.popcon_index)
+        if reindex or not self.load_index():
+            if not os.path.exists(cfg.popcon_dir):
+                os.makedirs(cfg.popcon_dir)
+            if not os.listdir(cfg.popcon_dir):
+                logging.critical("Popcon dir seems to be empty.")
+                raise Error
+            if not cfg.clustering:
+                self.source_dir = os.path.expanduser(cfg.popcon_dir)
+            else:
+                self.source_dir = os.path.expanduser(cfg.clusters_dir)
+                if not os.path.exists(cfg.clusters_dir):
+                    os.makedirs(cfg.clusters_dir)
+                if not os.listdir(cfg.clusters_dir):
+                    distance = JaccardDistance()
+                    logging.info("Clustering popcon submissions from \'%s\'"
+                                 % cfg.popcon_dir)
+                    logging.info("Clusters will be placed at \'%s\'"
+                                 % cfg.clusters_dir)
+                    data = self.get_submissions(cfg.popcon_dir)
+                    if cfg.clustering == "Hierarchical":
+                        self.hierarchical_clustering(data,cfg.clusters_dir,
+                                                     distance)
+                    else:
+                        self.kmedoids_clustering(data,cfg.clusters_dir,
+                                                 distance)
+            self.build_index()
 
-    def parse_submission(self,submission_path,binary=1):
-    	"""
-    	Parse a popcon submission, generating the names of the valid packages
-        in the vote.
-    	"""
-        submission = open(submission_path)
-    	for line in submission:
-            if not line.startswith("POPULARITY"):
-                if not line.startswith("END-POPULARITY"):
-                    data = line[:-1].split(" ")
-                    if len(data) > 3:
-                        if binary:
-                            # every installed package has the same weight
-                            yield data[2], 1
-                        elif data[3] == '<NOFILES>':
-                            # No executable files to track
-                            yield data[2], 1
-                        elif len(data) == 4:
-                            # Recently used packages
-                            yield data[2], 10
-                        elif data[4] == '<OLD>':
-                            # Unused packages
-                            yield data[2], 3
-                        elif data[4] == '<RECENT-CTIME>':
-                            # Recently installed packages
-                            yield data[2], 8
+    def __str__(self):
+        return print_index(self)
 
     def load_index(self):
         """
@@ -159,19 +169,19 @@ class PopconXapianIndex(xapian.WritableDatabase,Singleton):
             xapian.Database.__init__(self,self.path)
         except xapian.DatabaseError:
             logging.info("Could not open popcon index.")
-            self.new_index()
+            return 0
 
-    def new_index(self):
+    def build_index(self):
         """
-        Create a xapian index for popcon submissions at 'popcon_dir' and
+        Create a xapian index for popcon submissions at 'source_dir' and
         place it at 'self.path'.
         """
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
+        shutil.rmtree(self.path,1)
+        os.makedirs(self.path)
 
         try:
             logging.info("Indexing popcon submissions from \'%s\'" %
-                         self.popcon_dir)
+                         self.source_dir)
             logging.info("Creating new xapian index at \'%s\'" %
                          self.path)
             xapian.WritableDatabase.__init__(self,self.path,
@@ -180,123 +190,79 @@ class PopconXapianIndex(xapian.WritableDatabase,Singleton):
             logging.critical("Could not create popcon xapian index.")
             raise Error
 
-        for root, dirs, files in os.walk(self.popcon_dir):
-            for submission in files:
-                submission_path = os.path.join(root, submission)
+        for root, dirs, files in os.walk(self.source_dir):
+            for popcon_file in files:
+                submission = PopconSubmission(os.path.join(root, popcon_file))
                 doc = xapian.Document()
-                doc.set_data(submission)
-                logging.debug("Parsing popcon submission at \'%s\'" %
-                              submission_path)
-                for pkg, freq in self.parse_submission(submission_path):
+                doc.set_data(submission.user_id)
+                logging.debug("Parsing popcon submission \'%s\'" %
+                              submission.user_id)
+                for pkg, freq in submission.packages.items():
                     doc.add_term("XP"+pkg,freq)
                     for tag in axi_search_pkg_tags(self.axi,pkg):
-                        print tag
                         doc.add_term(tag,freq)
                 doc_id = self.add_document(doc)
                 logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
             # python garbage collector
         	gc.collect()
         # flush to disk database changes
-        self.flush()
+        self.commit()
 
-class PopconClusteredData(Singleton):
-    """
-    Data source for popcon submissions defined as a singleton xapian database.
-    """
-    def __init__(self,cfg):
+    def get_submissions(self,submissions_dir):
         """
-        Set initial attributes.
+        Get popcon submissions from popcon_dir
         """
-        self.popcon_dir = os.path.expanduser(cfg.popcon_dir)
-        self.clusters_dir = os.path.expanduser(cfg.clusters_dir)
-        self.submissions = []
-        self.clustering()
+        submissions = []
+        for root, dirs, files in os.walk(submissions_dir):
+            for popcon_file in files:
+                submission = PopconSubmission(os.path.join(root, popcon_file))
+                submissions.append(submission)
+        return submissions
 
-    def parse_submission(self,submission_path,binary=1):
-    	"""
-    	Parse a popcon submission, generating the names of the valid packages
-        in the vote.
-    	"""
-        submission_file = open(submission_path)
-    	for line in submission_file:
-            if not line.startswith("POPULARITY"):
-                if not line.startswith("END-POPULARITY"):
-                    data = line[:-1].split(" ")
-                    if len(data) > 3:
-                        if binary:
-                            # every installed package has the same weight
-                            yield data[2], 1
-                        elif data[3] == '<NOFILES>':
-                            # No executable files to track
-                            yield data[2], 1
-                        elif len(data) == 4:
-                            # Recently used packages
-                            yield data[2], 10
-                        elif data[4] == '<OLD>':
-                            # Unused packages
-                            yield data[2], 3
-                        elif data[4] == '<RECENT-CTIME>':
-                            # Recently installed packages
-                            yield data[2], 8
-
-    def clustering(self):
+    def hierarchical_clustering(self,data,clusters_dir,distance,k=10):
         """
-        called by init
-        Create a xapian index for popcon submissions at 'popcon_dir' and
-        place it at 'self.path'.
+        Select popcon submissions from popcon_dir and place them at clusters_dir
         """
-        if not os.path.exists(self.clusters_dir):
-            os.makedirs(self.clusters_dir)
+        cl = cluster.HierarchicalClustering(data, lambda x,y:
+                                                  distance(x.packages.keys(),
+                                                           y.packages.keys()))
+        clusters = cl.getlevel(0.5)
+        for c in clusters:
+            print "cluster"
+            for submission in c:
+                print submission.user_id
 
-        logging.info("Clustering popcon submissions from \'%s\'" %
-                     self.popcon_dir)
-        logging.info("Clusters will be placed at \'%s\'" % self.clusters_dir)
+    def kmedoids_clustering(self,data,clusters_dir,distance,k=10):
+        clusters = KMedoidsClustering(data,lambda x,y:
+                                           distance(x.packages.keys(),
+                                                    y.packages.keys()))
+        medoids = clusters.getMedoids(2)
+        for submission in medoids:
+            shutil.copyfile(submission.path,os.path.join(clusters_dir,
+                                                         submission.user_id))
 
-        for root, dirs, files in os.walk(self.popcon_dir):
-            for submission_hash in files:
-                s = PopconSubmission(submission_hash)
-                submission_path = os.path.join(root, submission_hash)
-                logging.debug("Parsing popcon submission \'%s\'" %
-                              submission_hash)
-                for pkg, freq in self.parse_submission(submission_path):
-                    s.add_pkg(pkg)
-                self.submissions.append(s)
-
-        distanceFunction = JaccardDistance()
-       # cl = cluster.HierarchicalClustering(self.submissions,lambda x,y: distanceFunction(x.pkgs_list,y.pkgs_list))
-       # clusters = cl.getlevel(0.5)
-       # for c in clusters:
-       #     print "cluster"
-       #     for submission in c:
-       #         print submission.hash
-        cl = KMedoidsClusteringPopcon(self.submissions, lambda x,y: \
-                                      distanceFunction(x.pkgs_list,y.pkgs_list))
-        #clusters = cl.getclusters(2)
-        medoids = cl.getMedoids(2)
-        print "medoids"
-        for m in medoids:
-            print m.hash
-
-class KMedoidsClusteringPopcon(cluster.KMeansClustering):
+class KMedoidsClustering(cluster.KMeansClustering):
 
     def __init__(self,data,distance):
-        if len(data)>100:
+        if len(data)<100:
+            data_sample = data
+        else:
             data_sample = random.sample(data,100)
         cluster.KMeansClustering.__init__(self, data_sample, distance)
         self.distanceMatrix = {}
         for submission in self._KMeansClustering__data:
-            self.distanceMatrix[submission.hash] = {}
+            self.distanceMatrix[submission.user_id] = {}
 
     def loadDistanceMatrix(self,cluster):
         for i in range(len(cluster)-1):
             for j in range(i+1,len(cluster)):
                 try:
-                    d = self.distanceMatrix[cluster[i].hash][cluster[j].hash]
+                    d = self.distanceMatrix[cluster[i].user_id][cluster[j].user_id]
                     logging.debug("Using d[%d,%d]" % (i,j))
                 except:
                     d = self.distance(cluster[i],cluster[j])
-                    self.distanceMatrix[cluster[i].hash][cluster[j].hash] = d
-                    self.distanceMatrix[cluster[j].hash][cluster[i].hash] = d
+                    self.distanceMatrix[cluster[i].user_id][cluster[j].user_id] = d
+                    self.distanceMatrix[cluster[j].user_id][cluster[i].user_id] = d
                     logging.debug("d[%d,%d] = %.2f" % (i,j,d))
 
     def getMedoid(self,cluster):
@@ -308,22 +274,19 @@ class KMedoidsClusteringPopcon(cluster.KMeansClustering):
         self.loadDistanceMatrix(cluster)
         medoidDistance = sys.maxint
         for i in range(len(cluster)):
-            totalDistance = sum(self.distanceMatrix[cluster[i].hash].values())
+            totalDistance = sum(self.distanceMatrix[cluster[i].user_id].values())
             print "totalDistance[",i,"]=",totalDistance
             if totalDistance < medoidDistance:
                 medoidDistance = totalDistance
                 medoid = i
             print "medoidDistance:",medoidDistance
-        logging.debug("Cluster medoid: [%d] %s" % (medoid, cluster[medoid].hash))
+        logging.debug("Cluster medoid: [%d] %s" % (medoid,
+                                                   cluster[medoid].user_id))
         return cluster[medoid]
 
     def assign_item(self, item, origin):
         """
         Assigns an item from a given cluster to the closest located cluster
-
-        PARAMETERS
-           item   - the item to be moved
-           origin - the originating cluster
         """
         closest_cluster = origin
         for cluster in self._KMeansClustering__clusters:
@@ -332,7 +295,7 @@ class KMedoidsClusteringPopcon(cluster.KMeansClustering):
 
         if closest_cluster != origin:
             self.move_item(item, origin, closest_cluster)
-            logging.debug("Item changed cluster: %s" % item.hash)
+            logging.debug("Item changed cluster: %s" % item.user_id)
             return True
         else:
             return False
@@ -342,5 +305,5 @@ class KMedoidsClusteringPopcon(cluster.KMeansClustering):
         Generate n clusters and return their medoids.
         """
         medoids = [self.getMedoid(cluster) for cluster in self.getclusters(n)]
-        logging.info("Clustering completed and the following centroids were found: %s" % [c.hash for c in medoids])
+        logging.info("Clustering completed and the following centroids were found: %s" % [c.user_id for c in medoids])
         return medoids
