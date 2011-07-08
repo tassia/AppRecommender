@@ -78,8 +78,11 @@ class Package:
 
 class Request:
     def __init__(self,web_input):
-        outputdir = tempfile.mkdtemp(prefix='',dir='./submissions/')
-        user_id = outputdir.lstrip('./submissions/')
+        submissions_dir = "./submissions/"
+        if not os.path.exists(submissions_dir):
+            os.makedirs(submissions_dir)
+        outputdir = tempfile.mkdtemp(prefix='',dir=submissions_dir)
+        user_id = outputdir.lstrip(submissions_dir)
         self.user_id = user_id
         self.storage = web_input
 
