@@ -95,9 +95,6 @@ class PopconXapianIndexTests(unittest2.TestCase):
                          sum([len(submissions) for submissions in
                               all_submissions]))
 
-    def test_recluster(self):
-        pxi = PopconXapianIndex(self.cfg,1,1)
-
 
 if __name__ == '__main__':
         unittest2.main()
