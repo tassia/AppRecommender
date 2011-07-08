@@ -129,13 +129,14 @@ class PopconXapianIndex(xapian.WritableDatabase):
         """
         self.axi = xapian.Database(cfg.axi)
         self.path = os.path.expanduser(cfg.popcon_index)
-        if reindex or not self.load_index():
+        self.source_dir = cfg.popcon_dir
+        if cfg.index_mode.startswith("1") or not self.load_index():
             if not os.path.exists(cfg.popcon_dir):
                 os.makedirs(cfg.popcon_dir)
             if not os.listdir(cfg.popcon_dir):
                 logging.critical("Popcon dir seems to be empty.")
                 raise Error
-            if not cfg.clustering:
+            if cfg.index_mode == "10":
                 self.source_dir = os.path.expanduser(cfg.popcon_dir)
             else:
                 self.source_dir = os.path.expanduser(cfg.clusters_dir)

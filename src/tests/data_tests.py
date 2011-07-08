@@ -56,41 +56,28 @@ class PopconXapianIndexTests(unittest2.TestCase):
         self.cfg.popcon_index = "test_data/.sample_pxi"
         self.cfg.popcon_dir = "test_data/popcon_dir"
         self.cfg.clusters_dir = "test_data/clusters_dir"
+        # build old index for all tests
         shutil.rmtree(self.cfg.popcon_index,1)
         self.assertFalse(os.path.exists(self.cfg.popcon_index))
-
-    def test_build_load(self):
-        # try to load, but index does not exist
+        # local variable, index will be closed before test
         pxi = PopconXapianIndex(self.cfg)
         self.assertEqual(pxi.get_metadata("old"),"")
         pxi.set_metadata("old","true")
-        pxi.close()
+
+    def test_load(self):
         # load the previously built index
-        new_pxi = PopconXapianIndex(self.cfg)
-        self.assertEqual(new_pxi.get_metadata("old"),"true")
+        pxi = PopconXapianIndex(self.cfg)
+        self.assertEqual(pxi.get_metadata("old"),"true")
 
     def test_reindex(self):
+        # force reindex with no clustering
+        self.cfg.index_mode = "10"
         pxi = PopconXapianIndex(self.cfg)
         self.assertEqual(pxi.get_metadata("old"),"")
-        pxi.set_metadata("old","true")
-        pxi.close()
-        # force reindex
-        reindex = 1
-        new_pxi = PopconXapianIndex(self.cfg,reindex,0)
-        self.assertEqual(new_pxi.get_metadata("old"),"")
-
-    def test_no_clustering(self):
-        self.cfg.clustering = 0
-        pxi = PopconXapianIndex(self.cfg)
-        self.assertEqual(pxi.source_dir,self.cfg.popcon_dir)
-        all_submissions = [submissions for (root, dirs, submissions) in
-                           os.walk(pxi.source_dir)]
-        self.assertEqual(pxi.get_doccount(),
-                         sum([len(submissions) for submissions in
-                              all_submissions]))
 
     def test_clustering(self):
-        self.cfg.clustering = 1
+        # force reindex with clustering
+        self.cfg.index_mode = "11"
         pxi = PopconXapianIndex(self.cfg)
         self.assertEqual(pxi.source_dir,self.cfg.clusters_dir)
         all_submissions = [submissions for (root, dirs, submissions) in
