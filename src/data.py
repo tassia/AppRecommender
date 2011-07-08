@@ -123,13 +123,12 @@ class PopconXapianIndex(xapian.WritableDatabase):
     """
     Data source for popcon submissions defined as a singleton xapian database.
     """
-    def __init__(self,cfg,reindex=0,recluster=0):
+    def __init__(self,cfg):
         """
         Set initial attributes.
         """
         self.axi = xapian.Database(cfg.axi)
         self.path = os.path.expanduser(cfg.popcon_index)
-        self.source_dir = cfg.popcon_dir
         if cfg.index_mode.startswith("1") or not self.load_index():
             if not os.path.exists(cfg.popcon_dir):
                 os.makedirs(cfg.popcon_dir)
@@ -279,11 +278,11 @@ class KMedoidsClustering(cluster.KMeansClustering):
         medoidDistance = sys.maxint
         for i in range(len(cluster)):
             totalDistance = sum(self.distanceMatrix[cluster[i].user_id].values())
-            print "totalDistance[",i,"]=",totalDistance
+            logging.debug("totalDistance[%d]=%f" % (i,totalDistance))
             if totalDistance < medoidDistance:
                 medoidDistance = totalDistance
                 medoid = i
-            print "medoidDistance:",medoidDistance
+            logging.debug("medoidDistance: %f" % medoidDistance)
         logging.debug("Cluster medoid: [%d] %s" % (medoid,
                                                    cluster[medoid].user_id))
         return cluster[medoid]

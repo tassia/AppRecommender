@@ -215,6 +215,9 @@ class RandomRequest(Request):
         #self.storage = web.Storage()
 
 class AppRecommender:
+    def __init__(self):
+        self.rec = Recommender(Config())
+
     def POST(self):
         request = Request(web.input(pkgs_file={}))
         if not request.validates():
@@ -233,6 +236,17 @@ class AppRecommender:
             return render.apprec(recommendation, pkg_summaries,
                                  FeedbackForm(request.selected_strategies),request)
 
+    def _recommends(self,request):
+        user = User(dict.fromkeys(request.pkgs_list,1),request.user_id)
+        user.maximal_pkg_profile()
+        results = dict()
+        for strategy_str in request.selected_strategies:
+            self.rec.set_strategy(strategy_str)
+            prediction = self.rec.get_recommendation(user).get_prediction(request.limit)
+            results[strategy_str] = \
+                [result[0] for result in prediction]
+        return results
+
 # parsing json from screenshots - can be usefull in the future...
 #    def _packages_attrs(self, recommends): #recommends is result of _recommends()
 #        all_recommended_packages = []
@@ -246,19 +260,6 @@ class AppRecommender:
 #            if pkg_attrs_dict['name'] in all_recommended_packages:
 #                recommended_pkgs_attrs[pkg_attrs_dict['name']] = pkg_attrs_dict
 #        return recommended_pkgs_attrs
-
-    def _recommends(self,request):
-        user = User(dict.fromkeys(request.pkgs_list,1),request.user_id)
-        user.maximal_pkg_profile()
-        cfg = Config()
-        rec = Recommender(cfg)
-        results = dict()
-        for strategy_str in request.selected_strategies:
-            rec.set_strategy(strategy_str)
-            prediction = rec.get_recommendation(user).get_prediction(request.limit)
-            results[strategy_str] = \
-                [result[0] for result in prediction]
-        return results
 
 def add_global_hook():
     g = web.storage({"counter": "1"})

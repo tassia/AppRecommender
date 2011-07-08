@@ -125,12 +125,12 @@ class UserTests(unittest2.TestCase):
                          self.user.full_profile(self.sample_axi,10))
 
     def test_tag_profile(self):
-        self.assertEqual(self.user.tag_profile(self.sample_axi,2),
-                         ['XTuse::editing', 'XTworks-with-format::jpg'])
+        self.assertEqual(self.user.tag_profile(self.sample_axi,1),
+                         ['XTuse::editing'])
 
     def test_desc_profile(self):
-        self.assertEqual(self.user.desc_profile(self.sample_axi,2),
-                         ['image', 'the'])
+        self.assertEqual(self.user.desc_profile(self.sample_axi,1),
+                         ['image'])
 
     def test_full_profile(self):
         self.assertEqual(self.user.full_profile(self.sample_axi,10),

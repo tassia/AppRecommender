@@ -63,8 +63,8 @@ class Recommender:
         Set initial parameters.
         """
         self.items_repository = xapian.Database(cfg.axi)
-        self.users_repository = data.PopconXapianIndex(cfg) #[FIXME] only cfg fields
-        self.clustered_users_repository = data.PopconXapianIndex(cfg) #[FIXME]
+        self.users_repository = data.PopconXapianIndex(cfg)
+        #self.clustered_users_repository = data.PopconXapianIndex(cfg)
         self.set_strategy(cfg.strategy)
         if cfg.weight == "bm25":
             self.weight = xapian.BM25Weight()
