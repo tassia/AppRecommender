@@ -44,7 +44,7 @@ class Config():
         self.popcon_index = os.path.expanduser("~/.app-recommender/popcon_index")
         self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
         self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters_dir")
-        self.clustering = 1
+        self.index_mode = "0"     # use old index
         self.strategy = "cb"
         self.weight = "bm25"
         self.load_options()
@@ -56,23 +56,23 @@ class Config():
         """
         print "\n [ general ]"
         print "  -h, --help              Print this help"
-        print "  -d, --debug             Set logging level to debug."
-        print "  -v, --verbose           Set logging level to verbose."
-        print "  -o, --output=PATH       Path to file to save output."
-        print "  -c, --config=PATH       Path to configuration file."
+        print "  -d, --debug             Set logging level to debug"
+        print "  -v, --verbose           Set logging level to verbose"
+        print "  -o, --output=PATH       Path to file to save output"
+        print "  -c, --config=PATH       Path to configuration file"
         print ""
         print " [ recommender ]"
-        print "  -a, --axi=PATH          Path to Apt-xapian-index."
-        print "  -p, --popconindex=PATH  Path to popcon dedicated index."
-        print "  -m, --popcondir=PATH    Path to popcon submissions dir."
-        print "  -u, --clustering        If popcon data should be clustered."
-        print "  -l, --clustersdir=PATH  Path to popcon clusters dir."
-        print "  -w, --weight=OPTION     Search weighting scheme."
-        print "  -s, --strategy=OPTION   Recommendation strategy."
+        print "  -a, --axi=PATH          Path to Apt-xapian-index"
+        print "  -p, --popconindex=PATH  Path to popcon dedicated index"
+        print "  -m, --popcondir=PATH    Path to popcon submissions dir"
+        print "  -u, --index_mode=       0: old, 1:reindex, 11:clustered_index"
+        print "  -l, --clustersdir=PATH  Path to popcon clusters dir"
+        print "  -w, --weight=OPTION     Search weighting scheme"
+        print "  -s, --strategy=OPTION   Recommendation strategy"
         print ""
         print " [ weight options ] "
-        print "  trad = traditional probabilistic weighting "
-        print "  bm25 = bm25 weighting scheme "
+        print "  trad = traditional probabilistic weighting"
+        print "  bm25 = bm25 weighting scheme"
         print ""
         print " [ strategy options ] "
         print "  cb = content-based "
@@ -113,14 +113,14 @@ class Config():
         self.axi = self.read_option('recommender', 'axi')
         self.popcon_index = self.read_option('recommender', 'popcon_index')
         self.popcon_dir = self.read_option('recommender', 'popcon_dir')
-        self.clustering = self.read_option('recommender', 'clustering')
+        self.index_mode = self.read_option('recommender', 'index_mode')
         self.clusters_dir = self.read_option('recommender', 'clusters_dir')
         self.weight = self.read_option('recommender', 'weight')
         self.strategy = self.read_option('recommender', 'strategy')
 
         short_options = "hdvo:c:a:p:m:ul:w:s:"
         long_options = ["help", "debug", "verbose", "output=", "config=",
-                        "axi=", "popconindex=", "popcondir=", "clustering",
+                        "axi=", "popconindex=", "popcondir=", "index_mode=",
                         "clusters_dir=", "weight=", "strategy="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
@@ -150,8 +150,8 @@ class Config():
                 self.popcon_index = p
             elif o in ("-m", "--popcondir"):
                 self.popcon_dir = p
-            elif o in ("-u", "--clustering"):
-                self.clustering = 1
+            elif o in ("-u", "--index_mode"):
+                self.index_mode = p
             elif o in ("-l", "--clustersdir"):
                 self.clusters_dir = p
             elif o in ("-w", "--weight"):
