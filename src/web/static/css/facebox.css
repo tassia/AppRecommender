@@ -28,6 +28,11 @@
   border-radius:4px;
 }
 
+.feedback #facebox .content { 
+width: 670px; 
+padding: 20px;
+}
+
 #facebox .content > p:first-child {
   margin-top:0;
 }

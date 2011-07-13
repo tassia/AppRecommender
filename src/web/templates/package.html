@@ -1,29 +1,39 @@
 $def with (pkg)
-<img src="http://qa.debian.org/popcon-png.php?packages=$pkg['package']&show_installed=on&want_legend=on&want_ticks=on&date_fmt=%25Y-%25m&beenhere=1');" width="150px;" style="float: right;" >
-<br />
-        <div class="align-right">
-                <button type="button" class="like_button" onclick=";return false;" id="like" >
-                <img src="/static/images/pixel-vfl73.gif" alt="">
-                </button>
-                &nbsp;
-                <button  type="button" class="dislike_button" onclick=";return false;" id="dislike" >
-                <img src="/static/images/pixel-vfl73.gif" alt="">
-                </button>
-                &nbsp;
-                <div id="update_count" style="float:left;">
-                        <?php include ('update_box.php')?>
-                </div>
-                <br clear="all" />
-                <div id="voting_result">
-                </div>
-        </div>
-<br />
-<br />
-<div class="graybox">
-<h1>$pkg['package'] - <i>$pkg['description']</i></h1>
-<table><tr><td class="noborder">
+
+<div id="debtags_box" class="graybox">
+<h2>Debtags</h2>
+<ul id="debtags_pkg">
+$for facet, tags in pkg['tag'].items():
+    <li> $facet
+     <ul>
+     $for tag in tags:
+         <li>$tag</li>
+     </ul>
+    </li>
+</ul>
+</div><!-- id="debtags_box" -->
+
+<div class="align-left" id="voting_box">
+ <button type="button" class="like_button" onclick=";return false;" id="like" >
+ <img src="/static/images/pixel-vfl73.gif" alt="">
+ </button>
+ &nbsp;
+ <button  type="button" class="dislike_button" onclick=";return false;" id="dislike" >
+ <img src="/static/images/pixel-vfl73.gif" alt="">
+ </button>
+ &nbsp;
+ <div id="update_count" style="float:left;">
+ <?php include ('update_box.php')?>
+ </div>
+ <div id="voting_result">
+ </div>
+</div><!-- id="voting_box" -->
+
+<h1 id="title_pkg">$pkg['package'] <br /><span>$pkg['description']</span></h1>
+<p>
 <h2>Details</h2>
-<ul>
+
+  <ul>
     <li><b>Description</b>: <br />$:pkg['long_description']</li>
     $if pkg['homepage']:
         <li><b>Homepage</b>:<a href="$pkg['homepage']">$pkg['homepage']</a></li>
@@ -37,7 +47,11 @@ $def with (pkg)
     $if pkg['origin']:
         <li><b>Origin</b>: $pkg['origin']</li>
     <li><b>Maintainer</b>: $pkg['maintainer']</li>
-</ul>
+  </ul>
+
+</p>
+
+<div id="debresources_box" class="graybox">
 <h2>Debian resources:</h2>
     <ul>
         <li><a href="http://packages.debian.org/$pkg['package']">Package page on debian.org</a></li>
@@ -47,21 +61,7 @@ $def with (pkg)
         <li><a href="http://patch-tracker.debian.org/package/$pkg['package']">Debian patch tracking system</a></li>
         <li><a href="http://screenshots.debian.net/package/$pkg['package']">Screenshots</a></li>
     </ul>
-</td>
-<td class="noborder">
-<p>&nbsp;</p>
-</td>
-<td class="noborder">
-<h2>Debtags</h2>
-<ul>
-$for facet, tags in pkg['tag'].items():
-    <li><b>$facet: </b></li>
-    <ul>
-    $for tag in tags:
-        <li>$tag</li>
-    </ul>
-</ul>
-</td>
-</tr></table>
-</div>
-</div>
+</div><!-- id="debresources_box -->
+
+
+

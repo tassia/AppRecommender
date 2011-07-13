@@ -52,7 +52,7 @@ blockquote:before, blockquote:after, q:before, q:after { content: ""; }
  */
 
 body{
-font-family: 'Cantarell', Arial, Verdana, sans-serif;
+font-family: Arial, Verdana, sans-serif;
 font-size: 0.9em;
 line-height: 1.1;
 font-weight: normal;
@@ -102,13 +102,20 @@ text-decoration: none;
 
 
 #sidebar {
-width: 300px;
-min-height: 400px;
-margin-bottom: 40px;
+width: 370px;
+min-height: 450px;
 float: right;
 }
 
 #maincontent {
+}
+
+.align-left {
+float: left;
+}
+
+.align-right {
+float: right;
 }
 
 .innertube {
@@ -156,43 +163,35 @@ h1
 , h4
 , h5
 , h6 {
-font-family: 'Cherry Cream Soda', Verdana, Arial, sans-serif;
+font-family: Verdana, Arial, sans-serif;
 font-weight: 600;
 color: black;
+margin-bottom: 0.7em;
+margin-top: 0.5em;
 }
 h1 {
 font-weight: normal;
 font-size: 1.8em;
-line-height: 0.43333;
-margin: 0.83333em 0 0.83333em 0;
 }
 h2 {
 font-size: 1.4em;
 font-weight: normal;
-line-height: 0.5714286;
-margin: 1.0714286em 0 1.0714286em 0;
 }
 h3 {
 font-size: 1.125em;
-line-height: 0.733em;
-margin: 1.333em 0 1.333em 0;
 }
 h3 {
 font-size: 1em;
-line-height: 0.8;
-margin: 1.5em 0 1.5em 0;
 font-weight: bold;
 }
 h4 {
 font-weight: normal;
 font-style: italic;
-margin: 1.5em 0 1.5em 0;
 color: #444;
 }
 h5 {
 font-style: italic;
 font-size: 0.75em;
-margin: 2em 0 2em 0;
 }
 pre {
 margin: 1.5em 0 1.5em 0;
@@ -216,6 +215,15 @@ overflow: auto;
 tt {
 margin: 0;
 padding:0;
+}
+
+/* Gray Box */
+
+.graybox { 
+background-color: #dfdfdf;
+border-radius: 5px;
+font-size: 0.8;
+padding: 5px;
 }
 
 
@@ -254,6 +262,10 @@ div.note
 , div.trans-note  {
 background-image: url('../images/admon-note.png');
 }
+
+
+/* Recommender BOX */
+
 #recommender-box { 
 margin-top: 0px;
 margin-right: auto;
@@ -263,9 +275,11 @@ width: 560px;
 position: relative;
 vertical-align: top;
 }
+
 #recommender-box label {
 font-size: 1.3em;
 }
+
 #recommender-box #upfile {
 width: 22px;
 height: 22px;
@@ -280,10 +294,12 @@ right: 0px;
 top: 2px;
 z-index: 1;
 }
+
 #pkgs_list, #input-box {
 position: relative;
 width: 410px;
 }
+
 #pkgs_list {
 font-size: 13px;
 font-family: Arial, Verdana, Sans-serif;
@@ -298,12 +314,21 @@ color: black;
 float: right;
 display: block;
 width: 135px;
+text-align: center;
 }
 
 #submit-box input {
 font-size: 14px;
 margin: 5px;
 }
+
+/* Advance Query */
+
+
+#content-form, #colaborative-form { display: none; }
+
+#content-form:target, #colaborative-form:target, #hybrid-form:target { z-index: 1; display: block; }
+
 
 
 

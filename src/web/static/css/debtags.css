@@ -4,7 +4,7 @@
 #debtags-facets {
     float: left;
     text-align: right;
-    width: 250px;
+    width: 320px;
 }
 #debtags-facets div {
     background-color: #F0F0F0;
@@ -25,8 +25,8 @@ position: absolute;
 background: white;
 display: none;
 overflow: hidden;
-width: 250px;
-height: 450px;
+width: 320px;
+height: 430px;
 }
 
 #tags-box div {
