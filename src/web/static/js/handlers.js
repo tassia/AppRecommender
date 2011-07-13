@@ -25,7 +25,6 @@ function inithandlers() {
         inSpeed: 300
     });
 
-
     // Add tooltip behavior to IMG with class 'tooltip'
         $(document).ready(function() {
             $('.tooltip').tooltip({

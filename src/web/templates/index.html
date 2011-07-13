@@ -1,7 +1,671 @@
 $var title: Home
 $var mod = 'index';
+$var cssfiles: static/css/tabs.css static/css/debtags.css static/css/facebox.css 
+$var jsfiles: static/js/facebox.js
 
-<table><tr><td class="noborder">
+
+<!-- Dynamic form -->
+<script type="application/x-javascript">
+window.onload = function() {
+    setupDependencies('weboptions'); //name of form(s). Seperate each with a comma (ie: 'weboptions', 'myotherform' )
+  };
+</script>
+
+<script type="application/x-javascript">
+$$(document).ready(function() {
+ $$('a[rel*=facebox]').facebox({
+ loadingImage : '/static/images/loading.gif',
+ closeImage   : '/static/images/closelabel.png'
+ });
+ $$("#tags-box").click(function () {
+ $$("#tags-box").hide(1000);
+ });
+
+});
+</script>
+
+
+<div id="sidebar">
+<div class="innertube">
+
+<div id="tab-area">
+  <ul id="list-tabs">
+    <li class="tab-one"><a href="#tab-one">Top 5</a></li>
+    <li class="tab-two"><a href="#tab-two">Recents</a></li>
+    <li class="tab-three"><a href="#tab-three">DebTags</a></li>
+  </ul>
+ <div id="tab-wrap">
+
+ <div id="tab-three" class="tabs">
+
+    <h2>Browse by debtags</h2>
+
+<!-- DEB TAG INITIAL -->
+   <div id="debtags-area">
+    <div id="debtags-facets">
+        <div onclick="showtags(0)" class="frontpage-facet" id="facet-0">Accessibility Support</div>
+        <div onclick="showtags(1)" class="frontpage-facet" id="facet-1">Application Suite</div>
+        <div onclick="showtags(2)" class="frontpage-facet" id="facet-2">Biology</div>
+        <div onclick="showtags(3)" class="frontpage-facet" id="facet-3">Electronic Mail</div>
+        <div onclick="showtags(4)" class="frontpage-facet" id="facet-4">Field</div>
+        <div onclick="showtags(5)" class="frontpage-facet" id="facet-5">Games and Amusement</div>
+        <div onclick="showtags(6)" class="frontpage-facet" id="facet-6">Hardware Enablement</div>
+        <div onclick="showtags(7)" class="frontpage-facet" id="facet-7">Implemented in</div>
+        <div onclick="showtags(8)" class="frontpage-facet" id="facet-8">Interface Toolkit</div>
+        <div onclick="showtags(9)" class="frontpage-facet" id="facet-9">Junior Applications</div>
+        <div onclick="showtags(10)" class="frontpage-facet" id="facet-10">Made Of</div>
+        <div onclick="showtags(11)" class="frontpage-facet" id="facet-11">Network Protocol</div>
+        <div onclick="showtags(12)" class="frontpage-facet" id="facet-12">Networking</div>
+        <div onclick="showtags(13)" class="frontpage-facet" id="facet-13">Office and business</div>
+        <div onclick="showtags(14)" class="frontpage-facet" id="facet-14">Purpose</div>
+        <div onclick="showtags(15)" class="frontpage-facet" id="facet-15">Role</div>
+        <div onclick="showtags(16)" class="frontpage-facet" id="facet-16">Science</div>
+        <div onclick="showtags(17)" class="frontpage-facet" id="facet-17">Security</div>
+        <div onclick="showtags(18)" class="frontpage-facet" id="facet-18">Software Development</div>
+        <div onclick="showtags(19)" class="frontpage-facet" id="facet-19">Sound and Music</div>
+        <div onclick="showtags(20)" class="frontpage-facet" id="facet-20">Supports Format</div>
+        <div onclick="showtags(21)" class="frontpage-facet" id="facet-21">System Administration</div>
+        <div onclick="showtags(22)" class="frontpage-facet" id="facet-22">User Interface</div>
+        <div onclick="showtags(23)" class="frontpage-facet" id="facet-23">Works with</div>
+        <div onclick="showtags(24)" class="frontpage-facet" id="facet-24">World Wide Web</div>
+        <div onclick="showtags(25)" class="frontpage-facet" id="facet-25">X Window System</div>
+    </div>
+
+    <div id="tags-box">
+    </div>
+
+    <div style="display: none" id="debtags-0">
+            <div><a href="/packages?debtag=accessibility%3A%3Ainput">Input Systems </a></div>
+            <div><a href="/packages?debtag=accessibility%3A%3Aspeech-recognition">Speech Recognition </a></div>
+            <div><a href="/packages?debtag=accessibility%3A%3Aspeech">Speech Synthesis </a></div>
+            <div><a href="/packages?debtag=accessibility%3A%3Ascreen-reader">Screen Reading </a></div>
+            <div><a href="/packages?debtag=accessibility%3A%3Aocr">Text Recognition (OCR) </a></div>
+            <div><a href="/packages?debtag=accessibility%3A%3Ascreen-magnify">Screen Magnification </a></div>
+    </div>
+    <div style="display: none" id="debtags-1">
+            <div><a href="/packages?debtag=suite%3A%3Awebmin">Webmin </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Aroxen">Roxen </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Axfce">XFce </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Asamba">Samba </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Aopie">Open Palmtop (OPIE) </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Agkrellm">GKrellM Monitors </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Agnome">GNOME </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Axmms">XMMS </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Axmms2">XMMS 2 </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Agnustep">GNUstep </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Agnu">GNU </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Agpe">GPE </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Aopenoffice">OpenOffice.org </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Akde">KDE </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Anetscape">Netscape Navigator </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Amozilla">Mozilla </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Agimp">The GIMP </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Agforge">GForge </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Absd">BSD </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Aemacs">Emacs </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Adebian">Debian </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Aeclipse">Eclipse </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Azope">Zope </a></div>
+            <div><a href="/packages?debtag=suite%3A%3Aapache">Apache </a></div>
+    </div>
+    <div style="display: none" id="debtags-2">
+            <div><a href="/packages?debtag=biology%3A%3Aemboss">EMBOSS </a></div>
+            <div><a href="/packages?debtag=biology%3A%3Aformat%3Aaln">Clustal/ALN </a></div>
+            <div><a href="/packages?debtag=biology%3A%3Apeptidic">Proteins </a></div>
+            <div><a href="/packages?debtag=biology%3A%3Aformat%3Anexus">Nexus </a></div>
+            <div><a href="/packages?debtag=biology%3A%3Anuceleic-acids">Nucleic Acids </a></div>
+    </div>
+    <div style="display: none" id="debtags-3">
+            <div><a href="/packages?debtag=mail%3A%3Afilters">Filters </a></div>
+            <div><a href="/packages?debtag=mail%3A%3Aimap">IMAP Protocol </a></div>
+            <div><a href="/packages?debtag=mail%3A%3Adelivery-agent">Mail Delivery Agent </a></div>
+            <div><a href="/packages?debtag=mail%3A%3Auser-agent">Mail User Agent </a></div>
+            <div><a href="/packages?debtag=mail%3A%3Atransport-agent">Mail Transport Agent </a></div>
+            <div><a href="/packages?debtag=mail%3A%3Apop">POP3 Protocol </a></div>
+            <div><a href="/packages?debtag=mail%3A%3Asmtp">SMTP Protocol </a></div>
+            <div><a href="/packages?debtag=mail%3A%3Anotification">Notification </a></div>
+            <div><a href="/packages?debtag=mail%3A%3Alist">Mailing Lists </a></div>
+    </div>
+    <div style="display: none" id="debtags-4">
+            <div><a href="/packages?debtag=field%3A%3Alinguistics">Linguistics </a></div>
+            <div><a href="/packages?debtag=field%3A%3Ageography">Geography </a></div>
+            <div><a href="/packages?debtag=field%3A%3Amathematics">Mathematics </a></div>
+            <div><a href="/packages?debtag=field%3A%3Agenealogy">Genealogy </a></div>
+            <div><a href="/packages?debtag=field%3A%3Amedicine">Medicine </a></div>
+            <div><a href="/packages?debtag=field%3A%3Ageology">Geology </a></div>
+            <div><a href="/packages?debtag=field%3A%3Astatistics">Statistics </a></div>
+            <div><a href="/packages?debtag=field%3A%3Aphysics">Physics </a></div>
+            <div><a href="/packages?debtag=field%3A%3Areligion">Religion </a></div>
+            <div><a href="/packages?debtag=field%3A%3Amedicine%3Aimaging">Medical Imaging </a></div>
+            <div><a href="/packages?debtag=field%3A%3Ameteorology">Meteorology </a></div>
+            <div><a href="/packages?debtag=field%3A%3Aastronomy">Astronomy </a></div>
+            <div><a href="/packages?debtag=field%3A%3Abiology%3Astructural">Structural Biology </a></div>
+            <div><a href="/packages?debtag=field%3A%3Abiology%3Abioinformatics">Bioinformatics </a></div>
+            <div><a href="/packages?debtag=field%3A%3Abiology%3Amolecular">Molecular Biology </a></div>
+            <div><a href="/packages?debtag=field%3A%3Aelectronics">Electronics </a></div>
+            <div><a href="/packages?debtag=field%3A%3Afinance">Financial </a></div>
+            <div><a href="/packages?debtag=field%3A%3Aarts">Arts </a></div>
+            <div><a href="/packages?debtag=field%3A%3Abiology">Biology </a></div>
+            <div><a href="/packages?debtag=field%3A%3Achemistry">Chemistry </a></div>
+            <div><a href="/packages?debtag=field%3A%3Aaviation">Aviation </a></div>
+    </div>
+    <div style="display: none" id="debtags-5">
+            <div><a href="/packages?debtag=game%3A%3Atyping">Typing Tutor </a></div>
+            <div><a href="/packages?debtag=game%3A%3Atetris">Tetris-like </a></div>
+            <div><a href="/packages?debtag=game%3A%3Atoys">Toy or Gimmick </a></div>
+            <div><a href="/packages?debtag=game%3A%3Aboard">Board </a></div>
+            <div><a href="/packages?debtag=game%3A%3Astrategy">Strategy </a></div>
+            <div><a href="/packages?debtag=game%3A%3Aplatform">Platform </a></div>
+            <div><a href="/packages?debtag=game%3A%3Afps">First Person Shooter </a></div>
+            <div><a href="/packages?debtag=game%3A%3Asport%3Aracing">Racing </a></div>
+            <div><a href="/packages?debtag=game%3A%3Aboard%3Achess">Chess </a></div>
+            <div><a href="/packages?debtag=game%3A%3Amud">Multiplayer RPG </a></div>
+            <div><a href="/packages?debtag=game%3A%3Asport">Sport Games </a></div>
+            <div><a href="/packages?debtag=game%3A%3Asimulation">Simulation </a></div>
+            <div><a href="/packages?debtag=game%3A%3Apuzzle">Puzzle </a></div>
+            <div><a href="/packages?debtag=game%3A%3Ademos">Demo </a></div>
+            <div><a href="/packages?debtag=game%3A%3Arpg">Role-playing </a></div>
+            <div><a href="/packages?debtag=game%3A%3Acard">Card </a></div>
+            <div><a href="/packages?debtag=game%3A%3Arpg%3Arogue">Rogue-like RPG </a></div>
+            <div><a href="/packages?debtag=game%3A%3Aarcade">Action and Arcade </a></div>
+            <div><a href="/packages?debtag=game%3A%3Aadventure">Adventure </a></div>
+    </div>
+    <div style="display: none" id="debtags-6">
+            <div><a href="/packages?debtag=hardware%3A%3Ainput%3Amouse">Mouse </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Ainput%3Akeyboard">Keyboard </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Ascanner">Image-scanning Hardware </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Ainput">Input Devices </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Ahamradio">Ham Radio </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Ainput%3Ajoystick">Joystick </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Adetection">Hardware Detection </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Aemulation">Emulation </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Acamera">Digital Camera </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Aembedded">Embedded </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Agps">GPS </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Astorage%3Afloppy">Floppy Disk </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Astorage%3Acd">CD </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Avideo">Graphics and Video </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Astorage">Storage </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Ausb">USB </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Astorage%3Advd">DVD </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Aprinter">Printer </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Ajoystick">Joystick (legacy) </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Apower%3Aups">UPS </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Amodem%3Adsl">xDSL Modem </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Aopengl">Requires video hardware acceleration </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Amodem">Modem </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Apower">Power Management </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Apower%3Aacpi">ACPI Power Management </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Apower%3Aapm">APM Power Management </a></div>
+            <div><a href="/packages?debtag=hardware%3A%3Alaptop">Laptop </a></div>
+    </div>
+    <div style="display: none" id="debtags-7">
+            <div><a href="/packages?debtag=implemented-in%3A%3Ac-sharp">C# </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Alisp">Lisp </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Alua">Lua </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Ajava">Java </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Apython">Python </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Ac">C </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Aada">Ada </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Ac%2B%2B">C++ </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Aperl">Perl </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Aocaml">OCaml </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Aphp">PHP </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Apike">Pike </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Aml">ML </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Aobjc">Objective C </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Aruby">Ruby </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Ascheme">Scheme </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Ar">GNU R </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Atcl">Tcl, Tool Command Language </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Ashell">sh, bash, ksh, tcsh and other shells </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Ahaskell">Haskell </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Aecmascript">Ecmascript/Javascript </a></div>
+            <div><a href="/packages?debtag=implemented-in%3A%3Afortran">Fortran </a></div>
+    </div>
+    <div style="display: none" id="debtags-8">
+            <div><a href="/packages?debtag=uitoolkit%3A%3Aathena">Athena Widgets </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Afltk">FLTK </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Aglut">GLUT </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Agnustep">GNUstep </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Agtk">GTK </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Amotif">Lesstif/Motif </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Ancurses">Ncurses TUI </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Aqt">Qt </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Asdl">SDL </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Atk">Tk </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Awxwidgets">wxWidgets </a></div>
+            <div><a href="/packages?debtag=uitoolkit%3A%3Axlib">X library </a></div>
+    </div>
+    <div style="display: none" id="debtags-9">
+            <div><a href="/packages?debtag=junior%3A%3Aarcade">Arcade Games </a></div>
+            <div><a href="/packages?debtag=junior%3A%3Ameta">Metapackages </a></div>
+            <div><a href="/packages?debtag=junior%3A%3Agames-gl">3D Games </a></div>
+    </div>
+    <div style="display: none" id="debtags-10">
+            <div><a href="/packages?debtag=made-of%3A%3Aaudio">Audio </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Afont">Font </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Adictionary">Dictionary </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Ahtml">HTML, Hypertext Markup Language </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Aicons">Icons </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Asvg">SVG, Scalable Vector Graphics </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Apdf">PDF Documents </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Apostscript">PostScript </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Asgml">SGML, Standard Generalized Markup Language </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Axml">XML </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Avrml">VRML, Virtual Reality Markup Language </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Atex">TeX, LaTeX and DVI </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Ainfo">Documentation in Info Format </a></div>
+            <div><a href="/packages?debtag=made-of%3A%3Aman">Manuals in Nroff Format </a></div>
+    </div>
+    <div style="display: none" id="debtags-11">
+            <div><a href="/packages?debtag=protocol%3A%3Ahttp">HTTP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aip">IP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aipv6">IPv6 </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Alpr">LPR </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Anfs">NFS </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aldap">LDAP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Amsn-messenger">MSN Messenger </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Anntp">NNTP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Apop3">POP3 </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Agadu-gadu">Gadu-Gadu </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aoscar">OSCAR (AIM/ICQ) </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aimap">IMAP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aident">Ident </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Agopher">Gopher </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Ajabber">Jabber </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Airc">IRC </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Akerberos">Kerberos </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Afinger">Finger </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Adhcp">DHCP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aftp">FTP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Adb%3Amysql">MySQL </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Adcc">DCC </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Adns">DNS </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Adb%3Apsql">PostgreSQL </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Acorba">CORBA </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Abittorrent">BitTorrent </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aatm">ATM </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aethernet">Ethernet </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Afidonet">FidoNet </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Assl">SSL/TLS </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Asmtp">SMTP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Atcp">TCP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Avoip">VoIP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Atftp">TFTP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Axmlrpc">XML-RPC </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Asoap">SOAP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Atelnet">Telnet </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Asmb">SMB </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Assh">SSH </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Ayahoo-messenger">Yahoo! Messenger </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Aradius">RADIUS </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Azeroconf">Zeroconf </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Asnmp">SNMP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Asftp">SFTP </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Awebdav">WebDAV </a></div>
+            <div><a href="/packages?debtag=protocol%3A%3Audp">UDP </a></div>
+    </div>
+    <div style="display: none" id="debtags-12">
+            <div><a href="/packages?debtag=network%3A%3Aload-balancing">Load Balancing </a></div>
+            <div><a href="/packages?debtag=network%3A%3Arouting">Routing </a></div>
+            <div><a href="/packages?debtag=network%3A%3Afirewall">Firewall </a></div>
+            <div><a href="/packages?debtag=network%3A%3Ahiavailability">High Availability </a></div>
+            <div><a href="/packages?debtag=network%3A%3Aconfiguration">Configuration </a></div>
+            <div><a href="/packages?debtag=network%3A%3Avpn">VPN or Tunneling </a></div>
+            <div><a href="/packages?debtag=network%3A%3Aservice">Service </a></div>
+            <div><a href="/packages?debtag=network%3A%3Aserver">Server </a></div>
+            <div><a href="/packages?debtag=network%3A%3Ascanner">Scanning </a></div>
+            <div><a href="/packages?debtag=network%3A%3Aclient">Client </a></div>
+    </div>
+    <div style="display: none" id="debtags-13">
+            <div><a href="/packages?debtag=office%3A%3Afinance">Finance </a></div>
+            <div><a href="/packages?debtag=office%3A%3Aspreadsheet">Spreadsheet </a></div>
+            <div><a href="/packages?debtag=office%3A%3Agroupware">Groupware </a></div>
+            <div><a href="/packages?debtag=office%3A%3Apresentation">Presentation </a></div>
+            <div><a href="/packages?debtag=office%3A%3Aproject-management">Project Management </a></div>
+    </div>
+    <div style="display: none" id="debtags-14">
+            <div><a href="/packages?debtag=use%3A%3Aanalysing">Analysing </a></div>
+            <div><a href="/packages?debtag=use%3A%3Abrowsing">Browsing </a></div>
+            <div><a href="/packages?debtag=use%3A%3Acalculating">Calculating </a></div>
+            <div><a href="/packages?debtag=use%3A%3Achatting">Chatting </a></div>
+            <div><a href="/packages?debtag=use%3A%3Achecking">Checking </a></div>
+            <div><a href="/packages?debtag=use%3A%3Acomparing">Comparing </a></div>
+            <div><a href="/packages?debtag=use%3A%3Acompressing">Compressing </a></div>
+            <div><a href="/packages?debtag=use%3A%3Aconfiguring">Configuration </a></div>
+            <div><a href="/packages?debtag=use%3A%3Aconverting">Data Conversion </a></div>
+            <div><a href="/packages?debtag=use%3A%3Adialing">Dialup Access </a></div>
+            <div><a href="/packages?debtag=use%3A%3Adownloading">Downloading </a></div>
+            <div><a href="/packages?debtag=use%3A%3Adriver">Hardware Driver </a></div>
+            <div><a href="/packages?debtag=use%3A%3Aediting">Editing </a></div>
+            <div><a href="/packages?debtag=use%3A%3Aentertaining">Entertaining </a></div>
+            <div><a href="/packages?debtag=use%3A%3Afiltering">Filtering </a></div>
+            <div><a href="/packages?debtag=use%3A%3Agameplaying">Game Playing </a></div>
+            <div><a href="/packages?debtag=use%3A%3Alearning">Learning </a></div>
+            <div><a href="/packages?debtag=use%3A%3Alogin">Login </a></div>
+            <div><a href="/packages?debtag=use%3A%3Ameasuring">Measuring </a></div>
+            <div><a href="/packages?debtag=use%3A%3Amonitor">Monitoring </a></div>
+            <div><a href="/packages?debtag=use%3A%3Aorganizing">Data Organisation </a></div>
+            <div><a href="/packages?debtag=use%3A%3Aplaying">Playing Media </a></div>
+            <div><a href="/packages?debtag=use%3A%3Aprinting">Printing </a></div>
+            <div><a href="/packages?debtag=use%3A%3Aproxying">Proxying </a></div>
+            <div><a href="/packages?debtag=use%3A%3Arouting">Routing </a></div>
+            <div><a href="/packages?debtag=use%3A%3Ascanning">Scanning </a></div>
+            <div><a href="/packages?debtag=use%3A%3Asearching">Searching </a></div>
+            <div><a href="/packages?debtag=use%3A%3Asimulating">Simulating </a></div>
+            <div><a href="/packages?debtag=use%3A%3Astoring">Storing </a></div>
+            <div><a href="/packages?debtag=use%3A%3Asynchronizing">Synchronisation </a></div>
+            <div><a href="/packages?debtag=use%3A%3Atext-formatting">Text Formatting </a></div>
+            <div><a href="/packages?debtag=use%3A%3Atimekeeping">Time and Clock </a></div>
+            <div><a href="/packages?debtag=use%3A%3Atransmission">Transmission </a></div>
+            <div><a href="/packages?debtag=use%3A%3Atypesetting">Typesetting </a></div>
+            <div><a href="/packages?debtag=use%3A%3Aviewing">Data Visualization </a></div>
+    </div>
+    <div style="display: none" id="debtags-15">
+            <div><a href="/packages?debtag=role%3A%3Aprogram">Program </a></div>
+            <div><a href="/packages?debtag=role%3A%3Aplugin">Plugin </a></div>
+            <div><a href="/packages?debtag=role%3A%3Adummy">Dummy Package </a></div>
+            <div><a href="/packages?debtag=role%3A%3Ametapackage">Metapackage </a></div>
+            <div><a href="/packages?debtag=role%3A%3Akernel">Kernel and Modules </a></div>
+            <div><a href="/packages?debtag=role%3A%3Aexamples">Examples </a></div>
+            <div><a href="/packages?debtag=role%3A%3Adata">Standalone Data </a></div>
+    </div>
+    <div style="display: none" id="debtags-16">
+            <div><a href="/packages?debtag=science%3A%3Amodelling">Modelling </a></div>
+            <div><a href="/packages?debtag=science%3A%3Abibliography">Bibliography </a></div>
+            <div><a href="/packages?debtag=science%3A%3Acalculation">Calculation </a></div>
+            <div><a href="/packages?debtag=science%3A%3Aplotting">Plotting </a></div>
+            <div><a href="/packages?debtag=science%3A%3Adata-acquisition">Data acquisition </a></div>
+            <div><a href="/packages?debtag=science%3A%3Avisualisation">Visualization </a></div>
+            <div><a href="/packages?debtag=science%3A%3Apublishing">Publishing </a></div>
+    </div>
+    <div style="display: none" id="debtags-17">
+            <div><a href="/packages?debtag=security%3A%3Aauthentication">Authentication </a></div>
+            <div><a href="/packages?debtag=security%3A%3Acryptography">Cryptography </a></div>
+            <div><a href="/packages?debtag=security%3A%3Aantivirus">Anti-Virus </a></div>
+            <div><a href="/packages?debtag=security%3A%3Afirewall">Firewall </a></div>
+            <div><a href="/packages?debtag=security%3A%3Aforensics">Forensics </a></div>
+            <div><a href="/packages?debtag=security%3A%3Aids">Intrusion Detection </a></div>
+            <div><a href="/packages?debtag=security%3A%3Aintegrity">File Integrity </a></div>
+            <div><a href="/packages?debtag=security%3A%3Alog-analyzer">Log Analyzer </a></div>
+            <div><a href="/packages?debtag=security%3A%3Aprivacy">Privacy </a></div>
+    </div>
+    <div style="display: none" id="debtags-18">
+            <div><a href="/packages?debtag=devel%3A%3Adebugger">Debugging </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Aecma-cli">ECMA CLI </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Adocsystem">Literate Programming </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aphp">PHP Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Apike">Pike Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Aweb">Web </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aocaml">OCaml Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aecmascript">Ecmascript/JavaScript Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Ai18n">Internationalization </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Ac-sharp">C# Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aobjc">Objective-C Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Ac">C Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Alua">Lua Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aada">Ada Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Aexamples">Examples </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aoctave">GNU Octave Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Ahaskell">Haskell Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Ac%2B%2B">C++ Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Ainterpreter">Interpreter </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aperl">Perl Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aml">ML Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Alisp">Lisp Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Apascal">Pascal Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Afortran">Fortran Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Aeditor">Source Editor </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Aide">IDE </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Ajava">Java Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Apython">Python Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aruby">Ruby Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Atcl">Tcl Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Ar">GNU R Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aposix-shell">POSIX shell </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Aprolog">Prolog Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Asql">SQL </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Amodelling">Modelling </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Alang%3Ascheme">Scheme Development </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Amachinecode">Machine Code </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Acompiler">Compiler </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Adebian">Debian </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Acode-generator">Code Generation </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Abugtracker">Bug Tracking </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Abuildtools">Build Tool </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Atesting-qa">Testing and QA </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Aui-builder">User Interface </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Aruntime">Runtime Support </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Aprofiler">Profiling </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Aprettyprint">Prettyprint </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Arpc">RPC </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Arcs">Revision Control </a></div>
+            <div><a href="/packages?debtag=devel%3A%3Apackaging">Packaging </a></div>
+    </div>
+    <div style="display: none" id="debtags-19">
+            <div><a href="/packages?debtag=sound%3A%3Amixer">Mixing </a></div>
+            <div><a href="/packages?debtag=sound%3A%3Aplayer">Playback </a></div>
+            <div><a href="/packages?debtag=sound%3A%3Arecorder">Recording </a></div>
+            <div><a href="/packages?debtag=sound%3A%3Amidi">MIDI Software </a></div>
+            <div><a href="/packages?debtag=sound%3A%3Acompression">Compression </a></div>
+            <div><a href="/packages?debtag=sound%3A%3Asequencer">MIDI Sequencing </a></div>
+            <div><a href="/packages?debtag=sound%3A%3Aspeech">Speech Synthesis </a></div>
+    </div>
+    <div style="display: none" id="debtags-20">
+            <div><a href="/packages?debtag=works-with-format%3A%3Azip">Zip Archives </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Awav">MS RIFF Audio </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Axml%3Axslt">XSL Transformations (XSLT) </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Axml%3Arss">RSS Rich Site Summary </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Axml%3Agpx">GPX, GPS eXchange Format </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Axml">XML </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Abib">BibTeX </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Achm">Compiled HTML Help </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Adjvu">DjVu </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Adocbook">DocBook </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Advi">TeX DVI </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aelf">Executable and Linkable Format </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aepub">EPub electronic publication </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Agif">GIF, Graphics Interchange Format </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Ahtml">HTML, Hypertext Markup Language </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Ainfo">Documentation in Info Format </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aiso9660">ISO 9660 CD Filesystem </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Ajpg">JPEG, Joint Photographic Experts Group </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Ajson">JSON </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aldif">LDIF </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aman">Manpages </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Amp3">MP3 Audio </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Ampc">Musepack Audio </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aodf">ODF, Open Document Format </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aoggtheora">Ogg Theora Video </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aoggvorbis">Ogg Vorbis Audio </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Apdf">PDF Documents </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aplaintext">Plain Text </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Apng">PNG, Portable Network Graphics </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Apo">PO, Portable Object </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Apostscript">PostScript </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Asgml">SGML, Standard Generalized Markup Language </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Asvg">SVG, Scalable Vector Graphics </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Aswf">SWF, ShockWave Flash </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Atar">Tar Archives </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Atex">TeX and LaTeX </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Atiff">TIFF, Tagged Image File Format </a></div>
+            <div><a href="/packages?debtag=works-with-format%3A%3Avrml">VRML 3D Model </a></div>
+    </div>
+    <div style="display: none" id="debtags-21">
+            <div><a href="/packages?debtag=admin%3A%3Afile-distribution">File Distribution </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Aboot">System Boot </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Acluster">Clustering </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Aconfiguring">Configuration Tool </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Abackup">Backup and Restoration </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Abenchmarking">Benchmarking </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Aaccounting">Accounting </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Aautomation">Automation and Scheduling </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Afilesystem">Filesystem Tool </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Aforensics">Forensics and Recovery </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Ahardware">Hardware Support </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Ainstall">System Installation </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Alogging">Logging </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Apackage-management">Package Management </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Arecovery">Data Recovery </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Amonitoring">Monitoring </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Apower-management">Power Management </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Avirtualization">Virtualization </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Alogin">Login </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Aissuetracker">Issue Tracker </a></div>
+            <div><a href="/packages?debtag=admin%3A%3Auser-management">User Management </a></div>
+    </div>
+    <div style="display: none" id="debtags-22">
+            <div><a href="/packages?debtag=interface%3A%3Atext-mode">Text-based Interactive </a></div>
+            <div><a href="/packages?debtag=interface%3A%3Ashell">Command Shell </a></div>
+            <div><a href="/packages?debtag=interface%3A%3Aframebuffer">Framebuffer </a></div>
+            <div><a href="/packages?debtag=interface%3A%3Asvga">Console SVGA </a></div>
+            <div><a href="/packages?debtag=interface%3A%3Ax11">X Window System </a></div>
+            <div><a href="/packages?debtag=interface%3A%3Aweb">World Wide Web </a></div>
+            <div><a href="/packages?debtag=interface%3A%3A3d">Three-Dimensional </a></div>
+            <div><a href="/packages?debtag=interface%3A%3Acommandline">Command Line </a></div>
+            <div><a href="/packages?debtag=interface%3A%3Adaemon">Daemon </a></div>
+    </div>
+    <div style="display: none" id="debtags-23">
+            <div><a href="/packages?debtag=works-with%3A%3A3dmodel">3D Model </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Aarchive">Archive </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Aaudio">Audio </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Abiological-sequence">Biological Sequence </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Abugs">Bugs or Issues </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Adb">Databases </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Adictionary">Dictionaries </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Adtp">Desktop Publishing (DTP) </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Afax">Faxes </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Afile">Files </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Afont">Fonts </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Agraphs">Trees and Graphs </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Aim">Instant Messages </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Aimage">Image </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Aimage%3Araster">Raster Image </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Aimage%3Avector">Vector Image </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Alogfile">System Logs </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Amail">Email </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Amusic-notation">Music Notation </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Anetwork-traffic">Network Traffic </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Apeople">People </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Apim">Personal Information </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Asoftware%3Apackage">Packaged Software </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Asoftware%3Arunning">Running Programs </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Asoftware%3Asource">Source Code </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Aspreadsheet">Spreadsheet </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Atext">Text </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Aunicode">Unicode </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Avcs">Version control system </a></div>
+            <div><a href="/packages?debtag=works-with%3A%3Avideo">Video and Animation </a></div>
+    </div>
+    <div style="display: none" id="debtags-24">
+            <div><a href="/packages?debtag=web%3A%3Asearch-engine">Search Engine </a></div>
+            <div><a href="/packages?debtag=web%3A%3Aserver">Server </a></div>
+            <div><a href="/packages?debtag=web%3A%3Awiki">Wiki Software </a></div>
+            <div><a href="/packages?debtag=web%3A%3Ascripting">Scripting </a></div>
+            <div><a href="/packages?debtag=web%3A%3Aportal">Portal </a></div>
+            <div><a href="/packages?debtag=web%3A%3Amicroblog">Microblog software </a></div>
+            <div><a href="/packages?debtag=web%3A%3Aforum">Forum </a></div>
+            <div><a href="/packages?debtag=web%3A%3Acms">Content Management (CMS) </a></div>
+            <div><a href="/packages?debtag=web%3A%3Acgi">CGI </a></div>
+            <div><a href="/packages?debtag=web%3A%3Acommerce">E-commerce </a></div>
+            <div><a href="/packages?debtag=web%3A%3Abrowser">Browser </a></div>
+            <div><a href="/packages?debtag=web%3A%3Aappserver">Application Server </a></div>
+            <div><a href="/packages?debtag=web%3A%3Ablog">Blog Software </a></div>
+            <div><a href="/packages?debtag=web%3A%3Aapplication">Application </a></div>
+    </div>
+    <div style="display: none" id="debtags-25">
+            <div><a href="/packages?debtag=x11%3A%3Aapplet">Applet </a></div>
+            <div><a href="/packages?debtag=x11%3A%3Aapplication">Application </a></div>
+            <div><a href="/packages?debtag=x11%3A%3Adisplay-manager">Login Manager </a></div>
+            <div><a href="/packages?debtag=x11%3A%3Afont">Font </a></div>
+            <div><a href="/packages?debtag=x11%3A%3Alibrary">Library </a></div>
+            <div><a href="/packages?debtag=x11%3A%3Ascreensaver">Screen Saver </a></div>
+            <div><a href="/packages?debtag=x11%3A%3Aterminal">Terminal Emulator </a></div>
+            <div><a href="/packages?debtag=x11%3A%3Atheme">Theme </a></div>
+            <div><a href="/packages?debtag=x11%3A%3Awindow-manager">Window Manager </a></div>
+            <div><a href="/packages?debtag=x11%3A%3Axserver">X Server and Drivers </a></div>
+    </div>
+<br style="clear: both">
+</div>
+
+<script type="application/x-javascript">
+function showtags(tagid) {
+    var content = $$('#debtags-'+tagid).html();
+    $$('#tags-box').fadeOut('fast', function () {
+        $$('#tags-box').html(content);
+        $$('#tags-box').fadeIn('fast');
+    });
+    $$('.frontpage-facet').removeClass('selected');
+    $$('#facet-'+tagid).addClass('selected');
+}
+</script>
+<!-- DEB TAG END -->
+
+ </div><!-- id="box-three" -->
+
+ <div id="tab-two" class="tabs">
+
+<h2>Atualizados recentemente</h2>
+   <ul>
+      <li><a href="#">Recents...1</a></li>
+      <li><a href="#">Recents...2</a></li>
+      <li><a href="#">Recents...3</a></li>
+      <li><a href="#">Recents...4</a></li>
+      <li><a href="#">Recents...5</a></li>
+      <li><a href="#">Recents...6</a></li>
+      <li><a href="#">Recents...7</a></li>
+      <li><a href="#">Recents...8</a></li>
+      <li><a href="#">Recents...9</a></li>
+      <li><a href="#">Recents...10</a></li>
+    </ul>
+
+ </div><!-- id="box-two" -->
+
+  <div id="tab-one" class="tabs">
+
+<h2>Os mais usados</h2>
+    <ul>
+      <li><a href="#">Lista...1</a></li>
+      <li><a href="#">Lista...2</a></li>
+      <li><a href="#">Lista...3</a></li>
+      <li><a href="#">Lista...4</a></li>
+      <li><a href="#">Lista...5</a></li>
+    </ul>
+   <a href="#">Listar todos nessa ordem</a>
+   
+<h2>Os mais votados</h2>
+    <ul>
+      <li><a href="#">Lista...</a></li>
+      <li><a href="#">Lista...</a></li>
+      <li><a href="#">Lista...</a></li>
+      <li><a href="#">Lista...</a></li>
+      <li><a href="#">Lista...</a></li>
+    </ul>
+   <a href="#">Listar todos nessa ordem</a>
+   
+<h2>Os mais pesquisados</h2>
+    <ul>
+      <li><a href="#">Lista...</a></li>
+      <li><a href="#">Lista...</a></li>
+      <li><a href="#">Lista...</a></li>
+      <li><a href="#">Lista...</a></li>
+      <li><a href="#">Lista...</a></li>
+    </ul>
+   <a href="#">Listar todos nessa ordem</a>
+   
+ </div> <!-- id="tab-one" -->
+
+ </div><!-- id="tab-wrap" -->
+</div><!-- id="tab-area" -->
+
+</div><!-- class="innertube" -->
+<br style="clear: both">
+</div><!-- id="sidebar" -->
+
+<div id="maincontent">
+<div class="innertube">
+
 <div class="textbox">
 <h1>You might also like...</h1>
 
@@ -12,131 +676,12 @@ customize the recommender setup or let it randomly choose one.</p>
 <p>Please fill the form that follows the recommendation results. Your
 feedback is very much appreciated!</p>
 
+
 <p>Enjoy it :)</p>
 </div>
-</td>
-<td class="noborder">
 
-<!--<div class="align-right"><img alt="AppRecommender logo"
-src="/static/images/AppRecommender-logo.jpg" width="320" /></div>-->
-
-<script language="javascript">
-function toggle() {
-	var ele = document.getElementById("toggleText");
-	var text = document.getElementById("displayText");
-	if(ele.style.display == "block") {
-    		ele.style.display = "none";
-		text.innerHTML = "custom";
-  	}
-	else {
-		ele.style.display = "block";
-		text.innerHTML = "random";
-	}
-}
-</script>
+</div><!-- class="innertube" -->
+</div><!-- id="maincontent" -->
 
 
-<form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
-	<fieldset>
-		<legend>Your packages</legend>
-		<div>
-			<label>Upload file</label><input type="file" id="pkgs_file" name="pkgs_file" size="18"/>
-		</div>
-		<div>
-			<label>Packages list</label><textarea rows="2" cols="33" name="pkgs_list" id="pkgs_list"></textarea>
-		</div>
-	</fieldset>
 
-<div id="toggleText" style="display: none">
-		<fieldset>
-    			<legend>General</legend>
-                        <div>
-                            <label><input type="hidden">Profile size:</label>
-                        </div>
-			<div>
-			    <label class="special"><input type="text" name="profile_size" value="10" size="4"></label>
-			</div>
-                        <div>
-                            <label><input type="hidden">Recommendations:</label>
-                        </div>
-			<div>
-		            <label class="special"><input type="text" name="limit" value="10" size="4"></label>
-			</div>
-                        <div>
-                            <label><input type="hidden">Weighting:</label>
-                        </div>
-			<div>
-    			    <label class="special"><input type="radio" name="weight" value="BM25" checked> BM25</label>
-			</div>
-			<div>
-    			    <label class="special"><input type="radio" name="weight" value="trad"> Traditional</label>
-			</div>
-                        <div>
-                            <label><input type="hidden">Strategy:</label>
-                        </div>
-			<div>
-    			    <label class="special"><input type="radio" name="strategy" value="content" checked> Content-based</label>
-			</div>
-			<div>
-    			    <label class="special"><input type="radio" name="strategy" value="collab"> Collaborative</label>
-			</div>
-			<div>
-    			    <label class="special"><input type="radio" name="strategy" value="hybrid"> Hybrid</label>
-			</div>
-		</fieldset>
-		<fieldset>
-    			<legend>Tuning up</legend>
-			<div>
-			    <label><input type="hidden" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid">Content representation:</label>
-			</div>
-			<div>
-    			    <label class="special"><input type="radio" name="content" value="tag" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> tag</label>
-			</div>
-			<div>
-    			    <label class="special"><input type="radio" name="content" value="desc" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> description</label>
-			</div>
-			<div>
-    			    <label class="special"><input type="radio" name="content" value="full" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> both</label>
-			</div>
-			<div>
-			    <label><input type="hidden" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid">Clustering:</label>
-			</div>
-			<div>
-    			    <label class="special"><input type="radio" name="cluster" value="yes" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> yes</label>
-			</div>
-			<div>
-    			    <label class="special"><input type="radio" name="cluster" value="no" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> no</label>
-			</div>
-			<div>
-			    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Neighborhood:</label>
-			</div>
-			<div>
-    			    <label class="special"><input type="text" name="neighbours" class="DEPENDS ON strategy BEING hybrid" value="50" size="4"></label>
-			</div>
-			<div>
-			    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Personal profile:</label>
-			</div>
-			<div>
-                        <label class=special><input type="checkbox" name="profile_desktop" class="DEPENDS ON strategy BEING hybrid" > Desktop</label>
-			</div>
-			<div>
-                        <label class=special><input type="checkbox" name="profile_admin" class="DEPENDS ON strategy BEING hybrid" > Admin</label>
-			</div>
-			<div>
-                        <label class=special><input type="checkbox" name="profile_devel" class="DEPENDS ON strategy BEING hybrid" > Devel</label>
-			</div>
-			<div>
-                        <label class=special><input type="checkbox" name="profile_science" class="DEPENDS ON strategy BEING hybrid" > Science</label>
-			</div>
-			<div>
-                        <label class=special><input type="checkbox" name="profile_arts" class="DEPENDS ON strategy BEING hybrid" > Arts</label>
-			</div>
-		</fieldset>
-</div>
-Want to try a <a id="displayText"
-href="javascript:toggle();">custom</a> query setup?
-		<div class="align-right"><input type="submit"></div>
-	</form>
-
-</td></tr>
-</table>

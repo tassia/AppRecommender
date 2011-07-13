@@ -1,0 +1,37 @@
+#debtags-area {
+}
+
+#debtags-facets {
+    float: left;
+    text-align: right;
+    width: 250px;
+}
+#debtags-facets div {
+    background-color: #F0F0F0;
+    cursor: pointer;
+    padding-right: 1em;
+}
+#debtags-facets div.selected {
+    background-color: #000000;
+    color: #F0F0F0;
+    font-weight: bolder;
+}
+#debtags-facets div:hover {
+    background-color: #AAAAAA;
+}
+
+#tags-box {
+position: absolute;
+background: white;
+display: none;
+overflow: hidden;
+width: 250px;
+height: 450px;
+}
+
+#tags-box div {
+    cursor: pointer;
+    float: left;
+    padding: 0.2em 1em;
+    white-space: nowrap;
+}

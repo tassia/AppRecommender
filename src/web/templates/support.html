@@ -1,0 +1,228 @@
+$var title: Support Template Page
+$var mod = 'support';
+$var cssfiles:
+$var jsfiles:
+
+
+<div id="maincontent">
+<div class="innertube">
+
+<span class="relatedpages">
+	<!--
+	A short list of related or "sibling" pages. Keep this list short, relevant and consistent
+	<a href="./header.html">Header</a> <a href="./footer.html">Footer</a>
+	<a href="http://wiki.debian.org/DebianWebdesign" title="Read more about the
+		design and how to implement a new site">Debian web-design</a> 
+	<a href="http://wiki.debian.org/KallesDesign" title="Read about the ongoing
+		redesign work">Redesign process</a>
+	-->
+</span><!-- end relatedpages -->
+
+
+<h1>
+	<!-- 
+	Start the content with a short descriptive h1 heading
+	-->
+	AppRecommender Template</h1>
+
+<p>Read the annotated source code of this page for instructions and best practice.<p>
+
+<ul class="toc">
+	<!--
+	The .toc list should *only* point to anchors/id's on the same page. Do not
+	link to other pages here.  
+	-->
+	<li><a href="#h2-1">Columns</a></li>
+	<li><a href="#h2-2">Admonitions</a></li>
+	<li><a href="#h2-3">Code and preformatted text</a></li>
+	<li><a href="#h2-4">Lists</a></li>
+</ul><!-- end .toc -->
+
+<div class="line">
+	<!--
+	It's very important to use the div.line wrapping each two columns.
+	Otherwise unexpected things will happen.  
+	-->
+	<div class="col50">
+		<h2 id="h2-1">Column1</h2>
+		<tt>div.col50</tt>
+		<p><strong>Use dual columns on index pages not on normal content
+			pages</strong></p> 
+		
+		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+		eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+		ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+		aliquip ex ea commodo consequat. Duis aute irure dolor in
+		reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+		pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+		culpa qui officia deserunt mollit anim id est laborum</p> 
+	</div><!-- end div.col50 -->
+
+	<div class="col50 lastcol">
+		<!--
+		The rightmost column must have the lastcol class 
+		-->
+	<h2>Column2</h2>
+		<tt>div.col50.lastcol</tt>
+
+		<p><strong>Care should be taken to make both columns of almost
+			equal length</strong></p>
+
+		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+		eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+		ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+		aliquip ex ea commodo consequat. Duis aute irure dolor in
+		reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+		pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+		culpa qui officia deserunt mollit anim id est laborum</p> 
+		
+	</div><!-- end div.col50.lastcol -->
+</div><!-- end div.line -->
+
+<h2 id="h2-2">
+	<!--
+	Use headings hierarchically. The heading tree has *one* h1 as root
+	-->
+	Admonitions</h2>
+
+<!--
+Use Admonitions sparingly unless the page is very long use only one per
+page. Choose carefully where the admonitions appear.
+-->
+<div class="tip">
+	<p><strong>div.tip</strong>: Highlight tips to the user</p>
+</div>
+
+<div class="important">
+	<p><strong>div.important</strong>: Important message</p>
+</div>
+
+<div class="warning">
+	<p><strong>div.warning</strong>: Warn the user</p>
+</div>
+
+<div class="note">
+	<p><strong>div.note</strong>: Add a note to the page</p>
+</div>
+
+<h2 id="h2-3">
+	Code and preformatted text</h2>
+
+<h3>Code</h3>
+
+<code>total 13356
+-rw-r--r-- 1 root root  106086 Jan 12 05:54 config-2.6.32-5-amd64
+drwxr-xr-x 3 root root    4096 Feb  6 16:11 grub
+-rw-r--r-- 1 root root 9108346 Feb  6 16:12 initrd.img-2.6.32-5-amd64
+-rw-r--r-- 1 root root  165084 Oct 21 18:09 memtest86+.bin
+-rw-r--r-- 1 root root  167264 Oct 21 18:09 memtest86+_multiboot.bin
+-rw-r--r-- 1 root root 1661980 Jan 12 05:54 System.map-2.6.32-5-amd64
+-rw-r--r-- 1 root root 2417696 Jan 12 05:52 vmlinuz-2.6.32-5-amd64
+</code>
+
+<h3>tt</h3>
+<tt>Linux finger 2.6.32-5-amd64 #1 SMP Wed Jan 12 03:40:32 UTC 2011 x86_64 GNU/Linux</tt>
+
+<h3>pre</h3>
+<pre>
+			   Constitution for the Debian Project (v1.4)
+
+Version 1.4 ratified on October 7th, 2007. Supersedes Version 1.3
+ratified on September 24th, 2006, Version 1.2 ratified on October 29th,
+2003 and Version 1.1 ratified on June 21st, 2003, which itself
+supersedes Version 1.0 ratified on December 2nd, 1998.
+
+1. Introduction
+
+The Debian Project is an association of individuals who have made
+common cause to create a free operating system.
+
+This document describes the organisational structure for formal
+decision-making in the Project. It does not describe the goals of the
+Project or how it achieves them, or contain any policies except those
+directly related to the decision-making process.
+</pre>
+
+<h2 id="h2-4">Lists</h2>
+
+<h3>ul. Unordered lists</h3>
+
+<ul>
+	<li>item</li>
+	<li>item</li>
+	<ul>
+		<li>subitem</li>
+		<li>subitem</li>
+		<li>subitem</li>
+	</ul>
+	<li>item</li>
+	<li>item</li>
+	<li>item</li>
+</ul>
+
+<h3>ol. Ordered lists</h3>
+<ol>
+	<li>item</li>
+	<li>item</li>
+	<ol>
+		<li>subitem</li>
+		<li>subitem</li>
+		<li>subitem</li>
+	</ol>
+	<li>item</li>
+	<li>item</li>
+	<li>item</li>
+</ol>
+
+<h3>dl: Definition Lists</h3>
+
+<dl>
+	<dt>Term</dt>
+	<dd>Definition</dd>
+	<dt>Term</dt>
+	<dd>Definition</dd>
+	<dt>Term</dt>
+	<dd>Definition</dd>
+</dl>
+
+<h3>ul.nolist</h3>
+
+<ul class="nolist">
+	<!--
+	Useful when short paragraphs create to much whitespace. 
+	-->
+	<li>item mod tempor incididunt</li>
+	<li> ut labore et dolore magna aliqua. Ut enim </li>
+	<li>ad minim veniam, quis nostrud</li>
+	<li> exercitation ullamco laboris nisi ut</li>
+</ul>
+
+<h2>Tables</h2>
+
+<table>
+	<tr>
+		<th>header1</th>
+		<th>header2</th>
+		<th>header3</th>
+		<th>header4</th>
+	</tr>
+	<tr>
+		<td>data</td>
+		<td>data</td>
+		<td>data</td>
+		<td>data</td>
+	</tr>
+	<tr>
+		<td>data</td>
+		<td>data</td>
+		<td>data</td>
+		<td>data</td>
+	</tr>
+</table>
+
+</div>
+
+
+</div><!-- id="innertube" -->
+</div><!-- id="maincontent" -->
+

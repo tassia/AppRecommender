@@ -1,158 +1,212 @@
 $def with (content)
 $ url_base = "http://localhost:8080"
+<!--Force IE6 into quirks mode with this comment tag-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+	<title>AppRecommender - $content.title</title>
+	<link rev="made" href="mailto:tassia@gmail.com">
+        <link rel="shortcut icon" href="static/favicon.ico">
 
-<!DOCTYPE html>
-<html lang="en"><head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>
-        AppRecommender - $content.title
-    </title>
+	<link href="static/css/style.css" rel="stylesheet" type="text/css" media="screen" charset="utf-8">
 
-        <link href="/static/css/style.css" media="screen" rel="stylesheet" type="text/css" />
-        <link href="/static/css/local.css" media="screen" rel="stylesheet" type="text/css" />
-        <link href="/static/css/thickbox.css" media="screen" rel="stylesheet" type="text/css" />
-        <link href="/static/css/voting.css" media="screen" rel="stylesheet" type="text/css" />
-        <link href="/static/css/quimby.css" media="screen" rel="stylesheet" type="text/css" />
-        <link href="/static/css/screen.css" media="screen" rel="stylesheet" type="text/css" />
-        <link href="/static/css/dropdown.css" media="screen" rel="stylesheet" type="text/css" />
+    $if content.cssfiles:
+        $for css in content.cssfiles.split():
+             <link href="$css" rel="stylesheet" type="text/css" media="screen" charset="utf-8"/>
 
-        <script src="/static/js/jquery.js" type="text/javascript"></script>
-        <script src="/static/js/jquery.autocomplete.js" type="text/javascript"></script>
-        <script src="/static/js/jquery.flyout.js" type="text/javascript"></script>
-        <script src="/static/js/jquery.jgrowl.js" type="text/javascript"></script>
-        <script src="/static/js/jquery.tooltip.js" type="text/javascript"></script>
-        <script src="/static/js/jquery.cycle.js" type="text/javascript"></script>
-        <script src="/static/js/handlers.js" type="text/javascript"></script>
-        <script src="/static/js/local.js" type="text/javascript"></script>
+	<script src="/static/js/jquery.js" type="text/javascript"></script>
 
-        <script type="text/javascript" src="/static/js/thickbox.js"></script>
+    $if content.jsfiles:
+        $for js in content.jsfiles.split():
+             <script src="$js" type="text/javascript"></script>
 
-        <script type="text/javascript" src="/static/js/jquery.livequery.js"></script>
+</head>
 
-        <script type="text/javascript" src="/static/js/FormManager.js"></script>
+<body class="$content.title">
 
+<div id="wrap">
+<div id="header"> 
 
+<form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
+  <fieldset>
+    <div id="recommender-box">
+	<div id="submit-box">
+	<input type="submit" value="Recommender!"><br />
+        <a href="#toggleText" rel="facebox">custom query setup?</a>
+	</div>
+	<div id="input-box">
+	  <a href="#attachfile" rel="facebox" id="upfile"><span style="display: none;">Upload a file.</span></a>
+	  <label title="App list"><textarea class="focused" onfocus="this.form.className='focused';
+                         if(this.value=='Write your list App here or send a file list this icon:'){this.value=''}" onblur="this.form.className='';
+                        if(/^\s*$$/.test(this.value)){ this.value='Write your list App here or send a file list this icon:';
+                          this.form.className='clean' }" rows="2" cols="55" name="pkgs_list" id="pkgs_list">Write your list App here or send a file list this icon:</textarea></label>
 
-<!-- Dynamic form -->
-<script type="text/javascript">
-window.onload = function() {
-    setupDependencies('weboptions'); //name of form(s). Seperate each with a comma (ie: 'weboptions', 'myotherform' )
-  };
-</script>
-
-<script type="text/javascript">
- $$(document).ready(function() {
-        $$('.like_button').mouseenter(function(e) {
-                $$('.tooltip').show();
-                $$('.ilikethis').fadeIn(200);
-        }).mouseleave(function(e) {
-                $$('.ilikethis').fadeOut(200);
-                $$('.tooltip').hide();
-        });
-        $$('.dislike_button').mouseenter(function(e) {
-                $$('.tooltip2').show();
-                $$('.idislikethis').fadeIn(200);
-        }).mouseleave(function(e) {
-           $$('.tooltip2').hide();
-                $$('.idislikethis').fadeOut(200);
-        });
-        
-        $$('.totalstatsbutton').livequery("mouseenter", function(e){
-                $$('.greenBar').css("background-color","#AADA37");
-                $$('.redbar').css("background-color","#CF362F");
-                $$('.tooltip3').show();
-                $$('.totalstats').fadeIn(200);
-        }).livequery("mouseleave", function(e){
-                $$('.tooltip3').hide();
-                $$('.greenBar').css("background-color","#DDDDDD");
-                $$('.redbar').css("background-color","#DDDDDD");
-                $$('.totalstats').fadeOut(200);
-        });
-});
-
-$$(document).ready(function(){   
-        //$('#voting_result').fadeOut();
-        $$('button').click(function(){
-                var a = $$(this).attr("id");
-                
-                $$.post("voting.php?value="+a, {
-                }, function(response){
-                        $$('#voting_result').fadeIn();
-                        $$('#voting_result').html($$(response).fadeIn('slow'));
-                        // now update box bar                   
-                        $$.post("update_box.php", {
-                        }, function(update){
-                                $$('#update_count').html(unescape(update));                              
-                        });
-                        ////////////
-                        // now update tooltip count                     
-                        $$.post("update_tooltip.php", {
-                        }, function(updates){
-                                $$('.tooltip3').html(unescape(updates));                         
-                        });
-                        ////////////
-                });
-        });     
-});     
-function hideMesg(){
-
-        $$('.rating_message').fadeOut();
-        $$.post("rating.php?show=1", {
-        }, function(response){
-                $$('#inner').html(unescape(response));
-                $$('#inner').fadeIn('slow');
-        });
-}       
-</script>
+	</div>
+   </div>
+   <input type="hidden" name="weight" value="BM25" checked="checked">
+   <input type="hidden" name="strategy" value="content" checked="checked">
+   <input type="hidden" name="profile_size" value="10" size="4">
+   <input type="hidden" name="limit" value="10" size="4">
+   <input type="hidden" name="neighbours" class="DEPENDS ON strategy BEING hybrid" value="50" size="4">
+  </fieldset>
+</form>
 
 
-<!--
-	<link rel="stylesheet" href="/static/cluetip/jquery.cluetip.css" type="text/css" />
 
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js" type="text/javascript"></script>
-	<script src="/static/cluetip/lib/jquery.hoverIntent.js" type="text/javascript"></script>
-	<script src="/static/cluetip/lib/jquery.bgiframe.min.js" type="text/javascript"></script>
-	<script src="/static/cluetip/jquery.cluetip.js" type="text/javascript"></script>
+<!-- BOX ATTACHMENT FILE -->
+<div id="attachfile" style="display: none;">
+<h2>Recommendation with file list</h2>
+<form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
+  <fieldset>
+   <label title="Upload file">Upload file: <input type="file" id="pkgs_file" name="pkgs_file" size="13" /></label>
+<p>
+You can use file <strong>/var/log/popularity-contest</strong> or create a with <strong>dpkg</strong>, use:
+<code>
+# dpkg -l > blih
+</code>
+</p>
+<p>
+   <p align="center"><input type="submit" value="Recommender!"></p>
+   <input type="hidden" name="weight" value="BM25" checked="checked">
+   <input type="hidden" name="strategy" value="content" checked="checked">
+   <input type="hidden" name="profile_size" value="10" size="4">
+   <input type="hidden" name="limit" value="10" size="4">
+   <input type="hidden" name="neighbours" class="DEPENDS ON strategy BEING hybrid" value="50" size="4">
+  </fieldset>
+</form>
+</p>
+</div><!-- id="attachfile" -->
+<!-- END BOX ATTACHMENT FILE -->
 
-	<script type="text/javascript">
-	$$(document).ready(function() {
-	  $$('a.tips').cluetip();
+<div id="toggleText" style="display: none">
+<form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
+	<fieldset>
+		<legend>Your packages</legend>
+		<div>
+		  <label>Packages list<textarea rows="2" cols="33" name="pkgs_list" id="pkgs_list"></textarea></label>
+		  <label>Upload file<input type="file" id="pkgs_file" name="pkgs_file" size="18"/></label>
+		</div>
+	</fieldset>
+		<fieldset>
+    			<legend>General</legend>
+                        <div>
+                            <label><input type="hidden">Profile size:</label>
+                        </div>
+			<div>
+			    <label class="special"><input type="text" name="profile_size" value="10" size="4"></label>
+			</div>
+                        <div>
+                            <label><input type="hidden">Recommendations:</label>
+                        </div>
+			<div>
+		            <label class="special"><input type="text" name="limit" value="10" size="4"></label>
+			</div>
+                        <div>
+                            <label><input type="hidden">Weighting:</label>
+                        </div>
+			<div>
+    			    <label class="special"><input type="radio" name="weight" value="BM25" checked="checked"> BM25</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="weight" value="trad"> Traditional</label>
+			</div>
+                        <div>
+                            <label><input type="hidden">Strategy:</label>
+                        </div>
+			<div>
+    			    <label class="special"><input type="radio" name="strategy" value="content" checked="checked"> Content-based</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="strategy" value="collab"> Collaborative</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="strategy" value="hybrid"> Hybrid</label>
+			</div>
+		</fieldset>
+		<fieldset>
+    			<legend>Tuning up</legend>
+			<div>
+			    <label><input type="hidden" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid">Content representation:</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="content" value="tag" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> tag</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="content" value="desc" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> description</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="content" value="full" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> both</label>
+			</div>
+			<div>
+			    <label><input type="hidden" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid">Clustering:</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="cluster" value="yes" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> yes</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="radio" name="cluster" value="no" class="DEPENDS ON strategy BEING collab OR strategy BEING hybrid"> no</label>
+			</div>
+			<div>
+			    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Neighborhood:</label>
+			</div>
+			<div>
+    			    <label class="special"><input type="text" name="neighbours" class="DEPENDS ON strategy BEING hybrid" value="50" size="4"></label>
+			</div>
+			<div>
+			    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Personal profile:</label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_desktop" class="DEPENDS ON strategy BEING hybrid" > Desktop</label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_admin" class="DEPENDS ON strategy BEING hybrid" > Admin</label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_devel" class="DEPENDS ON strategy BEING hybrid" > Devel</label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_science" class="DEPENDS ON strategy BEING hybrid" > Science</label>
+			</div>
+			<div>
+                        <label class=special><input type="checkbox" name="profile_arts" class="DEPENDS ON strategy BEING hybrid" > Arts</label>
+			</div>
+		</fieldset>
+<div style="text-align: right;"><input type="submit"></div>
+</form>
+</div>
 
-	  $$('#houdini').cluetip({
-	    splitTitle: '|', // use the invoking element's title attribute to populate the clueTip...
-	                     // ...and split the contents into separate divs where there is a "|"
-	    showTitle: false // hide the clueTip's heading
-	  });
-	});
-	</script>
--->
+  <div id="navbar">
+     <ul> 
+	<li><a href="$url_base">Home</a></li>
+	<li><a href="$url_base/about">About</a></li>
+	<li><a href="$url_base/support">Support</a></li>
+	<li><a href="http://github.com/tassia/AppRecommender">Development</a></li>
+    </ul>
+   </div><!-- id="navbar" -->
 
-    <link rel="shortcut icon" type="image/x-icon" href="$url_base/favicon.png">
-
-  <body>
-    <div id="page">
-      <div id="header">
-          <h1>AppRecommender</h1>
-      </div>
-
-      <div id="nav">
-          <a href="$url_base">Home</a>
-          |
-          <a href="$url_base/about">About</a>
-          |
-          <a href="http://github.com/tassia/AppRecommender">Devel</a>
-      </div>
-
-      <div id="maincontent">
-
+</div><!-- id="header" -->
+<div id="content">
 
 $:content
 
-      </div>
-    </div>
-    <div id="footer">
-        <a href="http://apprec.debian.net/about">About apprec.debian.net</a>
-    </div>
+ <div id="footer">
+
+  <div id="navbar">
+     <ul> 
+	<li><a href="$url_base">Home</a></li>
+	<li><a href="$url_base/about">About</a></li>
+	<li><a href="$url_base/support">Support</a></li>
+	<li><a href="http://github.com/tassia/AppRecommender">Development</a></li>
+    </ul>
+   </div><!-- id="navbar" -->
+
+ Copyright © 2011 AppRecommender.  Debian is a registered trademark of Software in the Public Interest, Inc.
+ </div><!-- id="footer" -->
 
 
-<div style="display: none;" id="tooltip"><h3></h3><div class="body"></div><div class="url"></div></div></body></html>
+</div><!-- id="content" -->
+</div><!-- id="wrap" -->
+</body>
+</html>
