@@ -28,6 +28,16 @@ $ url_base = "http://localhost:8080"
 window.onload = function() {
     setupDependencies('weboptions'); //name of form(s). Seperate each with a comma (ie: 'weboptions', 'myotherform' )
   };
+
+function validateForm()
+{
+var x=document.forms["weboptions"]["pkgs_list"].value
+if (x==null || x=="Write your list App here or send a file list this icon:")
+  {
+  alert("Write your list App!");
+  return false;
+  }
+}
 </script>
 <script type="text/javascript">
  $$(document).ready(function() {
@@ -45,7 +55,7 @@ window.onload = function() {
 <div id="header"> 
   <a href="$url_base" title="AppRecommender"><h1 id="logo"><span>AppRecommender</span></h1></a>
     <div id="recommender-box">
-    <form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
+    <form action="apprec" enctype="multipart/form-data" method="post" name="weboptions" onsubmit="return validateForm()">
       <fieldset>
 	<div id="submit-box">
 	<input type="submit" value="RECOMMENDER" id="submit-button"><br />
