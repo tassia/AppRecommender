@@ -1,6 +1,6 @@
 $def with (pkg)
 
-<div id="debtags_box" class="graybox">
+<div id="debtags_box" class="graybox horiz-grad">
 <h2>Debtags</h2>
 <ul id="debtags_pkg">
 $for facet, tags in pkg['tag'].items():
@@ -51,7 +51,7 @@ $for facet, tags in pkg['tag'].items():
 
 </p>
 
-<div id="debresources_box" class="graybox">
+<div id="debresources_box" class="graybox vert-grad">
 <h2>Debian resources:</h2>
     <ul>
         <li><a href="http://packages.debian.org/$pkg['package']">Package page on debian.org</a></li>

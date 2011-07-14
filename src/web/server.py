@@ -35,13 +35,13 @@ class About:
     def GET(self):
         return render.about()
 
+class Support:
+    def GET(self):
+        return render.support()
+
 class Thanks:
     def POST(self):
         return render.thanks()
-
-class Support:
-    def POST(self):
-        return render.support()
 
 class Package:
     def GET(self, pkg):

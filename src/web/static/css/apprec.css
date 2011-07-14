@@ -24,6 +24,14 @@ color: gray;
 }
 
 
+a.link-thumb img {
+height: 100px;
+margin: 5px;
+border-radius: 4px;
+box-shadow: 0 1px 2px gray;
+}
+
+
 
 /*
  * Package Box
@@ -47,11 +55,8 @@ margin-top: 20px;
 #debtags_box { 
 display: block;
 float: right;
-background-color: #dfdfdf;
-border-radius: 5px;
 width: 150px;
 font-size: 0.8em;
-padding: 5px;
 }
 
 #debtags_box h2 {
@@ -82,6 +87,20 @@ margin-top: 20px;
 
 #debresources_box li {
 margin-bottom: 4px;
+}
+
+/* Details BOX */
+
+#details_box {
+margin-top: 50px;
+padding: 20px;
+font-size: 0.8;
+color: #545454;
+}
+
+#details_box h2 {
+margin: -5px 0 15px 0px;
+color: #000;
 }
 
 #details_box li {
