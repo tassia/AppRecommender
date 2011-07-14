@@ -39,6 +39,10 @@ class Thanks:
     def POST(self):
         return render.thanks()
 
+class Support:
+    def POST(self):
+        return render.support()
+
 class Package:
     def GET(self, pkg):
         json_source = "http://dde.debian.net/dde/q/udd/packages/all/%s?t=json" % pkg #FIXME: url goes to config
@@ -271,10 +275,11 @@ def add_global_hook():
 render = web.template.render('templates/', base='layout')
 render_plain = web.template.render('templates/')
 
-urls = ('/',   			    'Index',
-        '/apprec',	  	    'AppRecommender',
+urls = ('/',   		        'Index',
+        '/apprec',	        'AppRecommender',
         '/thanks',   		'Thanks',
-        '/about',           'About',
+        '/support',             'Support',
+        '/about',               'About',
         '/package/(.*)',  	'Package'
        )
 

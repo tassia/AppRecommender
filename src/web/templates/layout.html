@@ -17,10 +17,25 @@ $ url_base = "http://localhost:8080"
              <link href="$css" rel="stylesheet" type="text/css" media="screen" charset="utf-8"/>
 
 	<script src="/static/js/jquery.js" type="text/javascript"></script>
+	<script src="/static/js/FormManager.js" type="text/javascript"></script>
 
     $if content.jsfiles:
         $for js in content.jsfiles.split():
              <script src="$js" type="text/javascript"></script>
+
+<!-- Dynamic form -->
+<script type="text/javascript">
+window.onload = function() {
+    setupDependencies('weboptions'); //name of form(s). Seperate each with a comma (ie: 'weboptions', 'myotherform' )
+  };
+</script>
+<script type="text/javascript">
+ $$(document).ready(function() {
+    $$("#advanced-button").click(function () {
+    $$("#advanced-slide").toggle("slow");
+    });    
+ }); 
+</script>  
 
 </head>
 
@@ -28,13 +43,13 @@ $ url_base = "http://localhost:8080"
 
 <div id="wrap">
 <div id="header"> 
-
-<form action="apprec" enctype="multipart/form-data" method="post" name="recommenderbox-form">
-  <fieldset>
+  <a href="$url_base" title="AppRecommender"><h1 id="logo"><span>AppRecommender</span></h1></a>
     <div id="recommender-box">
+    <form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
+      <fieldset>
 	<div id="submit-box">
-	<input type="submit" value="Recommender!"><br />
-        [<a href="#advancedquery" rel="facebox">advanced query</a>]
+	<input type="submit" value="RECOMMENDER" id="submit-button"><br />
+        <a id="advanced-button">advanced query?</a>
 	</div>
 	<div id="input-box">
 	  <a href="#attachfile" rel="facebox" id="upfile"><span style="display: none;">Upload a file.</span></a>
@@ -43,23 +58,71 @@ $ url_base = "http://localhost:8080"
             if(/^\s*$$/.test(this.value)){ this.value='Write your list App here or send a file list this icon:';
             this.form.className='clean' }" rows="2" cols="55" name="pkgs_list" id="pkgs_list"
             >Write your list App here or send a file list this icon:</textarea></label>
+        </div>
+   </fieldset>
+
+   <div id="advanced-slide">
+   <fieldset>
+     <legend>General</legend>
+       <div>
+        <label><input type="hidden">Profile size:</label>
+	<label class="special"><input type="text" name="profile_size" value="10" size="4"></label>
+        <label><input type="hidden">Recommendations:</label>
+	<label class="special"><input type="text" name="limit" value="10" size="4"></label>
+      </div>
+      <div>
+        <label><input type="hidden">Weighting:</label>
+    	<label class="special"><input type="radio" name="weight" value="BM25" checked="checked"> BM25</label>
+    	<label class="special"><input type="radio" name="weight" value="trad"> Traditional</label>
+      </div>
+      <div>
+       <label><input type="hidden">Strategy:</label>
+       <label class="special"><input type="radio" name="strategy" value="content" checked="checked"> Content-based</label>
+       <label class="special"><input type="radio" name="strategy" value="collab"> Collaborative</label>
+       <label class="special"><input type="radio" name="strategy" value="hybrid"> Hybrid</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Tuning up</legend>
+        <div id="content-form" class="group-form group-hybrid">
+	    <label><input type="hidden" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid">Content representation:</label>
+	    <label class="special"><input type="radio" name="content" value="tag" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> tag</label>
+	    <label class="special"><input type="radio" name="content" value="desc" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> description</label>
+  	    <label class="special"><input type="radio" name="content" value="full" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> both</label>
 	</div>
+	<div id="colaborative-form" class="group-form group-hybrid">
+	    <label><input type="hidden">Clustering:</label>
+	    <label class="special"><input type="radio" name="cluster" value="yes"> yes</label>
+	    <label class="special"><input type="radio" name="cluster" value="no"> no</label>
+	</div>
+	<div id="hybrid-form" class="group-form group-hybrid">
+	    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Neighborhood:</label>
+	    <label class="special"><input type="text" name="neighbours" class="DEPENDS ON strategy BEING hybrid" value="50" size="4"></label>
+	    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Personal profile:</label>
+	    <label class=special><input type="checkbox" name="profile_desktop" class="DEPENDS ON strategy BEING hybrid" > Desktop</label>
+	    <label class=special><input type="checkbox" name="profile_admin" class="DEPENDS ON strategy BEING hybrid" > Admin</label>
+	    <label class=special><input type="checkbox" name="profile_devel" class="DEPENDS ON strategy BEING hybrid" > Devel</label>
+	    <label class=special><input type="checkbox" name="profile_science" class="DEPENDS ON strategy BEING hybrid" > Science</label>
+	    <label class=special><input type="checkbox" name="profile_arts" class="DEPENDS ON strategy BEING hybrid" > Arts</label>
+	</div>
+     </fieldset>
+     <fieldset>
+	<legend>Your packages</legend>
+	  <div>
+	    <label>Upload file<input type="file" id="pkgs_file" name="pkgs_file" size="18"/></label>
+	  </div>
+	</fieldset>
+    </div><!-- id="advanced-slide" -->
+
+   </form>
    </div>
-   <input type="file" name="pkgs_file" size="18" style="display: none;" />
-   <input type="hidden" name="weight" value="BM25" checked="checked">
-   <input type="hidden" name="strategy" value="content" checked="checked">
-   <input type="hidden" name="profile_size" value="10" size="4">
-   <input type="hidden" name="limit" value="10" size="4">
-   <input type="hidden" name="neighbours" class="DEPENDS ON strategy BEING hybrid" value="50" size="4">
-  </fieldset>
-</form>
 
 
 
 <!-- BOX ATTACHMENT FILE -->
 <div id="attachfile" style="display: none;">
 <h2>Recommendation with file list</h2>
-<form action="apprec" enctype="multipart/form-data" method="post" name="uploadbox-form">
+<form action="apprec" enctype="multipart/form-data" method="post" name="uploadform">
   <fieldset>
    <label title="Upload file">Upload file: <input type="file" name="pkgs_file" size="18"/></label>
 <p>
@@ -81,89 +144,6 @@ You can use file <strong>/var/log/popularity-contest</strong> or create a with <
 </div><!-- id="attachfile" -->
 <!-- END BOX ATTACHMENT FILE -->
 
-<!-- Dynamic form -->
-<script type="application/javascript">
-window.onload = function() {
-    setupDependencies('weboptions'); //name of form(s). Seperate each with a comma (ie: 'weboptions', 'myotherform' )
-  };
-</script>
-
-<div id="advancedquery" style="display: none">
-<form action="apprec" enctype="multipart/form-data" method="post" name="weboptions">
-
-		<fieldset>
-		    <legend>General</legend>
-<div>
-                            <label><input type="hidden">Profile size:</label>
-			    <label class="special"><input type="text" name="profile_size" value="10" size="4"></label>
-                            <label><input type="hidden">Recommendations:</label>
-		            <label class="special"><input type="text" name="limit" value="10" size="4"></label>
-</div><div>
-                            <label><input type="hidden">Weighting:</label>
-    			    <label class="special"><input type="radio" name="weight" value="BM25" checked="checked"> BM25</label>
-    			    <label class="special"><input type="radio" name="weight" value="trad"> Traditional</label>
-</div><div>
-                            <label><input type="hidden">Strategy:</label>
-<div id="tab-area">
-  <ul id="list-tabs">
-    <li class="tab-one"><a href="#content-form">
-       <label class="special"><input type="radio" name="strategy" value="content" id="strategy-content"> Content-based</label>
-    </a></li>
-    <li class="tab-two"><a href="#colaborative-form">
-       <label class="special"><input type="radio" name="strategy" value="collab" id="strategy-collaborative"> Collaborative</label>
-    </a></li>
-    <li class="tab-three"><a href="#hybrid-form">
-       <label class="special"><input type="radio" name="strategy" value="hybrid" id="strategy-hybrid"> Hybrid</label>
-    </a></li>
-  </ul>
- </div>
-
-</div>
-		</fieldset>
-		<fieldset>
-    		  <legend>Tuning up</legend>
-		<div id="content-form" class="group-form group-hybrid">
-		    <label><input type="hidden" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid">Content representation:</label>
-    		    <label class="special"><input type="radio" name="content" value="tag" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> tag</label>
-    		    <label class="special"><input type="radio" name="content" value="desc" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> description</label>  	    <label class="special"><input type="radio" name="content" value="full" class="DEPENDS ON strategy BEING content OR strategy BEING hybrid"> both</label>
-		</div>
-		<div id="colaborative-form" class="group-form group-hybrid">
-		    <label><input type="hidden">Clustering:</label>
-    		    <label class="special"><input type="radio" name="cluster" value="yes"> yes</label>
-    		    <label class="special"><input type="radio" name="cluster" value="no"> no</label>
-		</div>
-		<div id="hybrid-form" class="group-form group-hybrid">
-		    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Neighborhood:</label>
-    		    <label class="special"><input type="text" name="neighbours" class="DEPENDS ON strategy BEING hybrid" value="50" size="4"></label>
-		    <label><input type="hidden" class="DEPENDS ON strategy BEING hybrid">Personal profile:</label>
-                    <label class=special><input type="checkbox" name="profile_desktop" class="DEPENDS ON strategy BEING hybrid" > Desktop</label>
-                    <label class=special><input type="checkbox" name="profile_admin" class="DEPENDS ON strategy BEING hybrid" > Admin</label>
-                    <label class=special><input type="checkbox" name="profile_devel" class="DEPENDS ON strategy BEING hybrid" > Devel</label>
-                    <label class=special><input type="checkbox" name="profile_science" class="DEPENDS ON strategy BEING hybrid" > Science</label>
-                    <label class=special><input type="checkbox" name="profile_arts" class="DEPENDS ON strategy BEING hybrid" > Arts</label>
-		</div>
-		</fieldset>
-	<fieldset>
-		<legend>Your packages</legend>
-		<div>
-		  <label>Packages list<textarea rows="2" cols="33" name="pkgs_list" id="pkgs_list"></textarea></label>
-		  <label>Upload file<input type="file" id="pkgs_file" name="pkgs_file" size="18"/></label>
-		</div>
-	</fieldset>
-<div style="text-align: right;"><input type="submit"></div>
-</form>
-
-
-</div><!-- id="advancedquery" -->
-
-  <div id="navbar">
-     <ul> 
-	<li><a href="$url_base">Home</a></li>
-	<li><a href="$url_base/about">About</a></li>
-	<li><a href="$url_base/support">Support</a></li>
-	<li><a href="http://github.com/tassia/AppRecommender">Development</a></li>
-    </ul>
-   </div><!-- id="navbar" -->
 
 </div><!-- id="header" -->
 <div id="content">

@@ -167,8 +167,10 @@ class PopconXapianIndex(xapian.WritableDatabase):
             logging.info("Opening existing popcon xapian index at \'%s\'"
                           % self.path)
             xapian.Database.__init__(self,self.path)
+            return True
         except xapian.DatabaseError:
             logging.info("Could not open popcon index.")
+            return True
             return 0
 
     def build_index(self):
