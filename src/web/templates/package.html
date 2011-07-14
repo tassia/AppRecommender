@@ -1,18 +1,5 @@
 $def with (pkg)
 
-<div id="debtags_box" class="graybox horiz-grad">
-<h2>Debtags</h2>
-<ul id="debtags_pkg">
-$for facet, tags in pkg['tag'].items():
-    <li> $facet
-     <ul>
-     $for tag in tags:
-         <li>$tag</li>
-     </ul>
-    </li>
-</ul>
-</div><!-- id="debtags_box" -->
-
 <div class="align-left" id="voting_box">
  <button type="button" class="like_button" onclick=";return false;" id="like" >
  <img src="/static/images/pixel-vfl73.gif" alt="">
@@ -30,6 +17,20 @@ $for facet, tags in pkg['tag'].items():
 </div><!-- id="voting_box" -->
 
 <h1 id="title_pkg">$pkg['package'] <br /><span>$pkg['description']</span></h1>
+
+<div id="debtags_box" class="graybox horiz-grad">
+<h2>Debtags</h2>
+<ul id="debtags_pkg">
+$for facet, tags in pkg['tag'].items():
+    <li> $facet
+     <ul>
+     $for tag in tags:
+         <li>$tag</li>
+     </ul>
+    </li>
+</ul>
+</div><!-- id="debtags_box" -->
+
 <p>
 <h2>Details</h2>
 
