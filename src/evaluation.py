@@ -49,6 +49,45 @@ class Metric(Singleton):
                           evaluation.real_item_scores[k]))
         return errors
 
+
+class SimpleAccuracy(Metric):
+    """
+    Classification accuracy metric which consider classes sizes.
+    """
+    def __init__(self):
+        """
+        Set metric description.
+        """
+        self.desc = "  S_Accuracy  "
+
+    def run(self,evaluation):
+        """
+        Compute metric.
+        """
+        return float((evaluation.repository_size-
+                      len(evaluation.false_positive))-
+                      len(evaluation.false_negative))/evaluation.repository_size
+
+class Accuracy(Metric):
+    """
+    Classification accuracy metric which consider classes sizes.
+    """
+    def __init__(self):
+        """
+        Set metric description.
+        """
+        self.desc = "    Accuracy  "
+
+    def run(self,evaluation):
+        """
+        Compute metric.
+        """
+        error_1 = (float(len(evaluation.false_positive))/
+               (evaluation.repository_size-len(evaluation.real_relevant)))
+        error_2 = (float(len(evaluation.false_negative))/len(evaluation.real_relevant))
+        accuracy = 1-(float(error_1+error_2)/2)
+        return accuracy
+
 class Precision(Metric):
     """
     Classification accuracy metric defined as the percentage of relevant itens
@@ -64,7 +103,7 @@ class Precision(Metric):
         """
         Compute metric.
         """
-        return float(len(evaluation.predicted_real))/len(evaluation.predicted_relevant)
+        return float(len(evaluation.true_positive))/len(evaluation.predicted_relevant)
 
 class Recall(Metric):
     """
@@ -81,7 +120,7 @@ class Recall(Metric):
         """
         Compute metric.
         """
-        return float(len(evaluation.predicted_real))/len(evaluation.real_relevant)
+        return float(len(evaluation.true_positive))/len(evaluation.real_relevant)
 
 class F1(Metric):
     """
@@ -100,7 +139,10 @@ class F1(Metric):
         """
         p = Precision().run(evaluation)
         r = Recall().run(evaluation)
-        return float((2*p*r))/(p+r)
+        if (p+r)>0:
+            return float((2*p*r))/(p+r)
+        else:
+            return 0
 
 class MAE(Metric):
     """
@@ -158,43 +200,47 @@ class Coverage(Metric):
     Evaluation metric defined as the percentage of itens covered by the
     recommender (have been recommended at least once).
     """
-    def __init__(self,repository_size):
+    def __init__(self):
         """
         Set initial parameters.
         """
         self.desc = "   Coverage  "
-        self.repository_size = repository_size
-        self.covered = set()
 
-    def save_covered(self,recommended_list):
-        """
-        Register that a list of itens has been recommended.
-        """
-        self.covered.update(set(recommended_list))
-
-    def run(self,evaluation):
+    def run(self,evaluations_set):
         """
         Compute metric.
         """
-        return float(self.covered.size)/self.repository_size
+        covered = set()
+        for evaluation in evaluations_set:
+            covered.update(set(evaluation.predicted_relevant))
+        return float(len(covered))/evaluation.repository_size
 
 class Evaluation:
     """
     Class designed to perform prediction evaluation, given data and metric.
     """
-    def __init__(self,predicted_result,real_result):
+    def __init__(self,predicted,real,repository_size):
         """
         Set initial parameters.
         """
-        self.predicted_item_scores = predicted_result.item_score
-        self.predicted_relevant = predicted_result.get_prediction()
-        self.real_item_scores = real_result.item_score
-        self.real_relevant = real_result.get_prediction()
-        self.predicted_real = [v for v in self.predicted_relevant if v in
-                               self.real_relevant]
-        #print len(self.predicted_relevant)
-        #print len(self.real_relevant)
-        #print len(self.predicted_real)
+        self.repository_size = repository_size
+        self.predicted_item_scores = predicted.item_score
+        self.predicted_relevant = predicted.get_prediction()
+        self.real_item_scores = real.item_score
+        self.real_relevant = real.get_prediction()
+
+        self.true_positive = [v[0] for v in self.predicted_relevant if v[0] in
+                              [w[0] for w in self.real_relevant]]
+        self.false_positive = [v[0] for v in self.predicted_relevant if not v[0] in
+                               [w[0] for w in self.real_relevant]]
+        self.false_negative = [v[0] for v in self.real_relevant if not v[0] in
+                               [w[0] for w in self.predicted_relevant]]
+
+        logging.debug("TP: %d" % len(self.true_positive))
+        logging.debug("FP: %d" % len(self.false_positive))
+        logging.debug("FN: %d" % len(self.false_negative))
+        logging.debug("Repo_size: %d" % self.repository_size)
+        logging.debug("Relevant: %d" % len(self.real_relevant))
 
     def run(self,metric):
         """
@@ -206,7 +252,7 @@ class CrossValidation:
     """
     Class designed to perform cross-validation process.
     """
-    def __init__(self,partition_proportion,rounds,rec,metrics_list):
+    def __init__(self,partition_proportion,rounds,rec,metrics_list,result_proportion):
         """
         Set initial parameters.
         """
@@ -219,6 +265,41 @@ class CrossValidation:
         self.recommender = rec
         self.metrics_list = metrics_list
         self.cross_results = defaultdict(list)
+        self.result_proportion = result_proportion
+
+    def run(self,user):
+        """
+        Perform cross-validation.
+        """
+        #
+        cross_item_score = dict.fromkeys(user.pkg_profile,1)
+        partition_size = int(len(cross_item_score)*self.partition_proportion)
+        for r in range(self.rounds):
+            round_partition = {}
+            for j in range(partition_size):
+                if len(cross_item_score)>0:
+                    random_key = random.choice(cross_item_score.keys())
+                else:
+                    logging.critical("Empty cross_item_score.")
+                    raise Error
+                round_partition[random_key] = cross_item_score.pop(random_key)
+            #logging.debug("Round partition: %s",str(round_partition))
+            #logging.debug("Cross item-score: %s",str(cross_item_score))
+            round_user = User(cross_item_score)
+            result_size = int(self.recommender.items_repository.get_doccount()*
+                              self.result_proportion)
+            predicted_result = self.recommender.get_recommendation(round_user,result_size)
+            print len(round_partition)
+            real_result = RecommendationResult(round_partition)
+            #logging.debug("Predicted result: %s",predicted_result)
+            evaluation = Evaluation(predicted_result,real_result,
+                                    self.recommender.items_repository.get_doccount())
+            for metric in self.metrics_list:
+                result = evaluation.run(metric)
+                self.cross_results[metric.desc].append(result)
+            while len(round_partition)>0:
+                item,score = round_partition.popitem()
+                cross_item_score[item] = score
 
     def __str__(self):
         """
@@ -242,30 +323,4 @@ class CrossValidation:
             metrics_mean += "     %2.1f%%    |" % (mean*100)
         str += "|  Mean |%s\n" % (metrics_mean)
         return str
-
-    def run(self,user):
-        """
-        Perform cross-validation.
-        """
-        cross_item_score = dict.fromkeys(user.pkg_profile,1)
-        partition_size = int(len(cross_item_score)*self.partition_proportion)
-        for r in range(self.rounds):
-            round_partition = {}
-            for j in range(partition_size):
-                if len(cross_item_score)>0:
-                    random_key = random.choice(cross_item_score.keys())
-                else:
-                    logging.critical("Empty cross_item_score.")
-                    raise Error
-                round_partition[random_key] = cross_item_score.pop(random_key)
-            round_user = User(cross_item_score)
-            predicted_result = self.recommender.get_recommendation(round_user)
-            real_result = RecommendationResult(round_partition,len(round_partition))
-            evaluation = Evaluation(predicted_result,real_result)
-            for metric in self.metrics_list:
-                result = evaluation.run(metric)
-                self.cross_results[metric.desc].append(result)
-            while len(round_partition)>0:
-                item,score = round_partition.popitem()
-                cross_item_score[item] = score
 
