@@ -45,13 +45,15 @@ class RecommendationResult:
             str += "%2d: %s\n" % (i,result[i][0])
         return str
 
-    def get_prediction(self,limit=20):
+    def get_prediction(self,limit=0):
         """
         Return prediction based on recommendation size (number of items).
         """
-        if limit > self.size: limit = self.size
         sorted_result = sorted(self.item_score.items(),
                                key=operator.itemgetter(1))
+        if not limit or limit > self.size:
+            limit = self.size
+
         return list(reversed(sorted_result[-limit:]))
 
 class Recommender:
@@ -63,13 +65,12 @@ class Recommender:
         Set initial parameters.
         """
         self.items_repository = xapian.Database(cfg.axi)
-        self.users_repository = data.PopconXapianIndex(cfg)
-        #self.clustered_users_repository = data.PopconXapianIndex(cfg)
         self.set_strategy(cfg.strategy)
         if cfg.weight == "bm25":
             self.weight = xapian.BM25Weight()
         else:
             self.weight = xapian.TradWeight()
+        self.cfg = cfg
 
     def set_strategy(self,strategy_str):
         """
@@ -83,6 +84,7 @@ class Recommender:
             self.strategy = strategy.ContentBasedStrategy("desc")
         if strategy_str == "col":
             self.strategy = strategy.CollaborativeStrategy(20)
+            self.users_repository = data.PopconXapianIndex(self.cfg)
 
     def get_recommendation(self,user,result_size=20):
         """

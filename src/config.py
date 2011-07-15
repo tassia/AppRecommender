@@ -44,7 +44,8 @@ class Config():
         self.popcon_index = os.path.expanduser("~/.app-recommender/popcon_index")
         self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
         self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters_dir")
-        self.index_mode = "0"     # use old index
+        self.k_medoids = 100
+        self.index_mode = "old"
         self.strategy = "cb"
         self.weight = "bm25"
         self.load_options()
@@ -65,8 +66,9 @@ class Config():
         print "  -a, --axi=PATH          Path to Apt-xapian-index"
         print "  -p, --popconindex=PATH  Path to popcon dedicated index"
         print "  -m, --popcondir=PATH    Path to popcon submissions dir"
-        print "  -u, --index_mode=       0: old, 1:reindex, 11:clustered_index"
+        print "  -u, --indexmode=        old, reindex, cluster, recluster"
         print "  -l, --clustersdir=PATH  Path to popcon clusters dir"
+        print "  -e, --medoids=k         Number of medoids for clustering"          
         print "  -w, --weight=OPTION     Search weighting scheme"
         print "  -s, --strategy=OPTION   Recommendation strategy"
         print ""
@@ -115,13 +117,14 @@ class Config():
         self.popcon_dir = self.read_option('recommender', 'popcon_dir')
         self.index_mode = self.read_option('recommender', 'index_mode')
         self.clusters_dir = self.read_option('recommender', 'clusters_dir')
+        self.k_medoids = self.read_option('recommender', 'k_medoids')
         self.weight = self.read_option('recommender', 'weight')
         self.strategy = self.read_option('recommender', 'strategy')
 
-        short_options = "hdvo:c:a:p:m:ul:w:s:"
+        short_options = "hdvo:c:a:p:m:ul:e:w:s:"
         long_options = ["help", "debug", "verbose", "output=", "config=",
-                        "axi=", "popconindex=", "popcondir=", "index_mode=",
-                        "clusters_dir=", "weight=", "strategy="]
+                        "axi=", "popconindex=", "popcondir=", "indexmode=",
+                        "clustersdir=", "kmedoids=", "weight=", "strategy="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
@@ -154,6 +157,8 @@ class Config():
                 self.index_mode = p
             elif o in ("-l", "--clustersdir"):
                 self.clusters_dir = p
+            elif o in ("-e", "--kmedoids"):
+                self.k_medoids = p
             elif o in ("-w", "--weight"):
                 self.weight = p
             elif o in ("-s", "--strategy"):

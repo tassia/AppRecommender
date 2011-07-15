@@ -71,13 +71,13 @@ class PopconXapianIndexTests(unittest2.TestCase):
 
     def test_reindex(self):
         # force reindex with no clustering
-        self.cfg.index_mode = "10"
+        self.cfg.index_mode = "reindex"
         pxi = PopconXapianIndex(self.cfg)
         self.assertEqual(pxi.get_metadata("old"),"")
 
     def test_clustering(self):
         # force reindex with clustering
-        self.cfg.index_mode = "11"
+        self.cfg.index_mode = "cluster"
         pxi = PopconXapianIndex(self.cfg)
         self.assertEqual(pxi.source_dir,self.cfg.clusters_dir)
         all_submissions = [submissions for (root, dirs, submissions) in
@@ -95,6 +95,13 @@ class PopconXapianIndexTests(unittest2.TestCase):
                          sum([len(submissions) for submissions in
                               all_submissions]))
 
+    def test_recluster(self):
+        # force reindexing and clustering
+        self.cfg.index_mode = "recluster"
+        self.cfg.k_medoids = 2
+        pxi = PopconXapianIndex(self.cfg)
+        self.assertEqual(pxi.source_dir,self.cfg.clusters_dir)
+        self.assertEqual(pxi.get_doccount(),2)
 
 if __name__ == '__main__':
         unittest2.main()

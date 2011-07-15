@@ -152,6 +152,24 @@ class User:
         desc_profile = self.desc_profile(items_repository,size)[:size/2]
         return tag_profile+desc_profile
 
+    def app_pkg_profile(self,axi):
+        """
+        Return list of packages that are applications.
+        """
+        old_profile_size = len(self.pkg_profile)
+        for p in self.pkg_profile[:]:     #iterate list copy
+            tags = data.axi_search_pkg_tags(axi,p)
+            try:
+
+                if not "XTrole::program" in tags:
+                    self.pkg_profile.remove(p)
+            except:
+                logging.debug("Package not found in axi: %s" % p)
+        profile_size = len(self.pkg_profile)
+        logging.debug("App package profile: reduced packages profile size \
+                       from %d to %d." % (old_profile_size, profile_size))
+        return self.pkg_profile
+
     def maximal_pkg_profile(self):
         """
         Return list of packages that are not dependence of any other package in

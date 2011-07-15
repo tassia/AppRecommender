@@ -129,31 +129,36 @@ class PopconXapianIndex(xapian.WritableDatabase):
         """
         self.axi = xapian.Database(cfg.axi)
         self.path = os.path.expanduser(cfg.popcon_index)
-        if cfg.index_mode.startswith("1") or not self.load_index():
+        if not cfg.index_mode == "old" or not self.load_index():
             if not os.path.exists(cfg.popcon_dir):
                 os.makedirs(cfg.popcon_dir)
             if not os.listdir(cfg.popcon_dir):
                 logging.critical("Popcon dir seems to be empty.")
                 raise Error
-            if cfg.index_mode == "10":
+            if cfg.index_mode == "reindex":
                 self.source_dir = os.path.expanduser(cfg.popcon_dir)
             else:
                 self.source_dir = os.path.expanduser(cfg.clusters_dir)
                 if not os.path.exists(cfg.clusters_dir):
                     os.makedirs(cfg.clusters_dir)
-                if not os.listdir(cfg.clusters_dir):
-                    distance = JaccardDistance()
+                if not os.listdir(cfg.clusters_dir) or \
+                    cfg.index_mode == "recluster":
+                    shutil.rmtree(cfg.clusters_dir,1)
+                    os.makedirs(cfg.clusters_dir)
                     logging.info("Clustering popcon submissions from \'%s\'"
                                  % cfg.popcon_dir)
                     logging.info("Clusters will be placed at \'%s\'"
                                  % cfg.clusters_dir)
+                    distance = JaccardDistance()
                     data = self.get_submissions(cfg.popcon_dir)
-                    if cfg.clustering == "Hierarchical":
-                        self.hierarchical_clustering(data,cfg.clusters_dir,
-                                                     distance)
-                    else:
-                        self.kmedoids_clustering(data,cfg.clusters_dir,
-                                                 distance)
+                    self.cluster_dispersion = \
+                        self.kmedoids_clustering(data, cfg.clusters_dir,
+                                                 distance, cfg.k_medoids)
+                    logging.info("Clusters dispersion: %f.2",
+                                 self.cluster_dispersion)
+                else:
+                    logging.info("Using clusters from \'%s\'" %
+                                 cfg.clusters_dir)
             self.build_index()
 
     def __str__(self):
@@ -167,10 +172,9 @@ class PopconXapianIndex(xapian.WritableDatabase):
             logging.info("Opening existing popcon xapian index at \'%s\'"
                           % self.path)
             xapian.Database.__init__(self,self.path)
-            return True
+            return 1
         except xapian.DatabaseError:
             logging.info("Could not open popcon index.")
-            return True
             return 0
 
     def build_index(self):
@@ -224,35 +228,23 @@ class PopconXapianIndex(xapian.WritableDatabase):
                 submissions.append(submission)
         return submissions
 
-    def hierarchical_clustering(self,data,clusters_dir,distance,k=10):
-        """
-        Select popcon submissions from popcon_dir and place them at clusters_dir
-        """
-        cl = cluster.HierarchicalClustering(data, lambda x,y:
-                                                  distance(x.packages.keys(),
-                                                           y.packages.keys()))
-        clusters = cl.getlevel(0.5)
-        for c in clusters:
-            print "cluster"
-            for submission in c:
-                print submission.user_id
-
-    def kmedoids_clustering(self,data,clusters_dir,distance,k=10):
+    def kmedoids_clustering(self,data,clusters_dir,distance,k_medoids):
         clusters = KMedoidsClustering(data,lambda x,y:
                                            distance(x.packages.keys(),
                                                     y.packages.keys()))
-        medoids = clusters.getMedoids(2)
+        medoids,dispersion = clusters.getMedoids(k_medoids)
         for submission in medoids:
             shutil.copyfile(submission.path,os.path.join(clusters_dir,
                                                          submission.user_id))
+        return dispersion
 
 class KMedoidsClustering(cluster.KMeansClustering):
 
-    def __init__(self,data,distance):
-        if len(data)<100:
+    def __init__(self,data,distance,max_data=100):
+        if len(data)<max_data:
             data_sample = data
         else:
-            data_sample = random.sample(data,100)
+            data_sample = random.sample(data,max_data)
         cluster.KMeansClustering.__init__(self, data_sample, distance)
         self.distanceMatrix = {}
         for submission in self._KMeansClustering__data:
@@ -287,7 +279,7 @@ class KMedoidsClustering(cluster.KMeansClustering):
             logging.debug("medoidDistance: %f" % medoidDistance)
         logging.debug("Cluster medoid: [%d] %s" % (medoid,
                                                    cluster[medoid].user_id))
-        return cluster[medoid]
+        return (cluster[medoid],medoidDistance)
 
     def assign_item(self, item, origin):
         """
@@ -295,7 +287,8 @@ class KMedoidsClustering(cluster.KMeansClustering):
         """
         closest_cluster = origin
         for cluster in self._KMeansClustering__clusters:
-            if self.distance(item,self.getMedoid(cluster)) < self.distance(item,self.getMedoid(closest_cluster)):
+            if self.distance(item,self.getMedoid(cluster)[0]) < \
+                self.distance(item,self.getMedoid(closest_cluster)[0]):
                 closest_cluster = cluster
 
         if closest_cluster != origin:
@@ -309,6 +302,8 @@ class KMedoidsClustering(cluster.KMeansClustering):
         """
         Generate n clusters and return their medoids.
         """
-        medoids = [self.getMedoid(cluster) for cluster in self.getclusters(n)]
-        logging.info("Clustering completed and the following centroids were found: %s" % [c.user_id for c in medoids])
-        return medoids
+        medoids_distances = [self.getMedoid(cluster) for cluster in self.getclusters(n)]
+        medoids = [m[0] for m in medoids_distances]
+        dispersion = sum([m[1] for m in medoids_distances])
+        logging.info("Clustering completed and the following medoids were found: %s" % [c.user_id for c in medoids])
+        return medoids,dispersion
