@@ -100,13 +100,14 @@ background: #6f2525;
 
 #logo span { display: none; }
 #logo { 
-background: url('../images/icon55.png') no-repeat;
-width: 55px;
-height: 55px;
+position: absolute;
+top: 0;
+left: -32px;
+background: url('../images/icon95.png') no-repeat;
+width: 105px;
+height: 95px;
 margin: 0px;
-/* margin-top: 5px; */
 display: block;
-float: left;
 }
 
 #navbar { 
