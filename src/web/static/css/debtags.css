@@ -1,32 +1,40 @@
-#debtags-area {
-}
-
 #debtags-facets {
     float: left;
     text-align: right;
     width: 320px;
 }
+
 #debtags-facets div {
     background-color: #F0F0F0;
     cursor: pointer;
     padding-right: 1em;
 }
+
 #debtags-facets div.selected {
     background-color: #000000;
     color: #F0F0F0;
     font-weight: bolder;
 }
+
 #debtags-facets div:hover {
-    background-color: #AAAAAA;
+border-radius: 5px;
+background: #9f9f9f; /* Old browsers */
+background: -moz-linear-gradient(left, #f0f0f0 51%, #9f9f9f 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, right top, color-stop(51%,#9f9f9f), color-stop(100%,#f0f0f0)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(left, #f0f0f0 51%,#9f9f9f 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(left, #f0f0f0 51%,#9f9f9f 100%); /* Opera11.10+ */
+background: -ms-linear-gradient(left, #f0f0f0 51%,#9f9f9f 100%); /* IE10+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f0f0f0', endColorstr='#9f9f9f',GradientType=1 ); /* IE6-9 */
+background: linear-gradient(left, #f0f0f0 51%,#9f9f9f 100%); /* W3C */
 }
 
 #tags-box {
 position: absolute;
-background: white;
+background: #f0f0f0;
 display: none;
 overflow: hidden;
 width: 320px;
-height: 430px;
+height: 425px;
 }
 
 #tags-box div {
