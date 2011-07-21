@@ -22,13 +22,28 @@ __license__ = """
 import unittest2
 import shutil
 import os
+import xapian
 import sys
 sys.path.insert(0,'../')
-from data import PopconSubmission, PopconXapianIndex
+from data import PopconSubmission, PopconXapianIndex, axi_search_pkg_tags
 from config import Config
 
 def suite():
     return unittest2.TestLoader().loadTestsFromTestCase(PopconSubmissionTests)
+
+class AxiSearchTests(unittest2.TestCase):
+    @classmethod
+    def setUpClass(self):
+        cfg = Config()
+        self.axi = xapian.Database(cfg.axi)
+
+    def test_search_pkg_tags(self):
+        tags = axi_search_pkg_tags(self.axi,'apticron')
+        self.assertEqual(set(tags),set(['XTadmin::package-management',
+                                        'XTinterface::daemon',
+                                        'XTnetwork::server', 'XTrole::program',
+                                        'XTsuite::debian', 'XTuse::monitor',
+                                        'XTworks-with::mail']))
 
 class PopconSubmissionTests(unittest2.TestCase):
     @classmethod
