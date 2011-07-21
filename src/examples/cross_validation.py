@@ -40,16 +40,20 @@ if __name__ == '__main__':
     try:
         cfg = Config()
         rec = Recommender(cfg)
+        print "\nRecommender strategy: ",rec.strategy.description
         user = LocalSystem()
-        user.maximal_pkg_profile()
-
+        #user.app_pkg_profile(rec.items_repository)
+        user.no_auto_pkg_profile()
         begin_time = datetime.datetime.now()
         logging.debug("Cross-validation started at %s" % begin_time)
 
         metrics = []
         metrics.append(Precision())
         metrics.append(Recall())
-        validation = CrossValidation(0.3,10,rec,metrics)
+        metrics.append(F1())
+        metrics.append(Accuracy())
+        metrics.append(SimpleAccuracy())
+        validation = CrossValidation(0.3,10,rec,metrics,0.005)
         validation.run(user)
         print validation
 
