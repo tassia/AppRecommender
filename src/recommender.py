@@ -28,12 +28,14 @@ class RecommendationResult:
     """
     Class designed to describe a recommendation result: items and scores.
     """
-    def __init__(self,item_score):
+    def __init__(self,item_score,ranking=0):
         """
         Set initial parameters.
         """
         self.item_score = item_score
         self.size = len(item_score)
+        if ranking:
+            self.ranking = ranking
 
     def __str__(self):
         """
@@ -64,13 +66,13 @@ class Recommender:
         """
         Set initial parameters.
         """
+        self.cfg = cfg
         self.items_repository = xapian.Database(cfg.axi)
         self.set_strategy(cfg.strategy)
         if cfg.weight == "bm25":
             self.weight = xapian.BM25Weight()
         else:
             self.weight = xapian.TradWeight()
-        self.cfg = cfg
 
     def set_strategy(self,strategy_str):
         """
@@ -83,10 +85,10 @@ class Recommender:
         if strategy_str == "cbd":
             self.strategy = strategy.ContentBasedStrategy("desc")
         if strategy_str == "col":
-            self.strategy = strategy.CollaborativeStrategy(20)
             self.users_repository = data.PopconXapianIndex(self.cfg)
+            self.strategy = strategy.CollaborativeStrategy(20)
 
-    def get_recommendation(self,user,result_size=20):
+    def get_recommendation(self,user,result_size=100):
         """
         Produces recommendation using previously loaded strategy.
         """
