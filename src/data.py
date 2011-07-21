@@ -41,14 +41,16 @@ def axi_search_pkgs(axi,pkgs_list):
     return matches
 
 def axi_search_pkg_tags(axi,pkg):
-    query = xapian.Query(xapian.Query.OP_OR, "XP"+pkg)
     enquire = xapian.Enquire(axi)
-    enquire.set_query(query)
+    enquire.set_query(xapian.Query("XP"+pkg))
     matches = enquire.get_mset(0,1)
+    if not matches:
+        logging.debug("Package %s not found in items repository" % pkg)
+        return []
     for m in matches:
         tags = [term.term for term in axi.get_document(m.docid).termlist() if
                 term.term.startswith("XT")]
-    return tags
+        return tags
 
 def print_index(index):
     output = "\n---\n" + xapian.Database.__repr__(index) + "\n---\n"
@@ -58,6 +60,32 @@ def print_index(index):
                        for posting in index.postlist(term.term)])
         output += "\n---"
     return output
+
+class AppAptXapianIndex(xapian.WritableDatabase):
+    """
+    Sample data source for packages information, mainly useful for tests.
+    """
+    def __init__(self,axi_path,path):
+        xapian.WritableDatabase.__init__(self,path,
+                                         xapian.DB_CREATE_OR_OVERWRITE)
+        axi = xapian.Database(axi_path)
+        logging.info("AptXapianIndex size: %d" % axi.get_doccount())
+        for docid in range(1,axi.get_lastdocid()+1):
+            try:
+                doc = axi.get_document(docid)
+                allterms = [term.term for term in doc.termlist()]
+                if "XTrole::program" in allterms:
+                    self.add_document(doc)
+                    logging.info("Added doc %d." % docid)
+                else:
+                    logging.info("Discarded doc %d." % docid)
+            except:
+                logging.info("Doc %d not found in axi." % docid)
+        logging.info("AppAptXapianIndex size: %d (lastdocid: %d)." %
+                     self.get_doccount(), self.get_lastdocid())
+
+    def __str__(self):
+        return print_index(self)
 
 class SampleAptXapianIndex(xapian.WritableDatabase):
     """
@@ -129,6 +157,7 @@ class PopconXapianIndex(xapian.WritableDatabase):
         """
         self.axi = xapian.Database(cfg.axi)
         self.path = os.path.expanduser(cfg.popcon_index)
+        self.source_dir = os.path.expanduser(cfg.popcon_dir)
         if not cfg.index_mode == "old" or not self.load_index():
             if not os.path.exists(cfg.popcon_dir):
                 os.makedirs(cfg.popcon_dir)
@@ -205,8 +234,9 @@ class PopconXapianIndex(xapian.WritableDatabase):
                               submission.user_id)
                 for pkg, freq in submission.packages.items():
                     doc.add_term("XP"+pkg,freq)
-                    for tag in axi_search_pkg_tags(self.axi,pkg):
-                        doc.add_term(tag,freq)
+                    if axi_search_pkg_tags(self.axi,pkg):
+                        for tag in axi_search_pkg_tags(self.axi,pkg):
+                            doc.add_term(tag,freq)
                 doc_id = self.add_document(doc)
                 logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
             # python garbage collector
