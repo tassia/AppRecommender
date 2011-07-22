@@ -45,6 +45,10 @@ class Thanks:
 
 class Package:
     def GET(self, pkg):
+        result = self.get_details_from_dde(pkg)
+        return render_plain.package(result)
+
+    def get_details_from_dde(self, pkg):
         json_source = "http://dde.debian.net/dde/q/udd/packages/all/%s?t=json" % pkg #FIXME: url goes to config
         json_data = json.load(urllib.urlopen(json_source))
         # parsing tags:
@@ -52,7 +56,7 @@ class Package:
         json_data['r']['tag'] = tags
         # formatting long description
         json_data['r']['long_description'] = json_data['r']['long_description'].replace(' .\n','').replace('\n','<br />')
-        return render_plain.package(json_data['r'])
+        return json_data['r']
 
     def _debtags_list_to_dict(self, debtags_list):
         """ in:
@@ -230,14 +234,20 @@ class AppRecommender:
             recommendation = self._recommends(request)
             ### Getting package summary (short description) ###
             pkg_summaries = {}
+            pkg_details = []
             cache = apt.Cache()
             for strategy, result in recommendation.items():
                 for pkg in result:
                     try:
                         pkg_summaries[pkg] = cache[pkg].candidate.summary
+                        pkg_details.append(Package().get_details_from_dde(pkg))
                     except:
                         pkg_summaries[pkg] = ""
-            return render.apprec(recommendation, pkg_summaries,
+
+            ### Temporarily rendering *survey* rather than *apprec* ###
+            #return render.apprec(recommendation, pkg_summaries,
+            #                     FeedbackForm(request.selected_strategies),request)
+            return render_plain.survey(recommendation, pkg_details,
                                  FeedbackForm(request.selected_strategies),request)
 
     def _recommends(self,request):
@@ -276,7 +286,7 @@ render = web.template.render('templates/', base='layout')
 render_plain = web.template.render('templates/')
 
 urls = ('/',   		        'Index',
-        '/apprec',	        'AppRecommender',
+        '/apprec',		'AppRecommender',
         '/thanks',   		'Thanks',
         '/support',             'Support',
         '/about',               'About',
