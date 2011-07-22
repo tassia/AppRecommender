@@ -99,6 +99,8 @@ $.fn.codaSlider = function(settings) {
 		$('#coda-nav-right-' + sliderCount + ' a').click(function(){
 			navClicks++;
 			if (currentPanel == panelCount) {
+				this.style.display = 'none'; // Button display none;
+				return false;
 				offset = 0;
 				currentPanel = 1;
 				alterPanelHeight(0);
@@ -209,6 +211,7 @@ $.fn.codaSlider = function(settings) {
 		function autoSlide() {
 			if (navClicks == 0 || !settings.autoSlideStopWhenClicked) {
 				if (currentPanel == panelCount) {
+					return false;
 					var offset = 0;
 					currentPanel = 1;
 				} else {
