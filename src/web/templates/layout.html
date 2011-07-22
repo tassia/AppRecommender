@@ -23,6 +23,13 @@ $ url_base = "http://localhost:8080"
         $for js in content.jsfiles.split():
              <script src="$js" type="text/javascript"></script>
 
+<!-- survey slides -->
+<script type="text/javascript">
+    $$().ready(function() {
+		$$('#coda-slider-1').codaSlider({dynamicTabs: false, dynamicArrowLeftText: "&#171;", dynamicArrowRightText:"&#187;" });
+	});
+</script>
+
 <!-- Dynamic form -->
 <script type="text/javascript">
 window.onload = function() {

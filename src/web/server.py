@@ -247,9 +247,9 @@ class AppRecommender:
                     except:
                         pkg_summaries[pkg] = ""
             if Config().survey_mode:
-                return render_plain.survey(recommendation, pkg_details,
-                                           FeedbackForm(request.selected_strategies),
-                                           request)
+                return render.survey(recommendation, pkg_details,
+                                     FeedbackForm(request.selected_strategies),
+                                     request)
             else:
                 return render.apprec(recommendation, pkg_summaries,
                                      FeedbackForm(request.selected_strategies),
