@@ -38,9 +38,7 @@ class Config():
         self.debug = 0
         self.verbose = 0
         self.output = "/dev/null"
-        self.config = None
         self.axi = "/var/lib/apt-xapian-index/index"
-        self.axi_values = "/var/lib/apt-xapian-index/values"
         self.popcon_index = os.path.expanduser("~/.app-recommender/popcon_index")
         self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
         self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters_dir")
@@ -48,6 +46,7 @@ class Config():
         self.index_mode = "old"
         self.strategy = "cb"
         self.weight = "bm25"
+        self.profile_size = 50
         self.load_options()
         self.set_logger()
 
@@ -56,21 +55,23 @@ class Config():
         Print usage help.
         """
         print "\n [ general ]"
-        print "  -h, --help              Print this help"
-        print "  -d, --debug             Set logging level to debug"
-        print "  -v, --verbose           Set logging level to verbose"
-        print "  -o, --output=PATH       Path to file to save output"
-        print "  -c, --config=PATH       Path to configuration file"
+        print "  -h, --help                 Print this help"
+        print "  -d, --debug                Set logging level to debug"
+        print "  -v, --verbose              Set logging level to verbose"
+        print "  -o, --output=PATH          Path to file to save output"
+        print ""
+        print " [ data sources ]"
+        print "  -a, --axi=PATH             Path to apt-xapian-index"
+        print "  -p, --popconindex=PATH     Path to popcon index"
+        print "  -m, --popcondir=PATH       Path to popcon submissions dir"
+        print "  -u, --indexmode=           'old'|'reindex'|'cluster'|'recluster'"
+        print "  -l, --clustersdir=PATH     Path to popcon clusters dir"
+        print "  -e, --medoids=k            Number of medoids for clustering"
         print ""
         print " [ recommender ]"
-        print "  -a, --axi=PATH          Path to Apt-xapian-index"
-        print "  -p, --popconindex=PATH  Path to popcon dedicated index"
-        print "  -m, --popcondir=PATH    Path to popcon submissions dir"
-        print "  -u, --indexmode=        old, reindex, cluster, recluster"
-        print "  -l, --clustersdir=PATH  Path to popcon clusters dir"
-        print "  -e, --medoids=k         Number of medoids for clustering"          
-        print "  -w, --weight=OPTION     Search weighting scheme"
-        print "  -s, --strategy=OPTION   Recommendation strategy"
+        print "  -w, --weight=OPTION        Search weighting scheme"
+        print "  -s, --strategy=OPTION      Recommendation strategy"
+        print "  -z, --profile_size=SIZE    Size of user profile"
         print ""
         print " [ weight options ] "
         print "  trad = traditional probabilistic weighting"
@@ -81,8 +82,7 @@ class Config():
         print "  cbt = content-based using only tags as content "
         print "  cbd = content-based using only package descriptions as content "
         print "  col = collaborative "
-        #print "  colct = collaborative through tags content "
-        #print "  colcp = collaborative through package descriptions content "
+        print "  colct = collaborative through tags content "
 
     def read_option(self, section, option):
         """
@@ -102,7 +102,8 @@ class Config():
         try:
             self.config = ConfigParser()
             self.config.read(['/etc/apprecommender/recommender.conf',
-                              os.path.expanduser('~/apprecommender.rc')])
+                              os.path.expanduser('~/.app_recommender.rc'),
+                              'app_recommender.cfg'])
         except (MissingSectionHeaderError), err:
             logging.error("Error in config file syntax: %s", str(err))
             os.abort()
@@ -110,21 +111,23 @@ class Config():
         self.debug = self.read_option('general', 'debug')
         self.debug = self.read_option('general', 'verbose')
         self.output_filename = self.read_option('general', 'output')
-        self.config = self.read_option('general', 'config')
 
-        self.axi = self.read_option('recommender', 'axi')
-        self.popcon_index = self.read_option('recommender', 'popcon_index')
-        self.popcon_dir = self.read_option('recommender', 'popcon_dir')
-        self.index_mode = self.read_option('recommender', 'index_mode')
-        self.clusters_dir = self.read_option('recommender', 'clusters_dir')
-        self.k_medoids = self.read_option('recommender', 'k_medoids')
+        self.axi = self.read_option('data_sources', 'axi')
+        self.popcon_index = os.path.expanduser(self.read_option('data_sources','popcon_index'))
+        self.popcon_dir = os.path.expanduser(self.read_option('data_sources', 'popcon_dir'))
+        self.index_mode = self.read_option('data_sources', 'index_mode')
+        self.clusters_dir = os.path.expanduser(self.read_option('data_sources', 'clusters_dir'))
+        self.k_medoids = self.read_option('data_sources', 'k_medoids')
+
         self.weight = self.read_option('recommender', 'weight')
         self.strategy = self.read_option('recommender', 'strategy')
+        self.profile_size = self.read_option('recommender', 'profile_size')
 
-        short_options = "hdvo:c:a:p:m:ul:e:w:s:"
-        long_options = ["help", "debug", "verbose", "output=", "config=",
+        short_options = "hdvo:a:p:m:ul:e:w:s:z:"
+        long_options = ["help", "debug", "verbose", "output=",
                         "axi=", "popconindex=", "popcondir=", "indexmode=",
-                        "clustersdir=", "kmedoids=", "weight=", "strategy="]
+                        "clustersdir=", "kmedoids=", "weight=", "strategy=",
+                        "profile_size="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
@@ -144,11 +147,8 @@ class Config():
                 self.verbose = 1
             elif o in ("-o", "--output"):
                 self.output = p
-            elif o in ("-c", "--config"):
-                self.config = p
             elif o in ("-a", "--axi"):
                 self.axi = p + "/index"
-                self.axi_values = p + "/values"
             elif o in ("-p", "--popconindex"):
                 self.popcon_index = p
             elif o in ("-m", "--popcondir"):
@@ -162,6 +162,8 @@ class Config():
             elif o in ("-w", "--weight"):
                 self.weight = p
             elif o in ("-s", "--strategy"):
+                self.strategy = p
+            elif o in ("-z", "--profile_size"):
                 self.strategy = p
             else:
                 assert False, "unhandled option"
