@@ -140,7 +140,7 @@ class F1(Metric):
         p = Precision().run(evaluation)
         r = Recall().run(evaluation)
         if (p+r)>0:
-            return float((2*p*r))/(p+r)
+            return float(2*((p*r)/(p+r)))
         else:
             return 0
 
@@ -289,7 +289,7 @@ class CrossValidation:
             result_size = int(self.recommender.items_repository.get_doccount()*
                               self.result_proportion)
             predicted_result = self.recommender.get_recommendation(round_user,result_size)
-            print len(round_partition)
+            #print len(round_partition)
             real_result = RecommendationResult(round_partition)
             #logging.debug("Predicted result: %s",predicted_result)
             evaluation = Evaluation(predicted_result,real_result,

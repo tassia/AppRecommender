@@ -1,0 +1,60 @@
+$var title: Survey
+$var mod = 'index';
+$var cssfiles: static/css/tabs.css static/css/debtags.css static/css/facebox.css 
+$var jsfiles: static/js/facebox.js
+
+
+<!-- Dynamic form -->
+<script type="application/x-javascript">
+window.onload = function() {
+    setupDependencies('weboptions'); //name of form(s). Seperate each with a comma (ie: 'weboptions', 'myotherform' )
+  };
+</script>
+
+<script type="application/x-javascript">
+$$(document).ready(function() {
+ $$('a[rel*=facebox]').facebox({
+ loadingImage : '/static/images/loading.gif',
+ closeImage   : '/static/images/closelabel.png'
+ });
+ $$("#tags-box").click(function () {
+ $$("#tags-box").hide(1000);
+ });
+
+});
+</script>
+
+
+<div id="sidebar">
+<div class="innertube">
+
+
+<br style="clear: both" />
+</div><!-- class="innertube" -->
+</div><!-- id="sidebar" -->
+
+<div id="maincontent">
+<div class="innertube">
+
+<div class="textbox">
+<h1>Help us learn your needs!</h1>
+
+<p>Participate in this survey and contribute for the development of
+AppRecommender, a recommender system for GNU/Linux applications.</p>
+<br />
+<p>Please provide the list of packages installed in a real running system,
+by uploading a popcon submission or the file generated with the command:
+"dpkg -l > packages_list".</p>
+
+<p>Evaluate at least 10 suggested applications and identify yourself if you
+wish to. Upon the completion of this survey there will be a thank you page
+listing all identified participant.</p>
+
+<p>Your help is very much appreciated!</p>
+
+</div>
+
+</div><!-- class="innertube" -->
+</div><!-- id="maincontent" -->
+
+

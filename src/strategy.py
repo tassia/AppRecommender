@@ -42,6 +42,26 @@ class PkgMatchDecider(xapian.MatchDecider):
         """
         return doc.get_data() not in self.pkgs_list
 
+class AppMatchDecider(xapian.MatchDecider):
+    """
+    Extend xapian.MatchDecider to not consider only applications packages.
+    """
+    def __init__(self, pkgs_list, axi):
+        """
+        Set initial parameters.
+        """
+        xapian.MatchDecider.__init__(self)
+        self.pkgs_list = pkgs_list
+        self.axi = axi
+
+    def __call__(self, doc):
+        """
+        True if the package is not already installed.
+        """
+        tags = axi_search_pkg_tags(self.axi,doc.get_data())
+        return (("XTrole::program" in tags) and
+                (doc.get_data() not in self.pkgs_list))
+
 class UserMatchDecider(xapian.MatchDecider):
     """
     Extend xapian.MatchDecider to match similar profiles.
@@ -73,7 +93,32 @@ class PkgExpandDecider(xapian.ExpandDecider):
         True if the term is a package.
         """
         # [FIXME] return term.startswith("XP")
-        return not term.startswith("XT")
+        #return not term.startswith("XT")
+        return term.startswith("XP")
+
+class AppExpandDecider(xapian.ExpandDecider):
+    """
+    Extend xapian.ExpandDecider to consider applications only.
+    """
+    def __init__(self,axi):
+        xapian.ExpandDecider.__init__(self)
+        self.axi = axi
+
+    def __call__(self, term):
+        """
+        True if the term is a package.
+        """
+        if not term.startswith("XT"):
+            package = term.lstrip("XP")
+            print package
+            tags = axi_search_pkg_tags(self.axi,package)
+            if "XTrole::program" in tags:
+                print tags
+                return True
+            else:
+                return False
+        else:
+            return False
 
 class TagExpandDecider(xapian.ExpandDecider):
     """
@@ -100,7 +145,7 @@ class ContentBasedStrategy(RecommendationStrategy):
         self.content = content
         self.profile_size = profile_size
 
-    def run(self,rec,user,limit):
+    def run(self,rec,user,recommendation_size):
         """
         Perform recommendation strategy.
         """
@@ -113,35 +158,40 @@ class ContentBasedStrategy(RecommendationStrategy):
         enquire.set_query(query)
         try:
             # retrieve matching packages
-            mset = enquire.get_mset(0, limit, None, PkgMatchDecider(user.items()))
+            mset = enquire.get_mset(0, recommendation_size, None,
+                                    PkgMatchDecider(user.items()))
+                                    #AppMatchDecider(user.items(),
+                                    #                rec.items_repository))
         except xapian.DatabaseError as error:
             logging.critical("Content-based strategy: "+error.get_msg())
         # compose result dictionary
         item_score = {}
+        ranking = []
         for m in mset:
+            #[FIXME] set this constraint somehow
+            #tags = axi_search_pkg_tags(rec.items_repository,m.document.get_data())
+            #if "XTrole::program" in tags:
             item_score[m.document.get_data()] = m.weight
-        return recommender.RecommendationResult(item_score)
+            ranking.append(m.document.get_data())
+
+        return recommender.RecommendationResult(item_score,ranking)
 
 class CollaborativeStrategy(RecommendationStrategy):
     """
     Colaborative recommendation strategy.
     """
-    def __init__(self,k,clustering=1):
+    def __init__(self,k):
         self.description = "Collaborative"
-        self.clustering = clustering
         self.neighbours = k
 
-    def run(self,rec,user,result_size):
+    def run(self,rec,user,recommendation_size):
         """
         Perform recommendation strategy.
         """
-        profile = user.pkg_profile
+        profile = ["XP"+package for package in user.pkg_profile]
         # prepair index for querying user profile
         query = xapian.Query(xapian.Query.OP_OR,profile)
-        if self.clustering:
-            enquire = xapian.Enquire(rec.clustered_users_repository)
-        else:
-            enquire = xapian.Enquire(rec.users_repository)
+        enquire = xapian.Enquire(rec.users_repository)
         enquire.set_weighting_scheme(rec.weight)
         enquire.set_query(query)
         try:
@@ -155,27 +205,39 @@ class CollaborativeStrategy(RecommendationStrategy):
             rset.add_document(m.document.get_docid())
             logging.debug(m.document.get_data())
         # retrieve most relevant packages
-        eset = enquire.get_eset(result_size,rset,PkgExpandDecider())
+        #eset = enquire.get_eset(recommendation_size,rset,
+        #                        AppExpandDecider(rec.items_repository))
+        eset = enquire.get_eset(recommendation_size,rset,PkgExpandDecider())
         # compose result dictionary
         item_score = {}
-        for package in eset:
-            item_score[package.term.lstrip("XP")] = package.weight
+        for e in eset:
+            package = e.term.lstrip("XP")
+            tags = axi_search_pkg_tags(rec.items_repository,package)
+            #[FIXME] set this constraint somehow
+            #if "XTrole::program" in tags:
+            item_score[package] = e.weight
         return recommender.RecommendationResult(item_score)
 
 class DemographicStrategy(RecommendationStrategy):
     """
     Recommendation strategy based on demographic data.
     """
+    #def __init__(self, result):
+        #self.result = result
     def __init__(self):
         self.description = "Demographic"
         logging.debug("Demographic recommendation not yet implemented.")
         raise Error
 
-    def run(self,user,items_repository):
+    def run(self,rec,user,recommendation_size):
         """
         Perform recommendation strategy.
         """
-        pass
+        ordered_result = self.result.get_prediction()
+
+        for item,weight in ordered_result:
+            pass
+
 
 class KnowledgeBasedStrategy(RecommendationStrategy):
     """
