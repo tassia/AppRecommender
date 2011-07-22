@@ -38,10 +38,11 @@ window.onload = function() {
 
 function validateForm()
 {
+var u=document.forms["weboptions"]["pkgs_file"].value
 var x=document.forms["weboptions"]["pkgs_list"].value
-if (x==null || x=="Write your list App here or send a file list this icon:")
+if ((u==null) && (x==null) || (x=="Write your list App here or send a file list this icon:") && (u=="") )
   {
-  alert("Write your list App!");
+  alert("Choice your list App or create a list!");
   return false;
   }
 }
@@ -51,6 +52,9 @@ if (x==null || x=="Write your list App here or send a file list this icon:")
     $$("#advanced-button").click(function () {
     $$("#advanced-slide").toggle("slow");
     });    
+    $$("#upfile").click(function () {
+    $$("#upload-slide").toggle("slow");
+    });  
  }); 
 </script>  
 
@@ -66,10 +70,10 @@ if (x==null || x=="Write your list App here or send a file list this icon:")
       <fieldset>
 	<div id="submit-box">
 	<input type="submit" value="RECOMMENDER" id="submit-button"><br />
-        <!--<a id="advanced-button">advanced query?</a>-->
+        <a id="advanced-button">advanced query?</a>
 	</div>
 	<div id="input-box">
-	  <a href="#attachfile" rel="facebox" id="upfile"><span style="display: none;">Upload a file.</span></a>
+	  <a id="upfile"><span style="display: none;">Upload a file.</span></a>
 	  <label title="App list"><textarea class="focused" onfocus="this.form.className='focused';
             if(this.value=='Write your list App here or send a file list this icon:'){this.value=''}" onblur="this.form.className='';
             if(/^\s*$$/.test(this.value)){ this.value='Write your list App here or send a file list this icon:';
@@ -125,43 +129,22 @@ if (x==null || x=="Write your list App here or send a file list this icon:")
 	</div>
 	</div>
      </fieldset>
-     <fieldset>
-	<legend>Your packages</legend>
-	  <div>
-	    <label>Upload file<input type="file" id="pkgs_file" name="pkgs_file" size="18"/></label>
-	  </div>
-	</fieldset>
     </div><!-- id="advanced-slide" -->
-
+    <div id="upload-slide">
+	 <fieldset>
+	<p>
+	   <label title="Upload file">Upload file: <input type="file" name="pkgs_file" size="18" /></label>
+	</p>
+	<p>
+	You can use file <strong>/var/log/popularity-contest</strong> or create a with <strong>dpkg</strong>, use:
+	</p>
+	<p>
+	<code> # dpkg -l > blih.list </code>
+	</p>
+	</fieldset>
+   </div><!-- id="upload-slide" -->
    </form>
    </div>
-
-
-
-<!-- BOX ATTACHMENT FILE -->
-<div id="attachfile" style="display: none;">
-<h2>Recommendation with file list</h2>
-<form action="apprec" enctype="multipart/form-data" method="post" name="uploadform">
-  <fieldset>
-   <label title="Upload file">Upload file: <input type="file" name="pkgs_file" size="18"/></label>
-<p>
-You can use file <strong>/var/log/popularity-contest</strong> or create a with <strong>dpkg</strong>, use:
-<code>
-# dpkg -l > blih
-</code>
-</p>
-<p>
-   <p align="center"><input type="submit" value="Recommender!"></p>
-   <input type="hidden" name="weight" value="BM25" checked="checked">
-   <input type="hidden" name="strategy" value="content" checked="checked">
-   <input type="hidden" name="profile_size" value="10" size="4">
-   <input type="hidden" name="limit" value="10" size="4">
-   <input type="hidden" name="neighbours" class="DEPENDS ON strategy BEING hybrid" value="50" size="4">
-  </fieldset>
-</form>
-</p>
-</div><!-- id="attachfile" -->
-<!-- END BOX ATTACHMENT FILE -->
 
 
 </div><!-- id="header" -->
@@ -178,9 +161,9 @@ $:content
 	<li><a href="http://github.com/tassia/AppRecommender">Development</a></li>
     </ul>
    </div><!-- id="navbar" -->
-<!--  <p id="copyright">
-   Copyright © 2011 AppRecommender team.
-  </p> -->
+   <div id="copyright"> <span> Copyright © 2011 AppRecommender team. </span>  
+   </div><!-- id="copyright" -->
+<br style="clear: both;" />
  </div><!-- id="footer" -->
 
 
