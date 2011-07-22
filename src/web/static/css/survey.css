@@ -14,10 +14,29 @@ height: 80px;
 margin: 50px;
 }
 
+body.survey #wrap {
+padding-top: 0px;
+}
+
 /* Display None itens Survey */
+.coda-nav-left,
+body.survey #header,
 #recommender-box #upfile,
 #advanced-button,
 #copyright span,
+#navbar,
 #pkgs_list {
 display: none;
 }
+
+
+/* FIXME: não funciona porque as vezes o resultado final não é 10.
+ * #conclude-button,
+ * #10:target #coda-nav-right-1 {
+ * display: none;
+ * }
+ * #10:target #conclude-button {
+ * display: block;
+ * }
+ */
+
