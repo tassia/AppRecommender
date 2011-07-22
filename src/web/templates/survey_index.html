@@ -1,7 +1,7 @@
 $var title: Survey
 $var mod = 'index';
-$var cssfiles: static/css/tabs.css static/css/debtags.css static/css/facebox.css 
-$var jsfiles: static/js/facebox.js
+$var cssfiles: static/css/tabs.css static/css/debtags.css static/css/facebox.css static/css/survey.css
+$var jsfiles: 
 
 
 <!-- Dynamic form -->
@@ -10,28 +10,6 @@ window.onload = function() {
     setupDependencies('weboptions'); //name of form(s). Seperate each with a comma (ie: 'weboptions', 'myotherform' )
   };
 </script>
-
-<script type="application/x-javascript">
-$$(document).ready(function() {
- $$('a[rel*=facebox]').facebox({
- loadingImage : '/static/images/loading.gif',
- closeImage   : '/static/images/closelabel.png'
- });
- $$("#tags-box").click(function () {
- $$("#tags-box").hide(1000);
- });
-
-});
-</script>
-
-
-<div id="sidebar">
-<div class="innertube">
-
-
-<br style="clear: both" />
-</div><!-- class="innertube" -->
-</div><!-- id="sidebar" -->
 
 <div id="maincontent">
 <div class="innertube">

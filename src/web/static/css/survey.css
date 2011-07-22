@@ -1,0 +1,23 @@
+#upload-slide { 
+display: block;
+position: absolute;
+top: 10px;
+left: 10px;
+}
+
+#header,
+#recommender-box {
+height: 80px;
+}
+
+.innertube {
+margin: 50px;
+}
+
+/* Display None itens Survey */
+#recommender-box #upfile,
+#advanced-button,
+#copyright span,
+#pkgs_list {
+display: none;
+}

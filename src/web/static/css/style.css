@@ -442,7 +442,7 @@ cursor: pointer;
 
 #advanced-button:hover { color: black; }
 
-
+#upload-slide,
 #advanced-slide { display: none; }
 
 #advanced-slide legend {
