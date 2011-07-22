@@ -1,0 +1,85 @@
+$def with (recommends, pkg_details, form, request)
+$var title: Feedback
+$var mod = 'feedback';
+$var cssfiles: static/coda-slider-2.0/javascripts/jquery.coda-slider-2.0.js static/coda-slider-2.0/javascripts/jquery.easing.1.3.js
+$var jsfiles: static/coda-slider-2.0/stylesheets/coda-slider-2.0.css static/coda-slider-2.0/stylesheets/reset.css
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+	<title>Coda-Slider 2.0</title>
+	<meta http-equiv="Content-Language" content="en-us" />
+
+	<meta name="author" content="Niall Doherty" />
+
+	<!-- Begin Stylesheets -->
+		<link rel="stylesheet" href="static/coda-slider-2.0/stylesheets/reset.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="static/coda-slider-2.0/stylesheets/coda-slider-2.0.css" type="text/css" media="screen" />
+	<!-- End Stylesheets -->
+
+	<!-- Begin JavaScript -->
+		<script type="text/javascript" src="static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js"></script>
+		<script type="text/javascript" src="static/coda-slider-2.0/javascripts/jquery.easing.1.3.js"></script>
+		<script type="text/javascript" src="static/coda-slider-2.0/javascripts/jquery.coda-slider-2.0.js"></script>
+		 <script type="text/javascript">
+			$$().ready(function() {
+				$$('#coda-slider-1').codaSlider({dynamicTabs: false, dynamicArrowLeftText: "&#171;", dynamicArrowRightText:"&#187;" });
+			});
+		 </script>
+	<!-- End JavaScript -->
+
+</head>
+
+<body class="coda-slider-no-js">
+
+<noscript>
+	<div>
+        <p>Unfortunately your browser does not hava JavaScript capabilities which are required to exploit full functionality of our site. This could be the result of two possible scenarios:</p>
+        <ol>
+            <li>You are using an old web browser, in which case you should upgrade it to a newer version. We recommend the latest version of <a href="http://www.getfirefox.com">Firefox</a>.</li>
+            <li>You have disabled JavaScript in you browser, in which case you will have to enable it to properly use our site. <a href="http://www.google.com/support/bin/answer.py?answer=23852">Learn how to enable JavaScript</a>.</li>
+        </ol>
+    </div>
+</noscript>
+
+<form action="/thanks" method="post" enctype="multipart/form-data">
+
+<div class="coda-slider-wrapper">
+	<div class="coda-slider preload" id="coda-slider-1">
+$for pkg in pkg_details:
+            <div class="panel">
+            	<div class="panel-wrapper">
+			<h1>$pkg['package']</h1>
+			<span>$pkg['description']</span><br />
+			<input type="radio" name="sex" value="male" /> Male<br />
+			<input type="radio" name="sex" value="female" /> Female
+            		<p>
+			    <li><b>Description</b>: <br />$:pkg['long_description']</li>
+			    $if pkg['homepage']:
+			        <li><b>Homepage</b>:<a href="$pkg['homepage']">$pkg['homepage']</a></li>
+			    $if pkg['task']:
+			        <li><b>Tasks</b>: $pkg['task']</li>
+			    <li><b>Section</b>: $pkg['section']</li>
+			    $if pkg['recommends']:
+			        <li><b>Recommends</b>: $pkg['recommends']</li>
+			    $if pkg['suggests']:
+			        <li><b>Suggests</b>: $pkg['suggests']</li>
+			    $if pkg['origin']:
+			        <li><b>Origin</b>: $pkg['origin']</li>
+			    <li><b>Maintainer</b>: $pkg['maintainer']</li>
+			  </ul>
+			</p>
+            	</div>
+            </div>
+</div><!-- .coda-slider -->
+</div><!-- .coda-slider-wrapper -->
+
+<input type="submit" value="Submit" />
+
+</form>
+
+</body>
+</html>
