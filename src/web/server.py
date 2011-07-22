@@ -29,7 +29,10 @@ class FeedbackForm(form.Form):
 
 class Index:
     def GET(self):
-        return render.index()
+        if Config().survey_mode:
+            return render.survey_index()
+        else:
+            return render.index()
 
 class About:
     def GET(self):
@@ -49,12 +52,12 @@ class Package:
         return render_plain.package(result)
 
     def get_details_from_dde(self, pkg):
-        json_source = "http://dde.debian.net/dde/q/udd/packages/all/%s?t=json" % pkg #FIXME: url goes to config
+        json_source = Config().dde_url % pkg
         json_data = json.load(urllib.urlopen(json_source))
-        # parsing tags:
+        # parse tags
         tags = self._debtags_list_to_dict(json_data['r']['tag'])
         json_data['r']['tag'] = tags
-        # formatting long description
+        # format long description
         json_data['r']['long_description'] = json_data['r']['long_description'].replace(' .\n','').replace('\n','<br />')
         return json_data['r']
 
@@ -243,12 +246,14 @@ class AppRecommender:
                         pkg_details.append(Package().get_details_from_dde(pkg))
                     except:
                         pkg_summaries[pkg] = ""
-
-            ### Temporarily rendering *survey* rather than *apprec* ###
-            #return render.apprec(recommendation, pkg_summaries,
-            #                     FeedbackForm(request.selected_strategies),request)
-            return render_plain.survey(recommendation, pkg_details,
-                                 FeedbackForm(request.selected_strategies),request)
+            if Config().survey_mode:
+                return render_plain.survey(recommendation, pkg_details,
+                                           FeedbackForm(request.selected_strategies),
+                                           request)
+            else:
+                return render.apprec(recommendation, pkg_summaries,
+                                     FeedbackForm(request.selected_strategies),
+                                     request)
 
     def _recommends(self,request):
         user = User(dict.fromkeys(request.pkgs_list,1),request.user_id)
@@ -256,7 +261,8 @@ class AppRecommender:
         results = dict()
         for strategy_str in request.selected_strategies:
             self.rec.set_strategy(strategy_str)
-            prediction = self.rec.get_recommendation(user).get_prediction(request.limit)
+            prediction = self.rec.get_recommendation(user,10).get_prediction()
+            print prediction
             results[strategy_str] = \
                 [result[0] for result in prediction]
         return results
@@ -286,10 +292,10 @@ render = web.template.render('templates/', base='layout')
 render_plain = web.template.render('templates/')
 
 urls = ('/',   		        'Index',
-        '/apprec',		'AppRecommender',
+        '/apprec',		    'AppRecommender',
         '/thanks',   		'Thanks',
-        '/support',             'Support',
-        '/about',               'About',
+        '/support',         'Support',
+        '/about',           'About',
         '/package/(.*)',  	'Package'
        )
 

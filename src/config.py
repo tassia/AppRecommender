@@ -38,7 +38,9 @@ class Config():
         self.debug = 0
         self.verbose = 0
         self.output = "/dev/null"
+        self.survey_mode = 1
         self.axi = "/var/lib/apt-xapian-index/index"
+        self.dde_url = "http://dde.debian.net/dde/q/udd/packages/all/%s?t=json"
         self.popcon_index = os.path.expanduser("~/.app-recommender/popcon_index")
         self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
         self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters_dir")
@@ -111,8 +113,10 @@ class Config():
         self.debug = self.read_option('general', 'debug')
         self.debug = self.read_option('general', 'verbose')
         self.output_filename = self.read_option('general', 'output')
+        self.survey_mode = self.read_option('general', 'survey_mode')
 
         self.axi = self.read_option('data_sources', 'axi')
+        self.dde_url = self.read_option('data_sources', 'dde_url')
         self.popcon_index = os.path.expanduser(self.read_option('data_sources','popcon_index'))
         self.popcon_dir = os.path.expanduser(self.read_option('data_sources', 'popcon_dir'))
         self.index_mode = self.read_option('data_sources', 'index_mode')
