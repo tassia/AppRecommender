@@ -3,12 +3,38 @@ display: block;
 position: absolute;
 top: 0px;
 left: 0px;
+padding: 0px;
+}
+
+#header,
+#recommender-box {
+height: 40px;
+}
+
+#submit-button {
+height: 42px;
 }
 
 #tip-upload {
 top: 40px;
 width: 420px;
 }
+
+#tip-finish,
+#tip-strategy .tip {
+display: none;
+position: absolute;
+top: 25px;
+width: 250px;
+right: 0px;
+font-size: 11px;
+font-weight: normal;
+color: #000000;
+}
+
+#finish-button:hover #tip-finish,
+#tip-strategy:hover .tip { display: block; }
+
 
 .innertube {
 margin: 30px;
@@ -57,10 +83,28 @@ list-style: none;
 margin-bottom: 10px;
 }
 
-/* Panel */
+#strategy-button,
+#finish-button {
+border: 1px solid #888a85;
+box-shadow: 0 1px 4px gray inset;
+border-radius: 5px;
+color: #585C60;
+font-size: 12px;
+font-weight: 600;
+width: 135px;
+height: 30px;
+line-height: 14px;
+margin: 0;
+margin-left: 10px;
+padding: 5px;
+z-index: 2;
+cursor: pointer;
+}
 
-#panel-controls {
-float: right;
+#panel-controls,
+#controls-form { 
+float: right; 
+position: relative;
 }
 
 

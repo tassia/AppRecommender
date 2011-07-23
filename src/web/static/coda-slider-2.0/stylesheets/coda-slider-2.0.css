@@ -22,7 +22,7 @@
 	.coda-slider, .coda-slider .panel { width: 600px } 
 	
 	/* Change margin and width of the slider (with dynamic arrows) */
-	.coda-slider-wrapper.arrows .coda-slider, .coda-slider-wrapper.arrows .coda-slider .panel { width: 600px }
+	.coda-slider-wrapper.arrows .coda-slider, .coda-slider-wrapper.arrows .coda-slider .panel { width: 500px }
 	.coda-slider-wrapper.arrows .coda-slider { margin: 0 10px }
 	
 	/* Arrow styling */
