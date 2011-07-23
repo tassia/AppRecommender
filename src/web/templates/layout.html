@@ -75,7 +75,21 @@ if ((u==null) && (x==null) || (x=="Write your list App here or send a file list 
             >Write your list App here or send a file list this icon:</textarea></label>
         </div>
    </fieldset>
-
+    <div id="upload-slide">
+	 <fieldset>
+	<p>
+	   <label title="Upload file">Upload file: <input type="file" name="pkgs_file" size="20" /></label>
+	</p>
+	<div id="tip-upload">
+	<p>
+	You can use file <strong>/var/log/popularity-contest</strong> or create a with <strong>dpkg</strong>, use:
+	</p>
+	<p>
+	<code> # dpkg -l > blih.list </code>
+	</p>
+	</div><!-- id="tip-upload" -->
+	</fieldset>
+   </div><!-- id="upload-slide" -->
    <div id="advanced-slide">
    <fieldset>
      <legend>General</legend>
@@ -124,19 +138,6 @@ if ((u==null) && (x==null) || (x=="Write your list App here or send a file list 
 	</div>
      </fieldset>
     </div><!-- id="advanced-slide" -->
-    <div id="upload-slide">
-	 <fieldset>
-	<p>
-	   <label title="Upload file">Upload file: <input type="file" name="pkgs_file" size="18" /></label>
-	</p>
-	<p>
-	You can use file <strong>/var/log/popularity-contest</strong> or create a with <strong>dpkg</strong>, use:
-	</p>
-	<p>
-	<code> # dpkg -l > blih.list </code>
-	</p>
-	</fieldset>
-   </div><!-- id="upload-slide" -->
    </form>
    </div>
 

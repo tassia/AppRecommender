@@ -52,11 +52,11 @@ blockquote:before, blockquote:after, q:before, q:after { content: ""; }
  */
 
 body{
+background: #b0c9e5 url('../images/pattern.gif');
 font-family: Arial, Verdana, sans-serif;
 font-size: 0.9em;
 line-height: 1.1;
 font-weight: normal;
-background-image: url('../images/pattern.gif');
 }
 
 #wrap {
@@ -69,7 +69,7 @@ margin-right: auto;
 margin-left: auto;
 background-color: white;
 border-radius: 10px;
-box-shadow: 0 0 20px #000000;
+box-shadow: 0 2px 20px #545454;
 background: #e0e0e0; /* Old browsers: generate by http://www.colorzilla.com/gradient-editor/ */
 background: -moz-linear-gradient(top, #e0e0e0 0%, #ffffff 46%); /* FF3.6+ */
 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#e0e0e0), color-stop(46%,#ffffff)); /* Chrome,Safari4+ */
@@ -86,28 +86,27 @@ top: 0px;
 left: -310px;
 margin-left: 50%;
 width: 620px;
-height: 60px;
-border-radius: 0 0 10px 10px;
-box-shadow: 0 -1px 5px #000000 inset, 0 2px 20px #545454;
+height: 50px;
+border-radius: 0 0 20px 20px;
+box-shadow: 0 2px 20px #545454;
 outline: medium none;
 padding: 15px;
-background: #6f2525;
-/* filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#babdb6', endColorstr='#000000');
- * background: -webkit-gradient(linear, left top, left bottom, from(#babdb6), to(#000000));
- * background: -moz-linear-gradient(top,  #babdb6,  #000000);
- */
+background: #eeeeec; 
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#eeeeec', endColorstr='#babdb6');
+background: -webkit-gradient(linear, left top, left bottom, from(#babdb6), to(#babdb6));
+background: -moz-linear-gradient(top,  #eeeeec,  #babdb6);
 }
 
 #logo span { display: none; }
 #logo { 
-position: absolute;
+display: none;
+position: absolute; /* FIXME: Remove Logo */
 top: 0;
 left: -32px;
 background: url('../images/icon95.png') no-repeat;
 width: 105px;
 height: 95px;
 margin: 0px;
-display: block;
 }
 
 #navbar { 
@@ -331,13 +330,13 @@ background-image: url('../images/admon-note.png');
 #recommender-box { 
 position: relative;
 margin:0;
-width: 560px;
+/* width: 560px; FIXME: remove logo */
+/* float: right; */
 vertical-align: top;
 border: 1px solid #888a85;
 border-radius: 4px;
 box-shadow: 0 1px 4px gray inset;
 background: white;
-float: right;
 z-index: 3;
 }
 
@@ -445,9 +444,12 @@ cursor: pointer;
 #upload-slide,
 #advanced-slide { display: none; }
 
+#upload-slide label,
 #advanced-slide legend {
 font-weight: bold;
 }
+
+#upload-slide,
 #advanced-slide fieldset {
 boder: 1px solid gray;
 font-size: 0.9em;
@@ -455,5 +457,19 @@ padding: 5px;
 margin: 10px;
 }
 
+#tip-upload {
+display: none;
+position: absolute;
+top: 0px;
+background: #fef7bc;
+padding: 10px;
+border-radius: 10px;
+box-shadow: 0 1px 10px #545454;
+z-index: 1;
+}
+
+#upload-slide:hover #tip-upload {
+display: block;
+}
 
 

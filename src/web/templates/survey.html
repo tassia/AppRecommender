@@ -1,14 +1,18 @@
 $def with (recommends, pkg_details, form, request)
 $var title: Survey
 $var mod = 'survey';
-$var cssfiles: static/coda-slider-2.0/stylesheets/coda-slider-2.0.css static/css/survey.css
-$var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda-slider-2.0/javascripts/jquery.coda-slider-2.0.js static/coda-slider-2.0/javascripts/jquery.easing.1.3.js
+$var cssfiles: static/coda-slider-2.0/stylesheets/coda-slider-2.0.css static/css/facebox.css static/css/survey.css
+$var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda-slider-2.0/javascripts/jquery.coda-slider-2.0.js static/coda-slider-2.0/javascripts/jquery.easing.1.3.js static/js/facebox.js
 
 
 <!-- survey slides -->
 <script type="text/javascript">
-    $$().ready(function() {
-                $$('#coda-slider-1').codaSlider({dynamicTabs: false, dynamicArrowLeftText: "&#171;", dynamicArrowRightText:"next &#187;" });
+    $$(document).ready(function() {
+        $$('a[rel*=facebox]').facebox({
+        loadingImage : '/static/images/loading.gif',
+        closeImage   : '/static/images/closelabel.png'
+        });
+        $$('#coda-slider-1').codaSlider({dynamicTabs: false, dynamicArrowLeftText: "&#171;", dynamicArrowRightText:"next &#187;" });
     });
 </script>
 
@@ -25,14 +29,22 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 $for pkg in pkg_details:
             <div class="panel">
             	<div class="panel-wrapper">
-			<h1>$pkg['package']</h1>
-			<span>$pkg['description']</span><br />
-			<input type="checkbox" name="good-$pkg['package']" /> Good <br />
-			<input type="checkbox" name="surprise-$pkg['package']" /> Surprise
-            		<p>
+		     <div id="panel-controls">
+       			<label for="good-$pkg['package']">Good</label>
+			<input type="checkbox" name="good-$pkg['package']" /><br />
+			<label for="surprise-$pkg['package']">Surprise</label>
+			<input type="checkbox" name="surprise-$pkg['package']" /> 
+		     </div><!-- #panel-controls -->
+			<h1 id="title_pkg">$pkg['package'] <br />
+			<span>$pkg['description']</span></h1>
+            		<div class="content-pkg">
+			<div class="screenshot">
+			<a class="link-thumb" rel="facebox" href="http://screenshots.debian.net/screenshot/$pkg['package']?.jpg" title="Screenshot of package $pkg['package']">
+			<img src="http://screenshots.debian.net/thumbnail/$pkg['package']" alt="Screenshot $pkg['package']" /></a>
+			</div><!-- .item -->
 			    <li><b>Description</b>: <br />$:pkg['long_description']</li>
 			    $if pkg['homepage']:
-			        <li><b>Homepage</b>:<a href="$pkg['homepage']">$pkg['homepage']</a></li>
+			        <li><b>Homepage</b>: $pkg['homepage']</li>
 			    $if pkg['task']:
 			        <li><b>Tasks</b>: $pkg['task']</li>
 			    <li><b>Section</b>: $pkg['section']</li>
@@ -44,9 +56,9 @@ $for pkg in pkg_details:
 			        <li><b>Origin</b>: $pkg['origin']</li>
 			    <li><b>Maintainer</b>: $pkg['maintainer']</li>
 			  </ul>
-			</p>
-            	</div>
-            </div>
+			</div><!-- id="content-pkg" -->
+            	</div><!-- .panel-wrapper -->
+            </div><!-- .panel -->
 </div><!-- .coda-slider -->
 </div><!-- .coda-slider-wrapper -->
 
