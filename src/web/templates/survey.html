@@ -9,7 +9,7 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
     $$(document).ready(function() {
         $$("#bar-header").click(function () {
         $$("#header").slideToggle("slow");
-        });    
+        });
         $$('a[rel*=facebox]').facebox({
         loadingImage : '/static/images/loading.gif',
         closeImage   : '/static/images/closelabel.png'
@@ -18,21 +18,6 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
     });
 </script>
 
-<div id="sidebar">
-<div class="innertube">
-
-<div id="details_box" class="graybox align-left">
-<h2>Recommendation strategy details</h2>
-        <ul class="toc">
-	$for key, value in request.get_details().items():
-
-        <li><b>$key:</b> $value</li>
-
-</div><!-- id="details_box" -->
-
-</div><!-- class="innertube" -->
-<br style="clear: both">
-</div><!-- id="sidebar" -->
 
 <div id="maincontent">
 <div class="innertube">
@@ -79,12 +64,12 @@ $for pkg in pkg_details:
 </div><!-- .coda-slider -->
 </div><!-- .coda-slider-wrapper -->
 
-<div id="controls-form">
+<div id="controls-form" style="display: none;"><!-- display show in the end form -->
 <a href="#finish" id="finish-button" class="glass">Finish 
   <div class="tip important" id="tip-finish"><p>Tem certeza que não gostaria de avaliar uma nova estratégia? </p></div>
 </a>
-<label for="strategy_button" id="tip-strategy"><div class="tip note"><p> Gerar um novo resultado com uma estratégia diferente para mesma lista de pacotes ou <a id="bar-header">envie uma nova lista de pacotes</a>. </p></div><input id="strategy-button" name="strategy_button" type="submit" value="New Strategy" class="glass" /></label>
-</div>
+<label for="strategy_button" id="tip-strategy"><div class="tip note"><p> Gerar um novo resultado com uma estratégia diferente para mesma lista de pacotes ou <a id="bar-header" style="text-decoration: underline; cursor: pointer;">envie uma nova lista de pacotes</a>. </p></div><input id="strategy-button" name="strategy_button" type="submit" value="New Strategy" class="glass" /></label>
+</div><!-- id="controls-form" -->
 
 </form>
 
