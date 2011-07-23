@@ -45,8 +45,7 @@ background: none;
 }
 
 .coda-slider-wrapper {
-margin-right: auto;
-margin-left: auto;
+clear: none;
 }
 
 body.survey #wrap {
@@ -72,7 +71,9 @@ margin: 5px;
 
 .content-pkg {
 overflow: auto;
+display: block;
 height: 250px;
+min-height: 250px;
 }
 
 .content-pkg ul { 
