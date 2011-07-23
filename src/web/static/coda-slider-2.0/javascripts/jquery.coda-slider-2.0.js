@@ -100,6 +100,7 @@ $.fn.codaSlider = function(settings) {
 			navClicks++;
 			if (currentPanel == panelCount) {
 				this.style.display = 'none'; // Button display none;
+				document.getElementById("controls-form").style.display = 'block'; // Show buttons controls;
 				return false;
 				offset = 0;
 				currentPanel = 1;
