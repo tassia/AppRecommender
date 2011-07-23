@@ -40,7 +40,7 @@ class Config():
         self.output = "/dev/null"
         self.survey_mode = 1
         self.axi = "/var/lib/apt-xapian-index/index"
-        self.dde_url = "http://dde.debian.net/dde/q/udd/packages/all/%s?t=json"
+        self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
         self.popcon_index = os.path.expanduser("~/.app-recommender/popcon_index")
         self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
         self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters_dir")
@@ -64,11 +64,12 @@ class Config():
         print ""
         print " [ data sources ]"
         print "  -a, --axi=PATH             Path to apt-xapian-index"
+        print "  -e, --dde=URL              DDE url"
         print "  -p, --popconindex=PATH     Path to popcon index"
         print "  -m, --popcondir=PATH       Path to popcon submissions dir"
         print "  -u, --indexmode=           'old'|'reindex'|'cluster'|'recluster'"
         print "  -l, --clustersdir=PATH     Path to popcon clusters dir"
-        print "  -e, --medoids=k            Number of medoids for clustering"
+        print "  -c, --medoids=k            Number of medoids for clustering"
         print ""
         print " [ recommender ]"
         print "  -w, --weight=OPTION        Search weighting scheme"
@@ -127,9 +128,9 @@ class Config():
         self.strategy = self.read_option('recommender', 'strategy')
         self.profile_size = self.read_option('recommender', 'profile_size')
 
-        short_options = "hdvo:a:p:m:ul:e:w:s:z:"
+        short_options = "hdvo:a:p:m:ul:c:w:s:z:"
         long_options = ["help", "debug", "verbose", "output=",
-                        "axi=", "popconindex=", "popcondir=", "indexmode=",
+                        "axi=", "dde=", "popconindex=", "popcondir=", "indexmode=",
                         "clustersdir=", "kmedoids=", "weight=", "strategy=",
                         "profile_size="]
         try:
@@ -153,6 +154,8 @@ class Config():
                 self.output = p
             elif o in ("-a", "--axi"):
                 self.axi = p + "/index"
+            elif o in ("-e", "--dde"):
+                self.dde_url = p
             elif o in ("-p", "--popconindex"):
                 self.popcon_index = p
             elif o in ("-m", "--popcondir"):
@@ -161,7 +164,7 @@ class Config():
                 self.index_mode = p
             elif o in ("-l", "--clustersdir"):
                 self.clusters_dir = p
-            elif o in ("-e", "--kmedoids"):
+            elif o in ("-c", "--kmedoids"):
                 self.k_medoids = p
             elif o in ("-w", "--weight"):
                 self.weight = p
