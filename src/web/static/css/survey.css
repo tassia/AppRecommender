@@ -40,6 +40,11 @@ display: block;
 z-index: 3;
 }
 
+#controls-form a:hover,
+#controls-form input:hover {
+background: white;
+}
+
 
 .innertube {
 margin: 30px;
