@@ -7,14 +7,14 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 
 <script type="text/javascript">
     $$(document).ready(function() {
-        $$("#bar-header").click(function () {
+        $$("#bar-button").click(function () {
         $$("#header").slideToggle("slow");
         });
         $$('a[rel*=facebox]').facebox({
         loadingImage : '/static/images/loading.gif',
         closeImage   : '/static/images/closelabel.png'
         });
-        $$('#coda-slider-1').codaSlider({dynamicTabs: false, dynamicArrowLeftText: "&#171;", dynamicArrowRightText:"next &#187;" });
+        $$('#coda-slider-1').codaSlider({dynamicTabs: false, dynamicArrowLeftText: "&#171; back", dynamicArrowRightText:"next &#187;" });
     });
 </script>
 
@@ -32,10 +32,12 @@ $for pkg in pkg_details:
             <div class="panel">
             	<div class="panel-wrapper">
 		     <div id="panel-controls">
+			<label for="bad-$pkg['package']">Bad</label>
+			<input class="radio" type="radio" name="radio" value="poor-$pkg['package']" /><br />
        			<label for="good-$pkg['package']">Good</label>
-			<input type="checkbox" name="good-$pkg['package']" /><br />
+			<input class="radio" type="radio" name="radio" value="good-$pkg['package']" /><br />
 			<label for="surprise-$pkg['package']">Surprise</label>
-			<input type="checkbox" name="surprise-$pkg['package']" /> 
+			<input class="radio" type="radio" name="radio" value="surprise-$pkg['package']" /> 
 		     </div><!-- #panel-controls -->
 			<h1 id="title_pkg">$pkg['package'] <br />
 			<span>$pkg['description']</span></h1>
@@ -65,10 +67,15 @@ $for pkg in pkg_details:
 </div><!-- .coda-slider-wrapper -->
 
 <div id="controls-form" style="display: none;"><!-- display show in the end form -->
-<a href="#finish" id="finish-button" class="glass">Finish 
-  <div class="tip important" id="tip-finish"><p>Tem certeza que não gostaria de avaliar uma nova estratégia? </p></div>
+<a id="finish-button" class="glass">Finish 
+  <div class="tip important" id="tip-bar"><p>Tem certeza que não gostaria de avaliar uma nova estratégia? </p></div>
 </a>
-<label for="strategy_button" id="tip-strategy"><div class="tip note"><p> Gerar um novo resultado com uma estratégia diferente para mesma lista de pacotes ou <a id="bar-header" style="text-decoration: underline; cursor: pointer;">envie uma nova lista de pacotes</a>. </p></div><input id="strategy-button" name="strategy_button" type="submit" value="New Strategy" class="glass" /></label>
+
+<a id="bar-button" class="glass">New Recommends 
+  <div class="tip note" id="tip-finish"><p>Fazer uma nova recomendação com uma nova lista de pacotes.</p></div>
+</a>
+
+<label for="strategy_button" id="tip-strategy"><div class="tip tip"><p> Gerar um novo resultado com uma estratégia diferente para esta mesma lista de pacotes. </p></div><input id="strategy-button" name="strategy_button" type="submit" value="New Strategy" class="glass" /></label>
 </div><!-- id="controls-form" -->
 
 </form>

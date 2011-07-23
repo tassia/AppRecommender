@@ -20,6 +20,7 @@ top: 40px;
 width: 420px;
 }
 
+#tip-bar,
 #tip-finish,
 #tip-strategy .tip {
 display: none;
@@ -32,8 +33,9 @@ font-weight: normal;
 color: #000000;
 }
 
-#finish-button:hover #tip-finish,
-#tip-strategy:hover .tip { display: block; }
+a:hover #tip-bar,
+a:hover #tip-finish,
+#tip-strategy:hover .tip { display: block; background-color: white; }
 
 
 .innertube {
@@ -54,7 +56,7 @@ min-height: 450px;
 }
 
 /* Display None itens Survey */
-.coda-nav-left,
+#coda-nav-left-1,
 body.survey #header,
 #recommender-box #upfile,
 #advanced-button,
@@ -84,6 +86,7 @@ list-style: none;
 margin-bottom: 10px;
 }
 
+#bar-button,
 #strategy-button,
 #finish-button {
 border: 1px solid #888a85;
@@ -178,4 +181,5 @@ color: #000;
 #details_box li {
 margin-bottom: 10px;
 }
+
 
