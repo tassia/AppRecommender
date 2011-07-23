@@ -7,6 +7,9 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 
 <script type="text/javascript">
     $$(document).ready(function() {
+        $$("#bar-header").click(function () {
+        $$("#header").slideToggle("slow");
+        });    
         $$('a[rel*=facebox]').facebox({
         loadingImage : '/static/images/loading.gif',
         closeImage   : '/static/images/closelabel.png'
@@ -18,7 +21,7 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 <div id="sidebar">
 <div class="innertube">
 
-<div id="details_box" class="graybox align-left glass_blue">
+<div id="details_box" class="graybox align-left">
 <h2>Recommendation strategy details</h2>
         <ul class="toc">
 	$for key, value in request.get_details().items():
@@ -80,7 +83,7 @@ $for pkg in pkg_details:
 <a href="#finish" id="finish-button" class="glass">Finish 
   <div class="tip important" id="tip-finish"><p>Tem certeza que não gostaria de avaliar uma nova estratégia? </p></div>
 </a>
-<label for="strategy_button" id="tip-strategy"><div class="tip note"><p> Gerar um novo resultado com uma estratégia diferente para mesma lista de pacotes. </p></div><input id="strategy-button" name="strategy_button" type="submit" value="New Strategy" class="glass" /></label>
+<label for="strategy_button" id="tip-strategy"><div class="tip note"><p> Gerar um novo resultado com uma estratégia diferente para mesma lista de pacotes ou <a id="bar-header">envie uma nova lista de pacotes</a>. </p></div><input id="strategy-button" name="strategy_button" type="submit" value="New Strategy" class="glass" /></label>
 </div>
 
 </form>

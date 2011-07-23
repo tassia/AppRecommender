@@ -27,22 +27,22 @@ $ url_base = "http://localhost:8080"
 <script type="text/javascript">
 window.onload = function() {
     setupDependencies('weboptions'); //name of form(s). Seperate each with a comma (ie: 'weboptions', 'myotherform' )
-  };
+};
 
 function validateForm()
-{
-var u=document.forms["weboptions"]["pkgs_file"].value
-var x=document.forms["weboptions"]["pkgs_list"].value
-if ((u==null) && (x==null) || (x=="Write your list App here or send a file list this icon:") && (u=="") )
-  {
-  alert("Choice your list App or create a list!");
-  return false;
-  }
-else {
-  if (x=='Write your list App here or send a file list this icon:') {x=''}
-  }
-};
-</script>
+ {
+  var t = $$("#pkgs_list");
+  var i = $$("input[name=pkgs_file]");
+  if (!i.val() && ( !t.val() || t.val() == "Write your list App here or send a file list this icon:")) {
+    alert("Choose your list app or create a list!");
+    return false;
+  } else {
+    if (i.val()) t.val("");
+  	return true;
+   }
+}
+ </script>
+
 
 <script type="text/javascript">
  $$(document).ready(function() {
@@ -157,7 +157,6 @@ else {
         </ol>
     </div>
 </noscript>
-
 
 $:content
 
