@@ -26,6 +26,18 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 
 <form action="/thanks" method="post" enctype="multipart/form-data" name="surveyform">
 
+<div id="controls-form" style="display: none;"><!-- display show in the end form -->
+<a id="finish-button" class="glass">Finish 
+  <div class="tip important" id="tip-bar"><p>Tem certeza que não gostaria de avaliar uma nova estratégia? </p></div>
+</a>
+
+<a id="bar-button" class="glass">New Recommends 
+  <div class="tip note" id="tip-finish"><p>Fazer uma nova recomendação com uma nova lista de pacotes.</p></div>
+</a>
+
+<label for="strategy_button" id="tip-strategy"><div class="tip tip"><p> Gerar um novo resultado com uma estratégia diferente para esta mesma lista de pacotes. </p></div><input id="strategy-button" name="strategy_button" type="submit" value="New Strategy" class="glass" /></label>
+</div><!-- id="controls-form" -->
+
 <div class="coda-slider-wrapper">
 	<div class="coda-slider preload" id="coda-slider-1">
 $for pkg in pkg_details:
@@ -65,18 +77,6 @@ $for pkg in pkg_details:
             </div><!-- .panel -->
 </div><!-- .coda-slider -->
 </div><!-- .coda-slider-wrapper -->
-
-<div id="controls-form" style="display: none;"><!-- display show in the end form -->
-<a id="finish-button" class="glass">Finish 
-  <div class="tip important" id="tip-bar"><p>Tem certeza que não gostaria de avaliar uma nova estratégia? </p></div>
-</a>
-
-<a id="bar-button" class="glass">New Recommends 
-  <div class="tip note" id="tip-finish"><p>Fazer uma nova recomendação com uma nova lista de pacotes.</p></div>
-</a>
-
-<label for="strategy_button" id="tip-strategy"><div class="tip tip"><p> Gerar um novo resultado com uma estratégia diferente para esta mesma lista de pacotes. </p></div><input id="strategy-button" name="strategy_button" type="submit" value="New Strategy" class="glass" /></label>
-</div><!-- id="controls-form" -->
 
 </form>
 

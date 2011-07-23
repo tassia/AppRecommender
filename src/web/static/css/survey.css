@@ -26,7 +26,7 @@ width: 420px;
 display: none;
 position: absolute;
 top: 15px;
-width: 250px;
+width: 300px;
 right: 0px;
 font-size: 11px;
 font-weight: normal;
@@ -35,7 +35,10 @@ color: #000000;
 
 a:hover #tip-bar,
 a:hover #tip-finish,
-#tip-strategy:hover .tip { display: block; background-color: white; }
+#tip-strategy:hover .tip { 
+display: block; 
+z-index: 3;
+}
 
 
 .innertube {
@@ -46,8 +49,8 @@ margin: 30px;
 background: none;
 }
 
-.coda-slider-wrapper {
-clear: none;
+#wrap {
+max-width: 780px;
 }
 
 body.survey #wrap {
@@ -56,6 +59,7 @@ min-height: 450px;
 }
 
 /* Display None itens Survey */
+#footer,
 #coda-nav-left-1,
 body.survey #header,
 #recommender-box #upfile,
@@ -74,8 +78,8 @@ margin: 5px;
 .content-pkg {
 overflow: auto;
 display: block;
-height: 250px;
-min-height: 250px;
+height: 400px;
+min-height: 400px;
 }
 
 .content-pkg ul { 
@@ -127,59 +131,5 @@ font-weight: normal;
 font-size: 0.8em;
 }
 
-#debtags_box { 
-display: block;
-float: right;
-width: 150px;
-font-size: 0.8em;
-}
-
-#debtags_box h2 {
-font-weight: bold;
-}
-
-#debtags_pkg ul { 
-padding: 3px;
-}
-
-#debtags_pkg li { 
-font-weight: bold;
-cursor: pointer;
-}
-
-#debtags_pkg li ul li { 
-font-weight: normal;
-margin-left: 5px;
-border-left: 1px solid white;
-border-bottom: 1px solid white;
-cursor: pointer;
-}
-
-#debresources_box { 
-float: left;
-margin-top: 20px;
-}
-
-#debresources_box li {
-margin-bottom: 4px;
-}
-
-/* Details BOX */
-
-#details_box {
-margin-top: 50px;
-padding: 20px;
-font-size: 0.8;
-color: #545454;
-}
-
-#details_box h2 {
-margin: -5px 0 15px 0px;
-color: #000;
-}
-
-#details_box li {
-margin-bottom: 10px;
-}
 
 
