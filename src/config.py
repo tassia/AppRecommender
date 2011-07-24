@@ -128,7 +128,7 @@ class Config():
         self.strategy = self.read_option('recommender', 'strategy')
         self.profile_size = self.read_option('recommender', 'profile_size')
 
-        short_options = "hdvo:a:p:m:ul:c:w:s:z:"
+        short_options = "hdvo:a:e:p:m:ul:c:w:s:z:"
         long_options = ["help", "debug", "verbose", "output=",
                         "axi=", "dde=", "popconindex=", "popcondir=", "indexmode=",
                         "clustersdir=", "kmedoids=", "weight=", "strategy=",
