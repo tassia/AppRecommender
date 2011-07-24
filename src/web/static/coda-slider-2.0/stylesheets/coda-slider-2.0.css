@@ -25,9 +25,10 @@
 	.coda-slider-wrapper.arrows .coda-slider, .coda-slider-wrapper.arrows .coda-slider .panel { width: 500px }
 	.coda-slider-wrapper.arrows .coda-slider { margin: 0 10px }
 	
-	/* Arrow styling */
-	.coda-nav-left a, .coda-nav-right a { background: #000; color: #fff; padding: 5px; width: 100px }
-	
+	/* Arrow styling 
+	 * .coda-nav-left a, .coda-nav-right a { background: #000; color: #fff; padding: 5px; width: 100px }
+	 */
+
 	/* Tab nav */
 	.coda-nav ul li a.current { background: #39c }
 	

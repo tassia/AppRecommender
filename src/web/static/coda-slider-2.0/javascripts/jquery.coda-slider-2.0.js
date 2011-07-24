@@ -8,7 +8,7 @@ $(function(){
 	// Remove the coda-slider-no-js class from the body
 	$("body").removeClass("coda-slider-no-js");
 	// Preloader
-	$(".coda-slider").children('.panel').hide().end().prepend('<p class="loading">Loading...<br /><img src="images/ajax-loader.gif" alt="loading..." /></p>');
+	$(".coda-slider").children('.panel').hide().end().prepend('<p class="loading">Loading...<br /><img src="/static/images/ajax-loader.gif" alt="loading..." /></p>');
 });
 
 var sliderCount = 1;
@@ -47,7 +47,7 @@ $.fn.codaSlider = function(settings) {
 		if (settings.dynamicArrows) {
 			slider.parent().addClass("arrows");
 			slider.before('<div class="coda-nav-left" id="coda-nav-left-' + sliderCount + '"><a href="#">' + settings.dynamicArrowLeftText + '</a></div>');
-			slider.after('<div class="coda-nav-right" id="coda-nav-right-' + sliderCount + '"><a href="#">' + settings.dynamicArrowRightText + '</a></div>');
+			slider.after('<div class="coda-nav-right" id="coda-nav-right-' + sliderCount + '"><a accesskey="n" class="glass" id="next-button" onClick="document.getElementById(\'coda-nav-right-1\').style.display = \'none\';" href="#">' + settings.dynamicArrowRightText + '</a></div>');
 		};
 		
 		var panelWidth = slider.find(".panel").width();

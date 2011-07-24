@@ -20,8 +20,8 @@ top: 40px;
 width: 420px;
 }
 
-#tip-bar,
-#tip-finish,
+#tip-restart .tip,
+#tip-finish .tip,
 #tip-strategy .tip {
 display: none;
 position: absolute;
@@ -33,14 +33,14 @@ font-weight: normal;
 color: #000000;
 }
 
-a:hover #tip-bar,
-a:hover #tip-finish,
+#tip-restart:hover .tip,
+#tip-finish:hover .tip,
 #tip-strategy:hover .tip { 
 display: block; 
 z-index: 3;
 }
 
-#controls-form a:hover,
+#next-button:hover,
 #controls-form input:hover {
 background: white;
 }
@@ -66,6 +66,7 @@ min-height: 450px;
 /* Display None itens Survey */
 #footer,
 #coda-nav-left-1,
+#coda-nav-right-1,
 body.survey #header,
 #recommender-box #upfile,
 #advanced-button,
@@ -80,13 +81,6 @@ float: right;
 margin: 5px;
 }
 
-.content-pkg {
-overflow: auto;
-display: block;
-height: 400px;
-min-height: 400px;
-}
-
 .content-pkg ul { 
 list-style: none;
 }
@@ -95,7 +89,8 @@ list-style: none;
 margin-bottom: 10px;
 }
 
-#bar-button,
+#next-button,
+#restart-button,
 #strategy-button,
 #finish-button {
 border: 1px solid #888a85;
@@ -112,6 +107,10 @@ margin-left: 10px;
 padding: 5px;
 z-index: 2;
 cursor: pointer;
+}
+
+#next-button {
+height: 20px;
 }
 
 #panel-controls,

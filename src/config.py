@@ -40,7 +40,8 @@ class Config():
         self.output = "/dev/null"
         self.survey_mode = 1
         self.axi = "/var/lib/apt-xapian-index/index"
-        self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
+#        self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
+        self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
         self.popcon_index = os.path.expanduser("~/.app-recommender/popcon_index")
         self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
         self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters_dir")

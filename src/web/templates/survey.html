@@ -7,15 +7,17 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 
 <script type="text/javascript">
     $$(document).ready(function() {
-        $$("#bar-button").click(function () {
-        $$("#header").slideToggle("slow");
+        $$("input[type=radio]").click(function () {
+        $$("#coda-nav-right-1").show("fast");
         });
+
         $$('a[rel*=facebox]').facebox({
         loadingImage : '/static/images/loading.gif',
         closeImage   : '/static/images/closelabel.png'
         });
-        $$('#coda-slider-1').codaSlider({dynamicTabs: false, dynamicArrowLeftText: "&#171; back", dynamicArrowRightText:"next &#187;" });
+        $$('#coda-slider-1').codaSlider({dynamicTabs: false, dynamicArrowLeftText: "L", dynamicArrowRightText:"Next" });
     });
+
 </script>
 
 
@@ -30,17 +32,27 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 <input type="hidden" name="strategy" value=$request.strategy>
 <div id="controls-form" style="display: none;"><!-- display show in the end form -->
 
-<!--<a id="finish-button" class="glass">Finish
-  <div class="tip important" id="tip-bar"><p>Conclude your participation in this survey</p></div>
-</a>
-<a id="bar-button" class="glass" href="http://localhost:8080">Restart
-  <div class="tip note" id="tip-finish"><p>Restart the survey with a new packages list.</p></div>
-</a>-->
+<label for="restart_button" id="tip-restart">
+   <div class="tip note">
+    <p>Restart the survey with a new packages list.</p>
+   </div>
+   <input id="restart-button" name="restart_button" type="submit" value="Restart" class="glass" />
+</label>
 
-<input id="restart-button" name="restart_button" type="submit" value="Restart" class="glass" />
-<input id="finish-button" name="finish_button" type="submit" value="Finish" class="glass" />
+<label for="finish_button" id="tip-finish">
+   <div class="tip important">
+   <p>Conclude your participation in this survey</p>
+   </div>
+   <input id="finish-button" name="finish_button" type="submit" value="Finish" class="glass" rel="facebox" />
+</label>
 
-<label for="strategy_button" id="tip-strategy"><div class="tip tip"><p> New round of evaluations for the same list of packages and suggestions produced by a different recommendation strategy. </p></div><input id="strategy-button" name="strategy_button" type="submit" value="New Round" class="glass" /></label>
+<label for="strategy_button" id="tip-strategy">
+   <div class="tip tip">
+   <p> New round of evaluations for the same list of packages and suggestions produced by a different recommendation strategy. </p>
+   </div>
+   <input id="strategy-button" name="strategy_button" type="submit" value="New Round" class="glass" />
+</label>
+
 </div><!-- id="controls-form" -->
 
 <div class="coda-slider-wrapper">
@@ -50,12 +62,11 @@ $for pkg in pkg_details:
             	<div class="panel-wrapper">
 		     <div id="panel-controls">
 			<label for="poor">Poor</label>
-			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="poor" /><br />
+			<input accesskey="p" class="radio" type="radio" onClick="; showNext();" name="evaluation-$pkg_details.index(pkg)" value="poor" /><br />
        			<label for="good">Good</label>
-			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="good" /><br />
+			<input accesskey="g" class="radio" type="radio" onClick="javascript: showNext();" name="evaluation-$pkg_details.index(pkg)" value="good" /><br />
 			<label for="surprising">Surprising</label>
-			<input class="radio" type="radio"
-            name="evaluation-$pkg_details.index(pkg)" value="surprising" />
+			<input accesskey="s" class="radio" type="radio" onClick="showNext()" name="evaluation-$pkg_details.index(pkg)" value="surprising" />
 		     </div><!-- #panel-controls -->
 			<h1 id="title_pkg">$pkg['package'] <br />
 			<span>$pkg['description']</span></h1>
@@ -78,17 +89,6 @@ $for pkg in pkg_details:
 			        <li><b>Origin</b>: $pkg['origin']</li>
 			    <li><b>Maintainer</b>: $pkg['maintainer']</li>
 			  </ul>
-            <div id="debresources_box" class="graybox vert-grad">
-            <h2>Debian resources:</h2>
-                <ul>
-                    <li><a href="http://packages.debian.org/$pkg['package']">Package page on debian.org</a></li>
-                    <li><a href="http://bugs.debian.org/$pkg['package']">Debian bug tracking system (BTS)</a></li>
-                    <li><a href="http://packages.qa.debian.org/$pkg['package']">Debian package tracking system (PTS)</a></li>
-                    <li><a href="http://qa.debian.org/popcon.php?package=$pkg['package']">Popularity contest statistics (Popcon)</a></li>
-                    <li><a href="http://patch-tracker.debian.org/package/$pkg['package']">Debian patch tracking system</a></li>
-                    <li><a href="http://screenshots.debian.net/package/$pkg['package']">Screenshots</a></li>
-                </ul>
-            </div><!-- id="debresources_box -->
 			</div><!-- id="content-pkg" -->
             	</div><!-- .panel-wrapper -->
             </div><!-- .panel -->
@@ -99,3 +99,4 @@ $for pkg in pkg_details:
 
 </div><!-- class="innertube" -->
 </div><!-- id="maincontent" -->
+
