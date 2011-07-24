@@ -51,7 +51,7 @@ blockquote:before, blockquote:after, q:before, q:after { content: ""; }
  */
 
 body{
-background: #d8e1e7; /* f2f6f8 */
+background: #b7d2ef;
 font-family: Arial, Verdana, sans-serif;
 font-size: 0.9em;
 line-height: 1.1;
@@ -83,6 +83,8 @@ box-shadow: 0 2px 20px #545454;
 outline: medium none;
 padding: 15px;
 }
+
+body.about #header { display: none; }
 
 #logo span { display: none; }
 #logo { 

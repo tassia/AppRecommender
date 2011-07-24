@@ -61,15 +61,27 @@ $for pkg in pkg_details:
             <div class="panel">
             	<div class="panel-wrapper">
 		     <div id="panel-controls">
-			<label for="poor">Poor</label>
-			<input accesskey="p" class="radio" type="radio" onClick="; showNext();" name="evaluation-$pkg_details.index(pkg)" value="poor" /><br />
-       			<label for="good">Good</label>
-			<input accesskey="g" class="radio" type="radio" onClick="javascript: showNext();" name="evaluation-$pkg_details.index(pkg)" value="good" /><br />
-			<label for="surprising">Surprising</label>
-			<input accesskey="s" class="radio" type="radio" onClick="showNext()" name="evaluation-$pkg_details.index(pkg)" value="surprising" />
+			<label class="glass radioButton">
+			<img src="/static/images/smile-s.png" alt="Smile Surprising" style="float: right;">
+			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="surprising" />
+			Surprising
+			</label>
+       			<label class="glass radioButton">
+			<img src="/static/images/smile-g.png" alt="Smile Good" style="float: right;">
+			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="good" />
+			Good
+			</label>
+			<label class="glass radioButton">
+			<img src="/static/images/smile-p.png" alt="Smile Poor" style="float: right;">
+			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="poor" />
+			Poor
+			</label>
+			<br style="clear: both;" />
 		     </div><!-- #panel-controls -->
+			<p>
 			<h1 id="title_pkg">$pkg['package'] <br />
 			<span>$pkg['description']</span></h1>
+			</p>
             		<div class="content-pkg">
 			<div class="screenshot">
 			<a class="link-thumb" rel="facebox" href="http://screenshots.debian.net/screenshot/$pkg['package']?.jpg" title="Screenshot of package $pkg['package']">

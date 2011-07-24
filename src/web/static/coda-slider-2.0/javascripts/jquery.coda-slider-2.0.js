@@ -16,7 +16,7 @@ var sliderCount = 1;
 $.fn.codaSlider = function(settings) {
 
 	settings = $.extend({
-		autoHeight: true,
+		autoHeight: false,
 		autoHeightEaseDuration: 1000,
 		autoHeightEaseFunction: "easeInOutExpo",
 		autoSlide: false,
@@ -47,7 +47,7 @@ $.fn.codaSlider = function(settings) {
 		if (settings.dynamicArrows) {
 			slider.parent().addClass("arrows");
 			slider.before('<div class="coda-nav-left" id="coda-nav-left-' + sliderCount + '"><a href="#">' + settings.dynamicArrowLeftText + '</a></div>');
-			slider.after('<div class="coda-nav-right" id="coda-nav-right-' + sliderCount + '"><a accesskey="n" class="glass" id="next-button" onClick="document.getElementById(\'coda-nav-right-1\').style.display = \'none\';" href="#">' + settings.dynamicArrowRightText + '</a></div>');
+			slider.after('<div class="coda-nav-right" id="coda-nav-right-' + sliderCount + '"><a class="glass" id="next-button" onClick="document.getElementById(\'coda-nav-right-1\').style.display = \'none\';" href="#">' + settings.dynamicArrowRightText + '</a></div>');
 		};
 		
 		var panelWidth = slider.find(".panel").width();

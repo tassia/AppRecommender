@@ -26,7 +26,7 @@ width: 420px;
 display: none;
 position: absolute;
 top: 15px;
-width: 300px;
+width: 400px;
 right: 0px;
 font-size: 11px;
 font-weight: normal;
@@ -40,18 +40,13 @@ display: block;
 z-index: 3;
 }
 
-#next-button:hover,
-#controls-form input:hover {
-background: white;
-}
-
-
 .innertube {
 margin: 30px;
 }
 
 .coda-slider {
 background: none;
+height: auto;
 }
 
 #wrap {
@@ -64,14 +59,12 @@ min-height: 450px;
 }
 
 /* Display None itens Survey */
-#footer,
 #coda-nav-left-1,
 #coda-nav-right-1,
 body.survey #header,
+body.survey #footer,
 #recommender-box #upfile,
 #advanced-button,
-#copyright span,
-#navbar,
 #pkgs_list {
 display: none;
 }
@@ -89,6 +82,7 @@ list-style: none;
 margin-bottom: 10px;
 }
 
+.radioButton,
 #next-button,
 #restart-button,
 #strategy-button,
@@ -109,14 +103,28 @@ z-index: 2;
 cursor: pointer;
 }
 
-#next-button {
-height: 20px;
+.radioButton:hover,
+#next-button:hover,
+#controls-form input:hover {
+background: white;
 }
 
-#panel-controls,
-#controls-form { 
-float: right; 
-position: relative;
+.radioButton {
+text-align: left;
+vertical-align: middle;
+float: right;
+cursor: normal;
+}
+
+#controls-form,
+#next-button {
+text-align: center;
+position: absolute;
+top: 145px;
+left: 50%;
+margin-left: -250px;
+width: 500px;
+height: 20px;
 }
 
 
