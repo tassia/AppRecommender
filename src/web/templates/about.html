@@ -1,12 +1,21 @@
 $var title: About
 $var mod = 'about';
-$var cssfiles:
-$var jsfiles:
+$var cssfiles: static/css/facebox.css
+$var jsfiles: static/js/facebox.js
+
+<script type="text/javascript">
+    $$(document).ready(function() {
+        $$('a[rel*=facebox]').facebox({
+        loadingImage : '/static/images/loading.gif',
+        closeImage   : '/static/images/closelabel.png'
+        });
+    });
+</script>
 
 <div id="maincontent">
 <div class="innertube">
 
-<img style="float: right;" alt="AppRecommender logo" src="/static/images/logo.png" width="150px" />
+<a rel="facebox" href="/static/images/diaappr.png" title="AppRecommender Diagram"><img style="float: right; margin: 10px;" alt="AppRecommender Diagram" src="/static/images/diaappr.png" width="230px" /></a>
 
 <h1>About</h1>
 
