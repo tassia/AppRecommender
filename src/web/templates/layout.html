@@ -12,14 +12,14 @@ $ url_base = "http://localhost:8080"
 
 	<link href="static/css/style.css" rel="stylesheet" type="text/css" media="screen" charset="utf-8">
 
-    $if content.cssfiles:
+    $if content.has_key('cssfiles'):
         $for css in content.cssfiles.split():
              <link href="$css" rel="stylesheet" type="text/css" media="screen" charset="utf-8"/>
 
 	<script src="/static/js/jquery.js" type="text/javascript"></script>
 	<script src="/static/js/FormManager.js" type="text/javascript"></script>
 
-    $if content.jsfiles:
+    $if content.has_key('jsfiles'):
         $for js in content.jsfiles.split():
              <script src="$js" type="text/javascript"></script>
 
@@ -85,10 +85,11 @@ function validateForm()
 	</p>
 	<div id="tip-upload" class="tip important">
 	<p>
-	You can use file <strong>/var/log/popularity-contest</strong> or create a with <strong>dpkg</strong>, use:
+    Upload a popularity-contest submission file ('/var/log/popularity-contest')
+    or run the following command and upload generated 'packages.list' file.
 	</p>
 	<p>
-	<code> # dpkg -l > blih.list </code>
+	<code> # dpkg-query --show > packages.list </code>
 	</p>
 	</div><!-- id="tip-upload" -->
 	</fieldset>

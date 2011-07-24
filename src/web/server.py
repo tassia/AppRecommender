@@ -16,16 +16,16 @@ from user import *
 
 import urllib
 
-class FeedbackForm(form.Form):
-    def __init__(self,selected_strategies):
-        desc_dict = {"cb": "Content-based", "cbt": "Content-based",
-                     "cbd": "Content-based", "col": "Collaborative",
-                     "hybrid": "Hybrib"}
-        fields = []
-        for strategy in selected_strategies:
-            fields.append(form.Radio(desc_dict[strategy],
-                [('1','1 '),('2','2 '),('3','3'),('4','4 '),('5','5')]))
-        form.Form.__init__(self, *fields, validators = [])
+#class FeedbackForm(form.Form):
+#    def __init__(self,selected_strategies):
+#        desc_dict = {"cb": "Content-based", "cbt": "Content-based",
+#                     "cbd": "Content-based", "col": "Collaborative",
+#                     "hybrid": "Hybrib"}
+#        fields = []
+#        for strategy in selected_strategies:
+#            fields.append(form.Radio(desc_dict[strategy],
+#                [('1','1 '),('2','2 '),('3','3'),('4','4 '),('5','5')]))
+#        form.Form.__init__(self, *fields, validators = [])
 
 class Index:
     def GET(self):
@@ -38,9 +38,9 @@ class About:
     def GET(self):
         return render.about()
 
-class Support:
-    def GET(self):
-        return render.support()
+#class Support:
+#    def GET(self):
+#        return render.support()
 
 class Thanks:
     def POST(self):
@@ -220,14 +220,15 @@ class Request:
         print details
         return details
 
-class RandomRequest(Request):
-    def __init__(self):
-        pass
-        #self.storage = web.Storage()
+#class RandomRequest(Request):
+#    def __init__(self):
+#        pass
+#        #self.storage = web.Storage()
 
 class AppRecommender:
     def __init__(self):
-        self.rec = Recommender(Config())
+        self.cfg = Config()
+        self.rec = Recommender(self.cfg)
 
     def POST(self):
         request = Request(web.input(pkgs_file={}))
@@ -248,8 +249,7 @@ class AppRecommender:
                         pkg_summaries[pkg] = ""
             if Config().survey_mode:
                 return render.survey(recommendation, pkg_details,
-                                     FeedbackForm(request.selected_strategies),
-                                     request)
+                                     FeedbackForm(request.selected_strategies))
             else:
                 return render.apprec(recommendation, pkg_summaries,
                                      FeedbackForm(request.selected_strategies),
