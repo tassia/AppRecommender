@@ -71,7 +71,8 @@ border-radius: 10px;
 box-shadow: 0 2px 20px #545454;
 }
 
-.about #wrap { max-width: 780px; } 
+.about #wrap { max-width: 780px; padding-top: 0px; } 
+.about .innertube { padding: 30px; }
 
 #header {
 position: absolute;
