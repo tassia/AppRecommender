@@ -74,12 +74,13 @@ class ContentBasedSuite(expsuite.PyExperimentSuite):
 
     def iterate(self, params, rep, n):
         if params['name'].startswith("content"):
-            # Get full recommendation
             item_score = dict.fromkeys(self.user.pkg_profile,1)
+            # Prepare partition
             sample = {}
             for i in range(self.sample_size):
-                 item, score = item_score.popitem()
-                 sample[item] = score
+                 key = random.choice(item_score.keys())
+                 sample[key] = item_score.pop(key)
+            # Get full recommendation
             user = User(item_score)
             recommendation = self.rec.get_recommendation(user,self.repo_size)
             # Write recall log
@@ -106,13 +107,13 @@ class ContentBasedSuite(expsuite.PyExperimentSuite):
                     output.write(pkg+"\n")
             output.close()
             # Plot metrics summary
-            g = Gnuplot.Gnuplot()
-            g('set style data lines')
-            g.xlabel('Recommendation size')
             accuracy = []
             precision = []
             recall = []
             f1 = []
+            g = Gnuplot.Gnuplot()
+            g('set style data lines')
+            g.xlabel('Recommendation size')
             for size in range(1,len(recommendation.ranking)+1,100):
                 predicted = RecommendationResult(dict.fromkeys(recommendation.ranking[:size],1))
                 real = RecommendationResult(sample)
@@ -121,17 +122,14 @@ class ContentBasedSuite(expsuite.PyExperimentSuite):
                 precision.append([size,evaluation.run(Precision())])
                 recall.append([size,evaluation.run(Recall())])
                 f1.append([size,evaluation.run(F1())])
-            #print "accuracy", len(accuracy)
-            #print "precision", len(precision)
-            #print "recall", len(recall)
-            #print "f1", len(f1)
             g.plot(Gnuplot.Data(accuracy,title="Accuracy"),
                    Gnuplot.Data(precision,title="Precision"),
                    Gnuplot.Data(recall,title="Recall"),
                    Gnuplot.Data(f1,title="F1"))
             g.hardcopy(recall_file+"-plot.ps", enhanced=1, color=1)
-            result = {}
-            result = {'weight': params['weight'],
+            # Iteration log
+            result = {'iteration': n,
+                      'weight': params['weight'],
                       'strategy': params['strategy'],
                       'accuracy': accuracy[20],
                       'precision': precision[20],
