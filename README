@@ -1,14 +1,23 @@
 AppRecommender - Application recommender for GNU/Linux systems
+---------------------------------------------------------------
 
-Install dependencies:
+Install dependencies
+---------------------
 
-	aptitude install python python-xapian apt-xapian-index python-apt python-cluster python-webpy python-simplejson python-unittest2
+# apt-get install \
+python python-xapian python-apt python-cluster python-webpy python-simplejson \
+python-unittest2 python-numpy python-gnuplot \
+apt-xapian-index gnuplot
 
-Run AppRecommender web UI:
+# cd ./src; git clone https://github.com/rueckstiess/expsuite
 
-	cd ./src/web
-	./server.py
 
-	-> http://localhost:8080
+Run AppRecommender web UI
+--------------------------
 
-More info: https://github.com/tassia/AppRecommender/wiki
+# cd ./src/web
+# ./server.py
+
+Open a browser and access http://localhost:8080
+
+More info at https://github.com/tassia/AppRecommender/wiki
