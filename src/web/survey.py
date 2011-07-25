@@ -27,7 +27,13 @@ class About:
 
 class Thanks:
     def POST(self):
-        return render.thanks()
+        web_input = web.input()
+        user_id = web_input['user_id'].encode('utf8')
+        with open("./submissions/%s/ident" % user_id,'w') as ident:
+            for key in ["name","email","country","public","comments"]:
+                if web_input.has_key(key):
+                    ident.write("%s: %s\n" % (key,web_input[key]))
+        return render.thanks_id()
 
 class Package:
     def GET(self, pkg):
@@ -97,7 +103,8 @@ class Request:
                     package_name_field = 0
                 for line in lines:
                     self.pkgs_list.append(line.split()[package_name_field])
-                    f.write(line)
+                for pkg in self.pkgs_list:
+                    f.write(pkg+'\n')
                 f.close()
 
     def __str__(self):
@@ -142,7 +149,7 @@ class Save:
         if web_input.has_key('strategy_button'):
             return Survey().POST()
         elif web_input.has_key('finish_button'):
-            return render.thanks()
+            return render.thanks(user_id)
         else:
             return render.survey_index()
 
@@ -209,6 +216,7 @@ urls = ('/',   		        'Index',
         '/apprec',          'Survey',
         '/thanks',   		'Thanks',
         '/save',   		    'Save',
+        '/thanks',   		'Thanks',
         '/about',           'About',
         '/package/(.*)',  	'Package'
        )
