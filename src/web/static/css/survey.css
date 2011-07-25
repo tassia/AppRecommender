@@ -112,8 +112,15 @@ background: white;
 .radioButton {
 text-align: left;
 vertical-align: middle;
-float: right;
 cursor: normal;
+width: 150px;
+margin-bottom: 10px;
+float: left;
+}
+
+#panel-controls { 
+width: 180px;
+float: right;
 }
 
 #controls-form,

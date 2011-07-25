@@ -2,10 +2,44 @@ $var title: Feedback
 $var mod = 'thanks';
 $var cssfiles: static/css/survey.css
 
-<div id="maincontent">
+
+<div id="sidebar">
 <div class="innertube">
 
-<div class="index_include">
+<h2>Identification</h2>
+	<form>
+	<p><label>
+	<input type="checkbox" name="public" value="checked">
+	Can we publish your name in our thanks page?
+	</label></p>
+	<p>
+	<label>
+	Name: <input type="text" name="name" value="" size="30">
+	</label></p>
+	<p>
+	<label>
+	E-mail:<input type="text" name="email" value="" size="30">
+	</label></p>
+	<p>
+	<label>
+	Country:<input type="text" name="country" value="" size="30">
+	</label></p>
+	<p>
+	<label>
+	Comments:<br />
+	<textarea name="comments" value="" rows="2" cols="30"></textarea>
+	</label></p>
+	<p align="right">
+	<input type="submit" name="send_button" value="Submit" class="glass" id="finish-button">
+	</p>
+	</form>
+
+<br style="clear: both" />
+</div><!-- class="innertube" -->
+</div><!-- id="sidebar" -->
+
+<div id="maincontent">
+<div class="innertube">
 
 <center>
 <h1>Thanks!</h1>
@@ -15,21 +49,6 @@ $var cssfiles: static/css/survey.css
 address you'll be sent the survey results report as soon as it is released. If
 you have any further comments, please send it through the form below.</p><br />
 
-<div class=graybox>
-<h2>Identification</h2>
-<form>
-<label><input type="checkbox" name="public" value="checked">Can we publish your name
-in our thanks page?</label><br >
-<label>Name: <input type="text" name="name" value="" size="30"></label><br />
-<label>E-mail:<input type="text" name="email" value="" size="30"></label><br >
-<label>Country:<input type="text" name="country" value="" size="30"></label><br >
-<label>Comments:<textarea name="comments" value="" rows="2"
-cols="30"></textarea></label><br />
-<input type="submit" name="send_button" value="Submit" class="glass">
-</form>
-</div>
-
-</div>
 
 </div><!-- class="innertube" -->
 </div><!-- id="maincontent" -->
