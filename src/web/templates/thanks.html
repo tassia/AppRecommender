@@ -1,4 +1,5 @@
-$var title: Feedback
+$def with (user_id)
+$var title: Thanks
 $var mod = 'thanks';
 $var cssfiles: static/css/survey.css
 
@@ -7,9 +8,10 @@ $var cssfiles: static/css/survey.css
 <div class="innertube">
 
 <h2>Identification</h2>
-	<form>
+	<form action="/thanks" method="post" enctype="multipart/form-data" name="identification_form">
 	<p>
 	<label>
+    <input type="hidden" name="user_id" value=$user_id>
 	Name: <input type="text" name="name" value="" size="30">
 	</label></p>
 	<p>
@@ -311,7 +313,7 @@ $var cssfiles: static/css/survey.css
 address you'll be sent the survey results report as soon as it is released. If
 you have any further comments, please send it through the form below.</p><br />
 
-
+<br style="clear: both" />
 </div><!-- class="innertube" -->
 </div><!-- id="maincontent" -->
 
