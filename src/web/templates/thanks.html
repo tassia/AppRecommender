@@ -1,8 +1,6 @@
 $var title: Feedback
 $var mod = 'thanks';
 $var cssfiles: static/css/survey.css
-$var jsfiles: 
-
 
 <div id="maincontent">
 <div class="innertube">
@@ -10,12 +8,26 @@ $var jsfiles:
 <div class="index_include">
 
 <center>
-<p>Your personal identification is not mandatory, since it won't be processed
-along with the experiments results. It is collected by means of demographic
-characterization of the participants population.</p>
-
 <h1>Thanks!</h1>
 </center>
+<p>Thank you very much for participating in this survey.</p><br />
+<p>Your identification is not mandatory, though if you provide a valid e-mail
+address you'll be sent the survey results report as soon as it is released. If
+you have any further comments, please send it through the form below.</p><br />
+
+<div class=graybox>
+<h2>Identification</h2>
+<form>
+<label><input type="checkbox" name="public" value="checked">Can we publish your name
+in our thanks page?</label><br >
+<label>Name: <input type="text" name="name" value="" size="30"></label><br />
+<label>E-mail:<input type="text" name="email" value="" size="30"></label><br >
+<label>Country:<input type="text" name="country" value="" size="30"></label><br >
+<label>Comments:<textarea name="comments" value="" rows="2"
+cols="30"></textarea></label><br />
+<input type="submit" name="send_button" value="Submit" class="glass">
+</form>
+</div>
 
 </div>
 

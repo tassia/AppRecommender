@@ -32,13 +32,6 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 <input type="hidden" name="strategy" value=$request.strategy>
 <div id="controls-form" style="display: none;"><!-- display show in the end form -->
 
-<label for="restart_button" id="tip-restart">
-   <div class="tip note">
-    <p>Restart the survey with a new packages list.</p>
-   </div>
-   <input id="restart-button" name="restart_button" type="submit" value="Restart" class="glass" />
-</label>
-
 <label for="finish_button" id="tip-finish">
    <div class="tip important">
    <p>Conclude your participation in this survey</p>
@@ -48,9 +41,9 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 
 <label for="strategy_button" id="tip-strategy">
    <div class="tip tip">
-   <p> New round of evaluations for the same list of packages and suggestions produced by a different recommendation strategy. </p>
+   <p>Evaluate more suggestions </p>
    </div>
-   <input id="strategy-button" name="strategy_button" type="submit" value="New Round" class="glass" />
+   <input id="strategy-button" name="strategy_button" type="submit" value="Continue" class="glass" />
 </label>
 
 </div><!-- id="controls-form" -->
@@ -64,7 +57,7 @@ $for pkg in pkg_details:
 			<label class="glass radioButton">
 			<img src="/static/images/smile-s.png" alt="Smile Surprising" style="float: right;">
 			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="surprising" />
-			Surprising
+			Pleasantly surprising
 			</label>
        			<label class="glass radioButton">
 			<img src="/static/images/smile-g.png" alt="Smile Good" style="float: right;">

@@ -86,10 +86,10 @@ function validateForm()
 	<div id="tip-upload" class="tip important">
 	<p>
     Upload a popularity-contest submission file ('/var/log/popularity-contest')
-    or run the following command and upload generated 'packages.list' file.
+    or run the following command and upload the generated 'packages.list' file.
 	</p>
 	<p>
-	<code> # dpkg --get-selections > packages.list </code>
+	<code> # dpkg-query --show > packages.list </code>
 	</p>
 	</div><!-- id="tip-upload" -->
 	</fieldset>
@@ -170,7 +170,8 @@ $:content
 	<li><a href="http://github.com/tassia/AppRecommender">Development</a></li>
     </ul>
    </div><!-- id="navbar" -->
-   <div id="copyright"> <span> Copyright © 2011 AppRecommender team. </span>  
+   <!--<div id="copyright"> <span> Copyright © 2011 AppRecommender team.
+   </span>  -->
    </div><!-- id="copyright" -->
 <br style="clear: both;" />
  </div><!-- id="footer" -->

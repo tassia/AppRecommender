@@ -97,7 +97,8 @@ class Request:
                     package_name_field = 0
                 for line in lines:
                     self.pkgs_list.append(line.split()[package_name_field])
-                    f.write(line)
+                for pkg in self.pkgs_list:
+                    f.write(pkg+'\n')
                 f.close()
 
     def __str__(self):
