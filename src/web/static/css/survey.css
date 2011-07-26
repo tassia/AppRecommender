@@ -20,22 +20,20 @@ top: 40px;
 width: 420px;
 }
 
-#tip-restart .tip,
-#tip-finish .tip,
-#tip-strategy .tip {
+#panel-controls label .tip,
+#controls-form label .tip {
 display: none;
 position: absolute;
-top: 15px;
-width: 400px;
-right: 0px;
+width: 200px;
+margin-top: -30px;
+right: 160px;
 font-size: 11px;
 font-weight: normal;
 color: #000000;
 }
 
-#tip-restart:hover .tip,
-#tip-finish:hover .tip,
-#tip-strategy:hover .tip { 
+#panel-controls label:hover .tip,
+#controls-form label:hover .tip { 
 display: block; 
 z-index: 3;
 }
@@ -53,9 +51,14 @@ height: auto;
 max-width: 780px;
 }
 
+#sidebar {
+min-height: 200px; 
+}
+
 body.survey #wrap {
 padding-top: 0px;
 min-height: 450px;
+position: relative;
 }
 
 /* Display None itens Survey */
@@ -85,7 +88,7 @@ margin-bottom: 10px;
 .radioButton,
 #next-button,
 #restart-button,
-#strategy-button,
+#continue-button,
 #finish-button {
 border: 1px solid #888a85;
 box-shadow: 0 1px 4px gray inset;
@@ -93,7 +96,7 @@ border-radius: 5px;
 color: #585C60;
 font-size: 12px;
 font-weight: 600;
-width: 135px;
+width: 150px;
 height: 30px;
 line-height: 14px;
 margin: 0;
@@ -114,11 +117,13 @@ text-align: left;
 vertical-align: middle;
 cursor: normal;
 width: 150px;
+height: 20px;
 margin-bottom: 10px;
 float: left;
 }
 
-#panel-controls { 
+#panel-controls {
+position: relative; 
 width: 180px;
 float: right;
 }
@@ -127,11 +132,17 @@ float: right;
 #next-button {
 text-align: center;
 position: absolute;
-top: 145px;
-left: 50%;
-margin-left: -250px;
-width: 500px;
+top: 120px;
+right: 65px;
+width: 150px;
 height: 20px;
+z-index: 3;
+}
+
+#controls-form {
+top: 90px;
+right: 85px;
+height: auto;
 }
 
 

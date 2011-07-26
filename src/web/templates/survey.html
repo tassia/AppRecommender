@@ -30,21 +30,19 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 <input type="hidden" name="user_id" value=$request.user_id>
 <input type="hidden" name="strategy" value=$request.strategy>
 <div id="controls-form" style="display: none;"><!-- display show in the end form -->
-
 <label for="finish_button" id="tip-finish">
    <div class="tip important">
    <p>Conclude your participation in this survey</p>
    </div>
    <input id="finish-button" name="finish_button" type="submit" value="Finish" class="glass" />
 </label>
-
-<label for="strategy_button" id="tip-strategy">
+<br />
+<label for="strategy_button" id="tip-continue">
    <div class="tip tip">
    <p>Evaluate more suggestions </p>
    </div>
-   <input id="strategy-button" name="strategy_button" type="submit" value="Continue" class="glass" />
+   <input id="continue-button" name="strategy_button" type="submit" value="Continue" class="glass" />
 </label>
-
 </div><!-- id="controls-form" -->
 
 <div class="coda-slider-wrapper">
@@ -59,17 +57,26 @@ $for pkg in pkg_details:
 		     	<div id="panel-controls">
 			<label class="glass radioButton">
 			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="surprising" />
-			Pleasantly surprising
+			Pleasantly surprising 
+			<div class="tip tip">
+			<p>Pleasantly $pkg['package'] FIXME </p>
+			</div>
 			</label><br />
        			<label class="glass radioButton">
 			<img src="/static/images/yes-enb.JPG" alt="Yes, Good" style="float: right;">
 			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="good" />
 			Good
+			<div class="tip tip">
+			<p>Good $pkg['package'] FIXME </p>
+			</div>
 			</label><br />
 			<label class="glass radioButton">
 			<img src="/static/images/no-dis.JPG" alt="Poor" style="float: right;">
 			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="poor" />
 			Poor
+			<div class="tip tip">
+			<p>Poor $pkg['package'] FIXME </p>
+			</div>
 			</label>
 			<br style="clear: both;" />
 				<div class="screenshot">
