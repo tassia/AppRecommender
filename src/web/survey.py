@@ -183,8 +183,11 @@ class Survey:
             old_strategies = [dirs for root, dirs, files in
                               os.walk(os.path.join(self.submissions_dir,
                                                    request.user_id))]
-            print "OLD Strategies", old_strategies[0]
-            strategies = [s for s in self.strategies if s not in old_strategies[0]]
+            if old_strategies:
+                strategies = [s for s in self.strategies if s not in old_strategies[0]]
+                print "OLD Strategies", old_strategies[0]
+            else:
+                strategies = self.strategies
             print "LEFT",strategies
             if not strategies:
                 return render.thanks(user_id)
