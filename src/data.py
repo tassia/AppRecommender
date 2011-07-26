@@ -271,11 +271,12 @@ class PopconXapianIndex(xapian.WritableDatabase):
 class KMedoidsClustering(cluster.KMeansClustering):
 
     def __init__(self,data,distance,max_data=100):
-        if len(data)<max_data:
-            data_sample = data
-        else:
-            data_sample = random.sample(data,max_data)
-        cluster.KMeansClustering.__init__(self, data_sample, distance)
+       # if len(data)<max_data:
+       #     data_sample = data
+       # else:
+       #     data_sample = random.sample(data,max_data)
+       # cluster.KMeansClustering.__init__(self, data_sample, distance)
+        cluster.KMeansClustering.__init__(self, data, distance)
         self.distanceMatrix = {}
         for submission in self._KMeansClustering__data:
             self.distanceMatrix[submission.user_id] = {}
@@ -332,7 +333,13 @@ class KMedoidsClustering(cluster.KMeansClustering):
         """
         Generate n clusters and return their medoids.
         """
-        medoids_distances = [self.getMedoid(cluster) for cluster in self.getclusters(n)]
+        #medoids_distances = [self.getMedoid(cluster) for cluster in self.getclusters(n)]
+        medoids_distances = []
+        for cluster in self.getclusters(n):
+            type(cluster)
+            print cluster
+            medoids_distances.append(self.getMedoid(cluster))
+            print medoids_distances
         medoids = [m[0] for m in medoids_distances]
         dispersion = sum([m[1] for m in medoids_distances])
         logging.info("Clustering completed and the following medoids were found: %s" % [c.user_id for c in medoids])
