@@ -25,18 +25,26 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 
 <h1>AppRecommender Survey</h1>
 
+<div class="show-end" style="display: none;">
+
+<p>
+A class <b>show-end</b> ou <b>hide-end</b> mostra um elemento ou esconde um elemento ao final do último Next.
+</p>
+
+</div>
+
+
 <form action="/save" method="post" enctype="multipart/form-data" name="surveyform">
 
 <input type="hidden" name="user_id" value=$request.user_id>
 <input type="hidden" name="strategy" value=$request.strategy>
-<div id="controls-form" style="display: none;"><!-- display show in the end form -->
+<div id="controls-form" style="display: none;" class="show-end"><!-- display show in the end form -->
 <label for="finish_button" id="tip-finish">
    <div class="tip important">
    <p>Conclude your participation in this survey</p>
    </div>
    <input id="finish-button" name="finish_button" type="submit" value="Finish" class="glass" />
 </label>
-<br />
 <label for="strategy_button" id="tip-continue">
    <div class="tip tip">
    <p>Evaluate more suggestions </p>
@@ -45,7 +53,7 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
 </label>
 </div><!-- id="controls-form" -->
 
-<div class="coda-slider-wrapper">
+<div class="coda-slider-wrapper hide-end">
 	<div class="coda-slider preload" id="coda-slider-1">
 $for pkg in pkg_details:
             <div class="panel">
@@ -79,6 +87,10 @@ $for pkg in pkg_details:
 			</div>
 			</label>
 			<br style="clear: both;" />
+		     	</div><!-- #panel-controls -->
+            		<div class="content-pkg">
+			   <ul>
+			    <li><b>Description</b>: 
 				<div class="screenshot">
 				<a class="link-thumb" rel="facebox" 
 				href="http://screenshots.debian.net/screenshot/$pkg['package']?.jpg" 
@@ -86,9 +98,7 @@ $for pkg in pkg_details:
 				<img src="http://screenshots.debian.net/thumbnail/$pkg['package']" 
 				alt="Screenshot $pkg['package']" /></a>
 				</div><!-- screenshot -->
-		     	</div><!-- #panel-controls -->
-            		<div class="content-pkg">
-			    <li><b>Description</b>: <br />$:pkg['long_description']</li>
+				<br />$:pkg['long_description']</li>
 			    $if pkg['homepage']:
 			        <li><b>Homepage</b>: $pkg['homepage']</li>
 			    $if pkg['task']:

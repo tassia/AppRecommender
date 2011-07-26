@@ -99,9 +99,9 @@ $.fn.codaSlider = function(settings) {
 		$('#coda-nav-right-' + sliderCount + ' a').click(function(){
 			navClicks++;
 			if (currentPanel == panelCount) {
-				this.style.display = 'none'; // Button display none;
-				document.getElementById("controls-form").style.display = 'block'; // Show buttons controls;
-				document.getElementById("coda-slider-1").style.display = 'none'; // Description hidden;
+				$(this).hide("fast"); // Button display none;
+				$(".show-end").show("fast"); // Show buttons controls;
+				$(".hide-end").hide("fast"); // Description hidden;
 				return false;
 				offset = 0;
 				currentPanel = 1;
