@@ -101,6 +101,7 @@ $.fn.codaSlider = function(settings) {
 			if (currentPanel == panelCount) {
 				this.style.display = 'none'; // Button display none;
 				document.getElementById("controls-form").style.display = 'block'; // Show buttons controls;
+				document.getElementById("coda-slider-1").style.display = 'none'; // Description hidden;
 				return false;
 				offset = 0;
 				currentPanel = 1;
