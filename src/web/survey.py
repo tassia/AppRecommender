@@ -79,12 +79,13 @@ class Package:
 class Request:
     def __init__(self,web_input,submissions_dir,user_id=0,pkgs_list=0):
         self.strategy = ""
+        print "Request from user",user_id
         if user_id:
             self.user_id = user_id
             self.outputdir = os.path.join(submissions_dir,user_id)
         else:
             self.outputdir = tempfile.mkdtemp(prefix='',dir=submissions_dir)
-            print "created dir %s",self.outputdir
+            print ("created dir %s" % self.outputdir)
             self.user_id = self.outputdir.lstrip(submissions_dir)
 
         if pkgs_list:
@@ -169,6 +170,7 @@ class Survey:
             request = Request(web_input,self.submissions_dir)
         else:
             user_id = web_input['user_id'].encode('utf8')
+            print "Continue", user_id
             with open("./submissions/%s/packages_list" % user_id) as packages_list:
                 pkgs_list = [line.strip() for line in packages_list.readlines()]
             request = Request(web_input,self.submissions_dir,user_id,pkgs_list)
@@ -184,6 +186,8 @@ class Survey:
             print "OLD Strategies", old_strategies[0]
             strategies = [s for s in self.strategies if s not in old_strategies[0]]
             print "LEFT",strategies
+            if not strategies:
+                return render.thanks(user_id)
             request.strategy = random.choice(strategies)
             print "selected",request.strategy
             self.rec.set_strategy(request.strategy)
