@@ -4,33 +4,32 @@ $var mod = 'thanks';
 $var cssfiles: static/css/survey.css
 
 
-<div id="sidebar">
+<div id="maincontent">
 <div class="innertube">
 
 <center>
 <h1>Thanks!</h1>
-</center>
 <p>Thank you very much for participating in this survey.</p><br />
 
 <h2>Optional Info</h2>
-<p>Provide at least a valid e-mail address if you want to be sent the survey
-results report when it is released.</p>
+<p>Tell us your name if you want it to be published in our <br / > thanks page.
+If you also provide a valid e-mail address <br / > you will be sent the survey
+report as soon as it is ready.</p>
 <br />
 	<form action="/thanks" method="post" enctype="multipart/form-data" name="identification_form">
 	<p>
 	<label>
     <input type="hidden" name="user_id" value=$user_id>
-	Name: <input type="text" name="name" value="" size="30">
+	Name: <input type="text" name="name" value="" size="35">
 	</label></p>
 	<p>
 	<label>
-	E-mail:<input type="text" name="email" value="" size="30">
+	E-mail: <input type="text" name="email" value="" size="35">
 	</label></p>
 	<p>
 	<label>
-	Country:
-    <select name="Country">
-    <option value="" selected="selected">Select</option>
+	Country: <select name="Country">
+    <option value="" selected="selected">--- Select ---</option>
     <option value="United States">United States</option>
     <option value="United Kingdom">United Kingdom</option>
     <option value="Afghanistan">Afghanistan</option>
@@ -294,22 +293,18 @@ results report when it is released.</p>
 	</label></p>
 	<p>
 	<label>
-	Comments:<br />
-	<textarea name="comments" value="" rows="2" cols="35"></textarea>
+	Comments:
+	<textarea name="comments" value="" rows="2" cols="32"></textarea>
 	</label></p>
-	<p><label>
-	<input type="checkbox" name="public" value="checked">
-	Name can be published in the 'thanks' page
-	</label></p>
-	<p align="right">
-	<input type="submit" name="send_button" value="Submit" class="glass" id="finish-button">
-	</p>
+	<p><input type="submit" name="send_button" value="Submit" class="glass"
+    id="finish-button"><p>
 	</form>
+</center>
 
 <!--
 <br style="clear: both" />
-</div><!-- class="innertube" -->
-</div><!-- id="sidebar" -->
+</div>
+</div> 
 
 <div id="maincontent">
 <div class="innertube">
