@@ -36,12 +36,14 @@ if __name__ == '__main__':
         begin_time = datetime.datetime.now()
         logging.info("Clustering computation started at %s" % begin_time)
 
-        cl = PopconXapianIndex(cfg)
+        pxi = PopconXapianIndex(cfg)
 
         end_time = datetime.datetime.now()
         logging.info("Clustering computation completed at %s" % end_time)
         delta = end_time - begin_time
         logging.info("Time elapsed: %d seconds." % delta.seconds)
+        logging.info("Medoids: %d\tDispersion:%f" %
+                     (cfg.k_medoids,pxi.cluster_dispersion))
 
     except Error:
         logging.critical("Aborting proccess. Use '--debug' for more details.")
