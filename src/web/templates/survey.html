@@ -44,15 +44,15 @@ button below.
 <input type="hidden" name="strategy" value=$request.strategy>
 <div id="controls-form" style="display: none;" class="show-end"><!-- display show in the end form -->
 <label for="finish_button" id="tip-finish">
-   <div class="tip important">
+   <!--<div class="tip important">
    <p>Conclude your participation in this survey</p>
-   </div>
+   </div>-->
    <input id="finish-button" name="finish_button" type="submit" value="Finish" class="glass" />
 </label>
 <label for="strategy_button" id="tip-continue">
-   <div class="tip tip">
+   <!--<div class="tip tip">
    <p>Evaluate more suggestions </p>
-   </div>
+   </div>-->
    <input id="continue-button" name="strategy_button" type="submit" value="Continue" class="glass" />
 </label>
 </div><!-- id="controls-form" -->
@@ -70,25 +70,25 @@ $for pkg in pkg_details:
 			<label class="glass radioButton">
 			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="surprising" />
 			Pleasantly surprising 
-			<div class="tip tip">
+			<!--<div class="tip tip">
 			<p>Pleasantly $pkg['package'] FIXME </p>
-			</div>
+			</div>-->
 			</label><br />
        			<label class="glass radioButton">
 			<img src="/static/images/yes-enb.JPG" alt="Yes, Good" style="float: right;">
 			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="good" />
-			Good
-			<div class="tip tip">
+			Yes
+			<!--<div class="tip tip">
 			<p>Good $pkg['package'] FIXME </p>
-			</div>
+			</div>-->
 			</label><br />
 			<label class="glass radioButton">
 			<img src="/static/images/no-dis.JPG" alt="Poor" style="float: right;">
 			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="poor" />
-			Poor
-			<div class="tip tip">
+			No
+			<!--<div class="tip tip">
 			<p>Poor $pkg['package'] FIXME </p>
-			</div>
+			</div>-->
 			</label>
 			<br style="clear: both;" />
 		     	</div><!-- #panel-controls -->
