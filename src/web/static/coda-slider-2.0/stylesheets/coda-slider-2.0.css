@@ -12,7 +12,7 @@
 
 /* Most common stuff you'll need to change */
 
-	.coda-slider-wrapper { padding: 20px 0 }
+	.coda-slider-wrapper { padding: 0px; margin-left: -20px; }
 	.coda-slider { background: #ebebeb }
 	
 	/* Use this to keep the slider content contained in a box even when JavaScript is disabled */
