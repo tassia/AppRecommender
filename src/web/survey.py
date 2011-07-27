@@ -175,7 +175,7 @@ class Survey:
                 pkgs_list = [line.strip() for line in packages_list.readlines()]
             request = Request(web_input,self.submissions_dir,user_id,pkgs_list)
         if not request.validates():
-            return render.error(request.errors)
+            return render.error_survey()
         else:
             user = User(dict.fromkeys(request.pkgs_list,1),request.user_id)
             user.maximal_pkg_profile()
@@ -206,7 +206,10 @@ class Survey:
                     pkg_summaries[pkg] = cache[pkg].candidate.summary
                 except:
                     pkg_summaries[pkg] = ""
-            return render.survey(pkg_details, request)
+            if pkg_details:
+                return render.survey(pkg_details, request)
+            else:
+                return render.error_survey()
 
 def add_global_hook():
     g = web.storage({"counter": "1"})
