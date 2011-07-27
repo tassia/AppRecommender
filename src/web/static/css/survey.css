@@ -93,6 +93,7 @@ font-size:
 }
 
 .radioButton,
+.radioButton:hover,
 #next-button,
 #restart-button,
 #continue-button,
@@ -113,29 +114,44 @@ z-index: 2;
 cursor: pointer;
 }
 
+.radioButton:hover { height: 20px; }
+
 #continue-button {
 float: right;
 }
 
-.radioButton:hover,
 #next-button:hover,
 #controls-form input:hover {
 background: white;
 }
 
 .radioButton {
+border: 1px solid white;
+box-shadow: 0 1px 4px white inset;
 text-align: left;
 vertical-align: middle;
-cursor: normal;
 width: 150px;
 height: 20px;
 margin-bottom: 10px;
 float: left;
+font-size: 12px;
+font-weight: 600;
+line-height: 14px;
+margin: 0;
+margin-left: 10px;
+padding: 5px;
+z-index: 2;
+cursor: pointer;
 }
 
 #panel-controls {
 position: relative; 
 width: 180px;
+padding: 5px;
+border-radius: 5px;
+border: 1px solid #888a85;
+box-shadow: 0 1px 4px gray inset;
+background: white;
 float: right;
 }
 

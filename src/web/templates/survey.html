@@ -66,15 +66,10 @@ $for pkg in pkg_details:
 			<h1 id="title_pkg">$pkg['package'] <br />
 			<span>$pkg['description']</span></h1>
 			</p>
-		     	<div id="panel-controls">
-			<label class="glass radioButton">
-			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="surprising" />
-			Pleasantly surprising 
-			<!--<div class="tip tip">
-			<p>Pleasantly $pkg['package'] FIXME </p>
-			</div>-->
-			</label><br />
-       			<label class="glass radioButton">
+		     	<div id="panel-controls" class="glass">
+		   <fieldset>
+		     <legend>Do you consider this recommendation useful?</legend>
+       			<label class="radioButton">
 			<img src="/static/images/yes-enb.JPG" alt="Yes, Good" style="float: right;">
 			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="good" />
 			Yes
@@ -82,14 +77,23 @@ $for pkg in pkg_details:
 			<p>Good $pkg['package'] FIXME </p>
 			</div>-->
 			</label><br />
-			<label class="glass radioButton">
+			<label class="radioButton">
 			<img src="/static/images/no-dis.JPG" alt="Poor" style="float: right;">
 			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="poor" />
 			No
 			<!--<div class="tip tip">
 			<p>Poor $pkg['package'] FIXME </p>
 			</div>-->
+			</label><br />
+		     <legend>Was it surprising?</legend>
+			<label class="radioButton">
+			<input class="radio" type="radio" name="evaluation-$pkg_details.index(pkg)" value="surprising" />
+			Pleasantly surprising 
+			<!--<div class="tip tip">
+			<p>Pleasantly $pkg['package'] FIXME </p>
+			</div>-->
 			</label>
+		   </fieldset>
 			<br style="clear: both;" />
 		     	</div><!-- #panel-controls -->
             		<div class="content-pkg">
