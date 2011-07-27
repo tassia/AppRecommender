@@ -63,7 +63,14 @@ $for pkg in pkg_details:
             <div class="panel">
             	<div class="panel-wrapper">
 			<p>
-			<h1 id="title_pkg">$pkg['package'] <br />
+		    <div class="screenshot">
+			<a class="link-thumb" rel="facebox" 
+			href="http://screenshots.debian.net/screenshot/$pkg['package']?.jpg" 
+			title="Screenshot of package $pkg['package']">
+			<img height="70px" src="http://screenshots.debian.net/thumbnail/$pkg['package']" 
+			alt="Screenshot $pkg['package']" /></a>
+		    </div><!-- screenshot -->
+			<h1 id="title_pkg">($pkg_details.index(pkg)/10) $pkg['package'] <br />
 			<span>$pkg['description']</span></h1>
 			</p>
 		     	<div id="panel-controls" class="glass">
@@ -97,13 +104,6 @@ $for pkg in pkg_details:
 			   <ul>
 			    <li><b>Description</b>: 
 				<br />$:pkg['long_description']</li>
-				<div class="screenshot">
-				<a class="link-thumb" rel="facebox" 
-				href="http://screenshots.debian.net/screenshot/$pkg['package']?.jpg" 
-				title="Screenshot of package $pkg['package']">
-				<img src="http://screenshots.debian.net/thumbnail/$pkg['package']" 
-				alt="Screenshot $pkg['package']" /></a>
-				</div><!-- screenshot -->
 			    $if pkg['homepage']:
 			        <li><b>Homepage</b>: $pkg['homepage']</li>
 			    $if pkg['task']:
