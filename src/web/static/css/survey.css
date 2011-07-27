@@ -87,9 +87,13 @@ float: left;
 margin: 5px;
 }
 
+.content-pkg {
+font-size: 0.8em;
+line-height: 1.4;
+}
+
 .content-pkg ul li {
 margin-bottom: 10px;
-font-size: 
 }
 
 .radioButton,

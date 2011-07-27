@@ -96,6 +96,7 @@ $for pkg in pkg_details:
             		<div class="content-pkg">
 			   <ul>
 			    <li><b>Description</b>: 
+				<br />$:pkg['long_description']</li>
 				<div class="screenshot">
 				<a class="link-thumb" rel="facebox" 
 				href="http://screenshots.debian.net/screenshot/$pkg['package']?.jpg" 
@@ -103,7 +104,6 @@ $for pkg in pkg_details:
 				<img src="http://screenshots.debian.net/thumbnail/$pkg['package']" 
 				alt="Screenshot $pkg['package']" /></a>
 				</div><!-- screenshot -->
-				<br />$:pkg['long_description']</li>
 			    $if pkg['homepage']:
 			        <li><b>Homepage</b>: $pkg['homepage']</li>
 			    $if pkg['task']:
