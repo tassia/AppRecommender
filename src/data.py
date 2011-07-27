@@ -82,7 +82,7 @@ class AppAptXapianIndex(xapian.WritableDatabase):
             except:
                 logging.info("Doc %d not found in axi." % docid)
         logging.info("AppAptXapianIndex size: %d (lastdocid: %d)." %
-                     self.get_doccount(), self.get_lastdocid())
+                     (self.get_doccount(), self.get_lastdocid()))
 
     def __str__(self):
         return print_index(self)
@@ -166,6 +166,7 @@ class PopconXapianIndex(xapian.WritableDatabase):
                 raise Error
             if cfg.index_mode == "reindex":
                 self.source_dir = os.path.expanduser(cfg.popcon_dir)
+                logging.debug(self.source_dir)
             else:
                 self.source_dir = os.path.expanduser(cfg.clusters_dir)
                 if not os.path.exists(cfg.clusters_dir):
@@ -180,10 +181,12 @@ class PopconXapianIndex(xapian.WritableDatabase):
                                  % cfg.clusters_dir)
                     distance = JaccardDistance()
                     data = self.get_submissions(cfg.popcon_dir)
+                    logging.debug(type(data))
                     self.cluster_dispersion = \
                         self.kmedoids_clustering(data, cfg.clusters_dir,
-                                                 distance, cfg.k_medoids)
-                    logging.info("Clusters dispersion: %f.2",
+                                                 distance, cfg.k_medoids,
+                                                 cfg.max_popcon)
+                    logging.info("Clusters dispersion: %.2f",
                                  self.cluster_dispersion)
                 else:
                     logging.info("Using clusters from \'%s\'" %
@@ -221,8 +224,9 @@ class PopconXapianIndex(xapian.WritableDatabase):
                          self.path)
             xapian.WritableDatabase.__init__(self,self.path,
                                              xapian.DB_CREATE_OR_OVERWRITE)
-        except xapian.DatabaseError:
+        except xapian.DatabaseError as e:
             logging.critical("Could not create popcon xapian index.")
+            logging.critical(str(e))
             raise Error
 
         for root, dirs, files in os.walk(self.source_dir):
@@ -254,29 +258,32 @@ class PopconXapianIndex(xapian.WritableDatabase):
         submissions = []
         for root, dirs, files in os.walk(submissions_dir):
             for popcon_file in files:
+                logging.debug("Parsing submission %s" % popcon_file)
                 submission = PopconSubmission(os.path.join(root, popcon_file))
                 submissions.append(submission)
         return submissions
 
-    def kmedoids_clustering(self,data,clusters_dir,distance,k_medoids):
+    def kmedoids_clustering(self,data,clusters_dir,distance,k_medoids,max_popcon):
         clusters = KMedoidsClustering(data,lambda x,y:
                                            distance(x.packages.keys(),
-                                                    y.packages.keys()))
+                                                    y.packages.keys()),max_popcon)
         medoids,dispersion = clusters.getMedoids(k_medoids)
         for submission in medoids:
+            logging.debug("Copying submission %s" % submission.user_id)
             shutil.copyfile(submission.path,os.path.join(clusters_dir,
                                                          submission.user_id))
         return dispersion
 
 class KMedoidsClustering(cluster.KMeansClustering):
 
-    def __init__(self,data,distance,max_data=100):
-       # if len(data)<max_data:
-       #     data_sample = data
-       # else:
-       #     data_sample = random.sample(data,max_data)
-       # cluster.KMeansClustering.__init__(self, data_sample, distance)
-        cluster.KMeansClustering.__init__(self, data, distance)
+    def __init__(self,data,distance,max_data):
+        if len(data)<max_data:
+            data_sample = data
+        else:
+            data_sample = random.sample(data,max_data)
+        print data_sample
+        cluster.KMeansClustering.__init__(self, data_sample, distance)
+       # cluster.KMeansClustering.__init__(self, data, distance)
         self.distanceMatrix = {}
         for submission in self._KMeansClustering__data:
             self.distanceMatrix[submission.user_id] = {}
@@ -335,6 +342,8 @@ class KMedoidsClustering(cluster.KMeansClustering):
         """
         #medoids_distances = [self.getMedoid(cluster) for cluster in self.getclusters(n)]
         medoids_distances = []
+        logging.debug("initial length %s" % self._KMeansClustering__initial_length)
+        logging.debug("n %d" % n)
         for cluster in self.getclusters(n):
             type(cluster)
             print cluster
