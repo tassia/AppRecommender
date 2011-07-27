@@ -36,7 +36,7 @@ if __name__ == '__main__':
         begin_time = datetime.datetime.now()
         logging.info("Clustering computation started at %s" % begin_time)
 
-        cl = PopconClusteredData(cfg)
+        cl = PopconXapianIndex(cfg)
 
         end_time = datetime.datetime.now()
         logging.info("Clustering computation completed at %s" % end_time)
