@@ -62,15 +62,15 @@ button below.
 $for pkg in pkg_details:
             <div class="panel">
             	<div class="panel-wrapper">
-			<p>
 		    <div class="screenshot">
 			<a class="link-thumb" rel="facebox" 
 			href="http://screenshots.debian.net/screenshot/$pkg['package']?.jpg" 
-			title="Screenshot of package $pkg['package']">
+			title="Click to enlarge screenshot of package $pkg['package']" alt="Click to enlarge screenshot">
 			<img height="70px" src="http://screenshots.debian.net/thumbnail/$pkg['package']" 
 			alt="Screenshot $pkg['package']" /></a>
 		    </div><!-- screenshot -->
-			<h1 id="title_pkg">($pkg_details.index(pkg)/10) $pkg['package'] <br />
+			<h1 style="float: right;">($pkg_details.index(pkg)/10)</h1>
+			<h1 id="title_pkg"> $pkg['package'] <br />
 			<span>$pkg['description']</span></h1>
 			</p>
 		     	<div id="panel-controls" class="glass">

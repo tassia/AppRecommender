@@ -87,11 +87,6 @@ float: left;
 margin: 5px;
 }
 
-.content-pkg {
-font-size: 0.8em;
-line-height: 1.4;
-}
-
 .content-pkg ul li {
 margin-bottom: 10px;
 }
@@ -158,6 +153,11 @@ border: 1px solid #888a85;
 box-shadow: 0 1px 4px gray inset;
 background: white;
 float: right;
+}
+
+.panel-wrapper {
+font-size: 0.8em;
+line-height: 1.4;
 }
 
 #panel-controls legend {
