@@ -15,20 +15,32 @@ $var jsfiles: static/js/facebox.js
 <div id="maincontent">
 <div class="innertube">
 
-<a rel="facebox" href="/static/images/diaappr.png" title="AppRecommender Diagram"><img style="float: right; margin: 10px;" alt="AppRecommender Diagram" src="/static/images/diaappr.png" width="230px" /></a>
+<h1>AppRecommender Survey</h1>
+<h2>About</h2>
 
-<h1>About</h1>
-
-<p>This experiment aims to compare and validate automated application
-recommendations produced by various strategies and algorithms tunnings. We
+<p align="justify">This experiment aims to compare and validate automated application
+recommendations produced by various strategies and algorithms tuning. We
 believe that real users evaluation regarding the relevance of recommendations is
 the most accurate data source for computing recommender system effectiveness.</p>
-<br />
-<p>The engine that is being tested is a free software called <a
+<br/>
+
+<a rel="facebox" href="/static/images/diaappr.png" title="AppRecommender Diagram">
+<img style="float: right; margin: 10px;" alt="AppRecommender dataflow"
+src="/static/images/diaappr.png" width="230px" /></a>
+
+<p align="justify">The engine that is being tested is a free software called <a
 href="http://github.com/tassia/AppRecommender">AppRecommender</a>. It was
 initially developed using the Debian Project infrasctructure, but the solution
-is essentially distro-independent and could even be adapted to non GNU/Linux
-systems given that there was available data for that.</p>
+is essentially distro-independent and can even be adapted to non GNU/Linux
+systems given that there is available data for that.</p>
+<br />
+
+<p align="justify">The picture on the right gives an idea of the data workflow
+for AppRecommender. The user provides a set of applications installed in his
+system and the recommender suggestes a set of applications that he might also
+be interested in. Different strategies can be used to compose the recommendation,
+based on this user and other similar users profiles, using Apt-xapian-index,
+Popcon and UDD as data sources.</p>
 
 </div><!-- id="innertube" -->
 </div><!-- id="maincontent" -->
