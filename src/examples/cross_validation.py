@@ -53,7 +53,7 @@ if __name__ == '__main__':
         metrics.append(F1())
         metrics.append(Accuracy())
         metrics.append(SimpleAccuracy())
-        validation = CrossValidation(0.3,10,rec,metrics,0.005)
+        validation = CrossValidation(0.9,10,rec,metrics,0.1)
         validation.run(user)
         print validation
 

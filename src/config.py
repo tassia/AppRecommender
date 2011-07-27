@@ -46,6 +46,7 @@ class Config():
         self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
         self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters_dir")
         self.k_medoids = 100
+        self.max_popcon = 1000
         self.index_mode = "old"
         self.strategy = "cb"
         self.weight = "bm25"
@@ -71,6 +72,7 @@ class Config():
         print "  -u, --indexmode=           'old'|'reindex'|'cluster'|'recluster'"
         print "  -l, --clustersdir=PATH     Path to popcon clusters dir"
         print "  -c, --medoids=k            Number of medoids for clustering"
+        print "  -x, --maxpopcon=k          Number of submissions to be considered"
         print ""
         print " [ recommender ]"
         print "  -w, --weight=OPTION        Search weighting scheme"
@@ -112,8 +114,8 @@ class Config():
             logging.error("Error in config file syntax: %s", str(err))
             os.abort()
 
-        self.debug = self.read_option('general', 'debug')
-        self.debug = self.read_option('general', 'verbose')
+        self.debug = int(self.read_option('general', 'debug'))
+        self.debug = int(self.read_option('general', 'verbose'))
         self.output_filename = self.read_option('general', 'output')
         self.survey_mode = self.read_option('general', 'survey_mode')
 
@@ -123,16 +125,18 @@ class Config():
         self.popcon_dir = os.path.expanduser(self.read_option('data_sources', 'popcon_dir'))
         self.index_mode = self.read_option('data_sources', 'index_mode')
         self.clusters_dir = os.path.expanduser(self.read_option('data_sources', 'clusters_dir'))
-        self.k_medoids = self.read_option('data_sources', 'k_medoids')
+        self.k_medoids = int(self.read_option('data_sources', 'k_medoids'))
+        self.max_popcon = int(self.read_option('data_sources', 'max_popcon'))
 
         self.weight = self.read_option('recommender', 'weight')
         self.strategy = self.read_option('recommender', 'strategy')
-        self.profile_size = self.read_option('recommender', 'profile_size')
+        self.profile_size = int(self.read_option('recommender',
+                                                 'profile_size'))
 
-        short_options = "hdvo:a:e:p:m:ul:c:w:s:z:"
+        short_options = "hdvo:a:e:p:m:ul:c:x:w:s:z:"
         long_options = ["help", "debug", "verbose", "output=",
                         "axi=", "dde=", "popconindex=", "popcondir=", "indexmode=",
-                        "clustersdir=", "kmedoids=", "weight=", "strategy=",
+                        "clustersdir=", "kmedoids=", "max_popcon=", "weight=", "strategy=",
                         "profile_size="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
@@ -166,13 +170,15 @@ class Config():
             elif o in ("-l", "--clustersdir"):
                 self.clusters_dir = p
             elif o in ("-c", "--kmedoids"):
-                self.k_medoids = p
+                self.k_medoids = int(p)
+            elif o in ("-x", "--max_popcon"):
+                self.max_popcon = int(p)
             elif o in ("-w", "--weight"):
                 self.weight = p
             elif o in ("-s", "--strategy"):
                 self.strategy = p
             elif o in ("-z", "--profile_size"):
-                self.strategy = p
+                self.strategy = int(p)
             else:
                 assert False, "unhandled option"
 
