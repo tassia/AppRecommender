@@ -81,16 +81,12 @@ function validateForm()
     <div id="upload-slide">
 	 <fieldset>
 	<p>
-	   <label title="Upload file">Upload file: <input type="file" name="pkgs_file" size="20" /></label>
+	   <label title="Upload file">Installed packages file: <input type="file" name="pkgs_file" size="20" /></label>
 	</p>
 	<div id="tip-upload" class="tip important">
 	<p>
-    Upload a popularity-contest submission file ('/var/log/popularity-contest')
-    or run the following command and upload the generated 'packages.list' file.
-	</p>
-	<p>
-	<code> # dpkg-query --show > packages.list </code>
-	</p>
+    Format: popularity-contest submission file or any file having each package
+    as the first field of lines.
 	</div><!-- id="tip-upload" -->
 	</fieldset>
    </div><!-- id="upload-slide" -->
