@@ -84,7 +84,12 @@ display: none;
 
 .screenshot {
 float: left;
+border: 1px solid black;
 margin: 5px;
+}
+
+.screenshot:hover {
+box-shadow: 0 1px 4px gray;
 }
 
 .content-pkg ul li {
@@ -113,7 +118,13 @@ z-index: 2;
 cursor: pointer;
 }
 
-.radioButton:hover { height: 20px; }
+.radioButton:hover { 
+height: 20px; 
+box-shadow: 0 0 4px gray;
+border: 1px solid #eeeeec;
+background: #eeeeec;
+color: #000;
+}
 
 #continue-button {
 float: right;

@@ -72,7 +72,7 @@ $for pkg in pkg_details:
 			<h1 style="float: right;">($pkg_details.index(pkg)/10)</h1>
 			<h1 id="title_pkg"> $pkg['package'] <br />
 			<span>$pkg['description']</span></h1>
-			</p>
+			<br style="clear: both;" />
 		     	<div id="panel-controls" class="glass">
 		   <fieldset>
 		     <legend>How do you evaluate this recommendation?</legend>
@@ -103,7 +103,7 @@ $for pkg in pkg_details:
             		<div class="content-pkg">
 			   <ul>
 			    <li><b>Description</b>: 
-				<br />$:pkg['long_description']</li>
+				<pre>$:pkg['long_description']</pre></li>
 			    $if pkg['homepage']:
 			        <li><b>Homepage</b>: $pkg['homepage']</li>
 			    $if pkg['task']:
