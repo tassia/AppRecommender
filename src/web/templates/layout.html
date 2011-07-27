@@ -1,5 +1,5 @@
 $def with (content)
-$ url_base = "http://localhost:8080"
+$ url_base = "/"
 <!--Force IE6 into quirks mode with this comment tag-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -166,7 +166,7 @@ $:content
   <div id="navbar">
      <ul>
 	<li><a href="$url_base">Home</a></li>
-	<li><a href="$url_base/about">About</a></li>
+	<li><a href="$(url_base)about">About</a></li>
 	<li><a href="http://github.com/tassia/AppRecommender">Development</a></li>
     </ul>
    </div><!-- id="navbar" -->
