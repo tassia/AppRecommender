@@ -32,7 +32,7 @@ class Thanks:
         with open("./submissions/%s/ident" % user_id,'w') as ident:
             for key in ["name","email","country","public","comments"]:
                 if web_input.has_key(key):
-                    ident.write("%s: %s\n" % (key,web_input[key]))
+                    ident.write("%s: %s\n" % (key,web_input[key].encode("utf-8")))
         return render.thanks_id()
 
 class Package:
