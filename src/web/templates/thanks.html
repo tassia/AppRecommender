@@ -3,6 +3,22 @@ $var title: Thanks
 $var mod = 'thanks';
 $var cssfiles: static/css/survey.css
 
+<style> 
+#header { display: none; } 
+#wrap { padding-top: 0px; }
+</style><!-- hidden top bar upload -->
+
+<script>
+function validateForm()
+ {
+  var n = $$("input[name=name]");
+  var e = $$("input[name=email]");
+  if ( !n.val() || !e.val() ) {
+    alert("Write your Name and Email.");
+    return false;
+  }
+}
+</script>
 
 <div id="maincontent">
 <div class="innertube">
@@ -11,20 +27,25 @@ $var cssfiles: static/css/survey.css
 <h1>Thanks!</h1>
 <p>Thank you very much for participating in this survey.</p><br />
 
+<div id="optionalform">
+<center>
 <h2>Optional Info</h2>
-<p>Tell us your name if you want it to be published in our <br / > thanks page.
-If you also provide a valid e-mail address <br / > you will be sent the survey
-report as soon as it is ready.</p>
-<br />
-	<form action="/thanks" method="post" enctype="multipart/form-data" name="identification_form">
-	<p>
+<p>
+ Tell us your name if you want it to be published in our 
+ thanks page. If you also provide a valid e-mail address 
+ you will be sent the survey report as soon as it is ready.
+</p><br />
+</center>
+
+	<form action="/thanks" method="post" enctype="multipart/form-data" name="identification_form" onsubmit="return validateForm()">
+	
 	<label>
-    <input type="hidden" name="user_id" value=$user_id>
-	Name: <input type="text" name="name" value="" size="35">
+	<input type="hidden" name="user_id" value=$user_id>
+	Name: <input class="text" type="text" name="name" value="" size="40">
 	</label></p>
 	<p>
 	<label>
-	E-mail: <input type="text" name="email" value="" size="35">
+	E-mail: <input class="text" type="text" name="email" value="" size="40">
 	</label></p>
 	<p>
 	<label>
@@ -290,25 +311,19 @@ report as soon as it is ready.</p>
     <option value="Zambia">Zambia</option>
     <option value="Zimbabwe">Zimbabwe</option>
     </select>
-	</label></p>
+	</label></p><br />
 	<p>
-	<label>
-	Comments:
-	<textarea name="comments" value="" rows="2" cols="32"></textarea>
+	<label class="text-left">
+	Comments:<br />
+	<textarea name="comments" value="" rows="2" cols="50"></textarea>
 	</label></p>
 	<p><input type="submit" name="send_button" value="Submit" class="glass"
     id="finish-button"><p>
 	</form>
+
+<div><!-- optionalform -->
 </center>
 
-<!--
-<br style="clear: both" />
-</div>
-</div> 
-
-<div id="maincontent">
-<div class="innertube">
--->
 
 <br style="clear: both" />
 </div><!-- class="innertube" -->

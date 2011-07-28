@@ -136,8 +136,9 @@ background: white;
 }
 
 .radioButton {
-border: 1px solid white;
-box-shadow: 0 1px 4px white inset;
+border: 1px solid transparent;
+box-shadow: none;
+background: none;
 text-align: left;
 vertical-align: middle;
 width: 150px;
@@ -154,6 +155,7 @@ z-index: 2;
 cursor: pointer;
 }
 
+#optionalform,
 #panel-controls {
 position: relative; 
 width: 170px;
@@ -178,7 +180,7 @@ font-weight: bold;
 #next-button {
 text-align: center;
 position: absolute;
-top: 90px;
+top: 85px;
 right: 70px;
 width: 80px;
 height: 20px;
@@ -197,10 +199,6 @@ height: 20px;
 z-index: 3;
 }
 
-/*
- * Package Box
- */
-
 #title_pkg {
 font-weight: bold;
 }
@@ -212,5 +210,39 @@ font-weight: normal;
 font-size: 0.8em;
 }
 
+#optionalform {
+width: 400px;
+padding: 10px;
+float: none;
+}
 
+#optionalform label {
+font-weight: bold;
+text-align: right;
+}
 
+#optionalform textarea,
+#optionalform input.text {
+border: 1px solid #888a85;
+border-radius: 5px;
+box-shadow: 0 1px 4px gray inset;
+background: white;
+width: 340px;
+height: 20px;
+}
+
+#optionalform textarea {
+width: 390px;
+height: 50px;
+text-align: left;
+}
+
+#optionalform textarea:hover,
+#optionalform input:hover.text {
+border: 1px solid #000;
+box-shadow: 0 1px 4px gray;
+}
+
+#optionalform .text-left {
+text-align: left;
+}
