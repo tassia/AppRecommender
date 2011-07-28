@@ -45,7 +45,7 @@ def axi_search_pkg_tags(axi,pkg):
     enquire.set_query(xapian.Query("XP"+pkg))
     matches = enquire.get_mset(0,1)
     if not matches:
-        logging.debug("Package %s not found in items repository" % pkg)
+        #logging.debug("Package %s not found in items repository" % pkg)
         return []
     for m in matches:
         tags = [term.term for term in axi.get_document(m.docid).termlist() if
@@ -158,13 +158,14 @@ class PopconXapianIndex(xapian.WritableDatabase):
         self.axi = xapian.Database(cfg.axi)
         self.path = os.path.expanduser(cfg.popcon_index)
         self.source_dir = os.path.expanduser(cfg.popcon_dir)
+        self.max_popcon = cfg.max_popcon
         if not cfg.index_mode == "old" or not self.load_index():
             if not os.path.exists(cfg.popcon_dir):
                 os.makedirs(cfg.popcon_dir)
             if not os.listdir(cfg.popcon_dir):
                 logging.critical("Popcon dir seems to be empty.")
                 raise Error
-            if cfg.index_mode == "reindex":
+            if cfg.index_mode == "reindex" or cfg.index_mode == "old":
                 self.source_dir = os.path.expanduser(cfg.popcon_dir)
                 logging.debug(self.source_dir)
             else:
@@ -229,8 +230,13 @@ class PopconXapianIndex(xapian.WritableDatabase):
             logging.critical(str(e))
             raise Error
 
+        doc_count = 0
         for root, dirs, files in os.walk(self.source_dir):
+            if doc_count == self.max_popcon:
+                break
             for popcon_file in files:
+                if doc_count == self.max_popcon:
+                    break
                 submission = PopconSubmission(os.path.join(root, popcon_file))
                 doc = xapian.Document()
                 doc.set_data(submission.user_id)
@@ -238,10 +244,11 @@ class PopconXapianIndex(xapian.WritableDatabase):
                               submission.user_id)
                 for pkg, freq in submission.packages.items():
                     doc.add_term("XP"+pkg,freq)
-                    if axi_search_pkg_tags(self.axi,pkg):
-                        for tag in axi_search_pkg_tags(self.axi,pkg):
-                            doc.add_term(tag,freq)
+                    #if axi_search_pkg_tags(self.axi,pkg):
+                    #    for tag in axi_search_pkg_tags(self.axi,pkg):
+                    #        doc.add_term(tag,freq)
                 doc_id = self.add_document(doc)
+                doc_count += 1
                 logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
             # python garbage collector
         	gc.collect()
