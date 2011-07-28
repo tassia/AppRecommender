@@ -40,7 +40,7 @@ class Config():
         self.output = "/dev/null"
         self.survey_mode = 1
         self.axi = "/var/lib/apt-xapian-index/index"
-#        self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
+        #self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
         self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
         self.popcon_index = os.path.expanduser("~/.app-recommender/popcon_index")
         self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
@@ -51,6 +51,9 @@ class Config():
         self.strategy = "cb"
         self.weight = "bm25"
         self.profile_size = 50
+        # options: maximal, voted, desktop
+        self.profiling = "maximal"
+        self.k_neighbors = 100
         self.load_options()
         self.set_logger()
 
@@ -77,7 +80,9 @@ class Config():
         print " [ recommender ]"
         print "  -w, --weight=OPTION        Search weighting scheme"
         print "  -s, --strategy=OPTION      Recommendation strategy"
-        print "  -z, --profile_size=SIZE    Size of user profile"
+        print "  -z, --profilesize=k        Size of user profile"
+        print "  -f, --profiling=OPTION     Profile filter strategy"
+        print "  -n, --neighbors=k          Size of neighborhood for collaboration"
         print ""
         print " [ weight options ] "
         print "  trad = traditional probabilistic weighting"
@@ -132,12 +137,15 @@ class Config():
         self.strategy = self.read_option('recommender', 'strategy')
         self.profile_size = int(self.read_option('recommender',
                                                  'profile_size'))
+        self.profiling = self.read_option('recommender', 'profiling')
+        self.k_neighbors = int(self.read_option('recommender',
+                                                 'k_neighbors'))
 
-        short_options = "hdvo:a:e:p:m:ul:c:x:w:s:z:"
+        short_options = "hdvo:a:e:p:m:ul:c:x:w:s:z:f:n:"
         long_options = ["help", "debug", "verbose", "output=",
                         "axi=", "dde=", "popconindex=", "popcondir=", "indexmode=",
-                        "clustersdir=", "kmedoids=", "max_popcon=", "weight=", "strategy=",
-                        "profile_size="]
+                        "clustersdir=", "kmedoids=", "maxpopcon=", "weight=", "strategy=",
+                        "profile_size=", "profiling=", "neighbors="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
@@ -178,7 +186,11 @@ class Config():
             elif o in ("-s", "--strategy"):
                 self.strategy = p
             elif o in ("-z", "--profile_size"):
-                self.strategy = int(p)
+                self.profile_size = int(p)
+            elif o in ("-z", "--profiling"):
+                self.profiling = p
+            elif o in ("-n", "--neighbors"):
+                self.k_neighbors = int(p)
             else:
                 assert False, "unhandled option"
 
