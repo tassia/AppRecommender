@@ -251,9 +251,7 @@ class AppRecommender:
                 return render.survey(recommendation, pkg_details,
                                      FeedbackForm(request.selected_strategies))
             else:
-                return render.apprec(recommendation, pkg_summaries,
-                                     FeedbackForm(request.selected_strategies),
-                                     request)
+                return render.apprec(recommendation, pkg_summaries, request)
 
     def _recommends(self,request):
         user = User(dict.fromkeys(request.pkgs_list,1),request.user_id)

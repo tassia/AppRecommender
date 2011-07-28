@@ -38,7 +38,7 @@ class Config():
         self.debug = 0
         self.verbose = 0
         self.output = "/dev/null"
-        self.survey_mode = 1
+        self.survey_mode = 0
         self.axi = "/var/lib/apt-xapian-index/index"
 #        self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
         self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
