@@ -8,18 +8,6 @@ $var cssfiles: static/css/survey.css
 #wrap { padding-top: 0px; }
 </style><!-- hidden top bar upload -->
 
-<script>
-function validateForm()
- {
-  var n = $$("input[name=name]");
-  var e = $$("input[name=email]");
-  if ( !n.val() || !e.val() ) {
-    alert("Write your Name and Email.");
-    return false;
-  }
-}
-</script>
-
 <div id="maincontent">
 <div class="innertube">
 
@@ -37,7 +25,7 @@ function validateForm()
 </p><br />
 </center>
 
-	<form action="/thanks" method="post" enctype="multipart/form-data" name="identification_form" onsubmit="return validateForm()">
+	<form action="/thanks" method="post" enctype="multipart/form-data" name="identification_form">
 	
 	<label>
 	<input type="hidden" name="user_id" value=$user_id>

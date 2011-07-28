@@ -67,7 +67,7 @@ min-height: 200px;
 
 body.survey #wrap {
 padding-top: 0px;
-min-height: 450px;
+min-height: 200px;
 position: relative;
 }
 
@@ -190,7 +190,7 @@ z-index: 3;
 
 #controls-form {
 position: absolute;
-top: 390px;
+top: 150px;
 width: 600px;
 margin-right: auto;
 margin-left: auto;
