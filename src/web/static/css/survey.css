@@ -158,7 +158,7 @@ cursor: pointer;
 position: relative; 
 width: 170px;
 padding: 5px;
-margin: 5px 60px 5px 5px;
+margin: 5px;
 border-radius: 5px;
 border: 1px solid #888a85;
 box-shadow: 0 1px 4px gray inset;
@@ -178,8 +178,8 @@ font-weight: bold;
 #next-button {
 text-align: center;
 position: absolute;
-top: 230px;
-right: 25px;
+top: 120px;
+right: 70px;
 width: 80px;
 height: 20px;
 float: right;
@@ -196,8 +196,6 @@ text-align: center;
 height: 20px;
 z-index: 3;
 }
-
-
 
 /*
  * Package Box
