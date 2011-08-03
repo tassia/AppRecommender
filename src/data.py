@@ -119,13 +119,12 @@ class PopconSubmission():
             output += "\n "+pkg+": "+str(weight)
         return output
 
-    def apps(self,axi):
-        apps = {}
+    def get_filtered(self,filter_list):
+        filtered = {}
         for pkg in self.packages.keys():
-            tags = axi_search_pkg_tags(self.axi,pkg)
-            if "XTrole::program" in tags:
-                apps[pkg] = self.packages[pkg]
-        return apps
+            if pkg in filter_list:
+                filtered[pkg] = self.packages[pkg]
+        return filtered
 
     def load(self,binary=1):
     	"""
@@ -261,11 +260,15 @@ class PopconXapianIndex(xapian.WritableDatabase):
                     break
                 submission = PopconSubmission(os.path.join(root, popcon_file))
                 doc = xapian.Document()
-                doc.set_data(submission.user_id)
-                logging.debug("Parsing popcon submission \'%s\'" %
-                              submission.user_id)
-                for pkg, freq in submission.packages.items():
-                    if pkg in self.valid_pkgs:
+                submission_pkgs = submission.get_filtered(self.valid_pkgs)
+                if len(submission_pkgs) < 10:
+                    logging.debug("Low profile popcon submission \'%s\' (%d)" %
+                                  (submission.user_id,len(submission_pkgs)))
+                else:
+                    doc.set_data(submission.user_id)
+                    logging.debug("Parsing popcon submission \'%s\'" %
+                                  submission.user_id)
+                    for pkg,freq in submission_pkgs.items():
                         tags = axi_search_pkg_tags(self.axi,pkg)
                         # if the package was foung in axi
                         if tags:
@@ -275,9 +278,9 @@ class PopconXapianIndex(xapian.WritableDatabase):
                                 for tag in tags:
                                     if tag in self.valid_tags:
                                         doc.add_term(tag,freq)
-                doc_id = self.add_document(doc)
-                doc_count += 1
-                logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
+                    doc_id = self.add_document(doc)
+                    doc_count += 1
+                    logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
             # python garbage collector
         	gc.collect()
         # flush to disk database changes
