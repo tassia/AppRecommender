@@ -33,7 +33,7 @@ import Gnuplot
 def run_iteration(label,cfg,sample_proportion,n):
     rec = Recommender(cfg)
     repo_size = rec.items_repository.get_doccount()
-    user = PopconSystem("/root/popularity-contest-tassia")
+    user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters,"desktop"))
     print "profile",user.pkg_profile
     user.maximal_pkg_profile()
     sample_size = int(len(user.pkg_profile)*sample_proportion)
