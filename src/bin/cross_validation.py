@@ -25,43 +25,34 @@ import sys
 sys.path.insert(0,'../')
 import logging
 import datetime
-from datetime import timedelta
 
-from config import *
-from data import *
-from evaluation import *
-from dissimilarity import *
-from recommender import *
-from strategy import *
-from user import *
-from error import Error
+from config import Config
+from evaluation import CrossValidation, Precision, Recall, F1, Accuracy, SimpleAccuracy
+from recommender import Recommender
+from user import RandomPopcon
 
 if __name__ == '__main__':
-    try:
-        cfg = Config()
-        rec = Recommender(cfg)
-        user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters,"desktop"))
-        user.filter_pkg_profile(os.path.join(cfg.filters,"desktop"))
-        user.maximal_pkg_profile()
-        begin_time = datetime.datetime.now()
+    cfg = Config()
+    rec = Recommender(cfg)
+    user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters,"desktop"))
+    user.filter_pkg_profile(os.path.join(cfg.filters,"desktop"))
+    user.maximal_pkg_profile()
+    begin_time = datetime.datetime.now()
 
-        metrics = []
-        metrics.append(Precision())
-        metrics.append(Recall())
-        metrics.append(F1())
-        metrics.append(Accuracy())
-        metrics.append(SimpleAccuracy())
-        validation = CrossValidation(0.9,10,rec,metrics,0.1)
-        validation.run(user)
-        print validation
+    metrics = []
+    metrics.append(Precision())
+    metrics.append(Recall())
+    metrics.append(F1())
+    metrics.append(Accuracy())
+    metrics.append(SimpleAccuracy())
+    validation = CrossValidation(0.9,10,rec,metrics,0.01)
+    validation.run(user)
+    print validation
 
-        end_time = datetime.datetime.now()
-        delta = end_time - begin_time
-        logging.info("Cross-validation for user %s" % user.user_id)
-        logging.info("Recommender strategy: %s" % rec.strategy.description)
-        logging.debug("Cross-validation started at %s" % begin_time)
-        logging.debug("Cross-validation completed at %s" % end_time)
-        logging.info("Time elapsed: %d seconds." % delta.seconds)
-
-    except Error:
-        logging.critical("Aborting proccess. Use '--debug' for more details.")
+    end_time = datetime.datetime.now()
+    delta = end_time - begin_time
+    logging.info("Cross-validation for user %s" % user.user_id)
+    logging.info("Recommender strategy: %s" % rec.strategy.description)
+    logging.debug("Cross-validation started at %s" % begin_time)
+    logging.debug("Cross-validation completed at %s" % end_time)
+    logging.info("Time elapsed: %d seconds." % delta.seconds)

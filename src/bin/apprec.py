@@ -23,38 +23,27 @@ import os
 import sys
 sys.path.insert(0,'../')
 import logging
-import datetime
 import random
-from datetime import timedelta
+import datetime
 
-from config import *
-from data import *
-from evaluation import *
-from dissimilarity import *
-from recommender import *
-from strategy import *
-from user import *
-from error import Error
+from config import Config
+from recommender import Recommender
+from user import LocalSystem, RandomPopcon
 
 if __name__ == '__main__':
-    try:
-        begin_time = datetime.datetime.now()
-        logging.debug("Computation started at %s" % begin_time)
-        cfg = Config()
-        rec = Recommender(cfg)
-        user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters,"desktop"))
-        #user = LocalSystem()
-        user.filter_pkg_profile(os.path.join(cfg.filters,"desktop"))
-        user.maximal_pkg_profile()
+    begin_time = datetime.datetime.now()
+    cfg = Config()
+    rec = Recommender(cfg)
+    logging.info("Computation started at %s" % begin_time)
+    user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters,"desktop"))
+    #user = LocalSystem()
+    user.filter_pkg_profile(os.path.join(cfg.filters,"desktop"))
+    user.maximal_pkg_profile()
 
-        logging.info("Recommending applications for user %s" % user.user_id)
-        logging.info(rec.get_recommendation(user,20))
+    logging.info("Recommending applications for user %s" % user.user_id)
+    logging.info(rec.get_recommendation(user,20))
 
-        end_time = datetime.datetime.now()
-        logging.debug("Computation completed at %s" % end_time)
-        delta = end_time - begin_time
-        logging.info("Time elapsed: %d seconds." % delta.seconds)
-
-    except Error:
-        logging.critical("Aborting proccess. Use '--debug' for more details.")
-
+    end_time = datetime.datetime.now()
+    logging.info("Computation completed at %s" % end_time)
+    delta = end_time - begin_time
+    logging.info("Time elapsed: %d seconds." % delta.seconds)

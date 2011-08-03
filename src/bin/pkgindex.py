@@ -18,11 +18,12 @@ __license__ = """
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+import os
 import sys
 sys.path.insert(0,'../')
 import logging
 import datetime
-from datetime import timedelta
 
 from config import Config
 from error import Error
@@ -32,27 +33,18 @@ import xapian
 if __name__ == '__main__':
     cfg = Config()
     begin_time = datetime.datetime.now()
-    if len(sys.argv) >= 3:
-        try:
-            with open(sys.argv[2]) as valid:
-                pkgs_list = [line.strip() for line in valid]
-                logging.info("Packages list length: %d" % len(pkgs_list))
-        except:
-            logging.critical("File %s does not seem to be a package \
-                              list" % sys.argv[2])
-            raise Error
-        pkgs_index = data.SampleAptXapianIndex(pkgs_list,xapian.Database(cfg.axi),
-                                              sys.argv[1])
-        try:
-            logging.info("Sample package indexing started at %s" % begin_time)
-        except:
-                logging.critical("Could not create the index at %s" % sys.argv[1])
-                raise Error
+    logging.info("Sample package indexing started at %s" % begin_time)
+    with open(os.path.join(cfg.filters,cfg.pkgs_filter)) as valid:
+        pkgs_list = [line.strip() for line in valid]
+        logging.info("Packages list length: %d" % len(pkgs_list))
 
-        end_time = datetime.datetime.now()
-        print("Sample package indexing completed at %s" % end_time)
-        print("Number of documents: %d" % pkgs_index.get_doccount())
-        delta = end_time - begin_time
-        logging.info("Time elapsed: %d seconds." % delta.seconds)
-    else:
-        logging.critical("Usage: pkgindex.py INDEX_PATH PKGS_LIST")
+    # use config file or command line options 
+    pkgindex = data.SampleAptXapianIndex(pkgs_list,xapian.Database(cfg.axi),
+                                         cfg.axi+"-"+cfg.pkgs_filter)
+    end_time = datetime.datetime.now()
+    logging.info("Sample package indexing completed at %s" % end_time)
+    logging.info("Number of documents (packages): %d" %
+                 pkgindex.get_doccount())
+
+    delta = end_time - begin_time
+    logging.info("Time elapsed: %d seconds." % delta.seconds)

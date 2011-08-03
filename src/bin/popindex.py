@@ -23,29 +23,25 @@ import sys
 sys.path.insert(0,'../')
 import logging
 import datetime
-from datetime import timedelta
 
-from config import *
-from data import *
-from dissimilarity import *
-from error import Error
+from config import Config
+from data import PopconXapianIndex
 
 if __name__ == '__main__':
-    try:
-        cfg = Config()
-        begin_time = datetime.datetime.now()
-        logging.info("Popcon indexing started at %s" % begin_time)
+    cfg = Config()
+    begin_time = datetime.datetime.now()
+    logging.info("Popcon indexing started at %s" % begin_time)
 
-        pxi = PopconXapianIndex(cfg)
+    # use config file or command line options
+    popindex = PopconXapianIndex(cfg)
 
-        end_time = datetime.datetime.now()
-        logging.info("Popcon indexing completed at %s" % end_time)
-        delta = end_time - begin_time
-        logging.info("Time elapsed: %d seconds." % delta.seconds)
-        if cfg.index_mode=="cluster" or cfg.index_mode=="recluster":
-            logging.info("Medoids: %d\tDispersion:%f" %
-                         (cfg.k_medoids,pxi.cluster_dispersion))
+    end_time = datetime.datetime.now()
+    logging.info("Popcon indexing completed at %s" % end_time)
+    logging.info("Number of documents (submissions): %d" %
+                 popindex.get_doccount())
 
-    except Error:
-        logging.critical("Aborting proccess. Use '--debug' for more details.")
-
+    delta = end_time - begin_time
+    logging.info("Time elapsed: %d seconds." % delta.seconds)
+    if cfg.index_mode=="cluster" or cfg.index_mode=="recluster":
+        logging.info("Medoids: %d\tDispersion:%f" %
+                     (cfg.k_medoids,popindex.cluster_dispersion))
