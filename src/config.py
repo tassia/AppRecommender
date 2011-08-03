@@ -36,11 +36,11 @@ class Config():
         Set default configuration options.
         """
         self.debug = 0
-        self.verbose = 0
+        self.verbose = 1
         self.output = "/dev/null"
         self.filters = os.path.expanduser("~/.app-recommender/filters")
         #self.axi = "/var/lib/apt-xapian-index/index"
-        self.axi = os.path.expanduser("~/.app-recommender/DesktopAxi")
+        self.axi = os.path.expanduser("~/.app-recommender/ProgramAxi")
         #self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
         self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
         self.popcon_index = os.path.expanduser("~/.app-recommender/popcon-index")
@@ -176,7 +176,7 @@ class Config():
             elif o in ("-b", "--pkgsfilter"):
                 self.pkgs_filter = p
             elif o in ("-a", "--axi"):
-                self.axi = p + "/index"
+                self.axi = p
             elif o in ("-e", "--dde"):
                 self.dde_url = p
             elif o in ("-p", "--popconindex"):
@@ -221,7 +221,7 @@ class Config():
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
         console_handler.setLevel(log_level)
-        #self.logger.addHandler(console_handler)
+        self.logger.addHandler(console_handler)
 
         file_handler = logging.handlers.RotatingFileHandler(self.output,
                                                             maxBytes=50000000,
