@@ -140,7 +140,7 @@ class ContentBasedStrategy(RecommendationStrategy):
     """
     Content-based recommendation strategy based on Apt-xapian-index.
     """
-    def __init__(self,content,profile_size=50):
+    def __init__(self,content,profile_size):
         self.description = "Content-based"
         self.content = content
         self.profile_size = profile_size
@@ -149,8 +149,8 @@ class ContentBasedStrategy(RecommendationStrategy):
         """
         Perform recommendation strategy.
         """
-        profile = user.profile(rec.items_repository,self.content,
-                               self.profile_size)
+        profile = user.content_profile(rec.items_repository,self.content,
+                                       self.profile_size)
         # prepair index for querying user profile
         query = xapian.Query(xapian.Query.OP_OR,profile)
         enquire = xapian.Enquire(rec.items_repository)
@@ -188,7 +188,8 @@ class CollaborativeStrategy(RecommendationStrategy):
         """
         Perform recommendation strategy.
         """
-        profile = ["XP"+package for package in user.pkg_profile]
+        profile = ["XP"+package for package in
+                   user.filter_pkg_profile("/root/.app-recommender/filters/program")]
         # prepair index for querying user profile
         query = xapian.Query(xapian.Query.OP_OR,profile)
         enquire = xapian.Enquire(rec.users_repository)
@@ -210,13 +211,15 @@ class CollaborativeStrategy(RecommendationStrategy):
         eset = enquire.get_eset(recommendation_size,rset,PkgExpandDecider())
         # compose result dictionary
         item_score = {}
+        ranking = []
         for e in eset:
             package = e.term.lstrip("XP")
             tags = axi_search_pkg_tags(rec.items_repository,package)
             #[FIXME] set this constraint somehow
             #if "XTrole::program" in tags:
             item_score[package] = e.weight
-        return recommender.RecommendationResult(item_score)
+            ranking.append(m.document.get_data())
+        return recommender.RecommendationResult(item_score, ranking)
 
 class DemographicStrategy(RecommendationStrategy):
     """

@@ -31,6 +31,7 @@ import shutil
 from error import Error
 from singleton import Singleton
 from dissimilarity import *
+from config import Config
 
 def axi_search_pkgs(axi,pkgs_list):
     terms = ["XP"+item for item in pkgs_list]
@@ -38,19 +39,22 @@ def axi_search_pkgs(axi,pkgs_list):
     enquire = xapian.Enquire(axi)
     enquire.set_query(query)
     matches = enquire.get_mset(0,axi.get_doccount())
-    return matches
+    return [m.docid for m in matches]
 
 def axi_search_pkg_tags(axi,pkg):
     enquire = xapian.Enquire(axi)
     enquire.set_query(xapian.Query("XP"+pkg))
     matches = enquire.get_mset(0,1)
     if not matches:
-        #logging.debug("Package %s not found in items repository" % pkg)
-        return []
+        logging.debug("Package %s not found in items repository" % pkg)
+        return False
     for m in matches:
         tags = [term.term for term in axi.get_document(m.docid).termlist() if
                 term.term.startswith("XT")]
-        return tags
+        if not tags:
+            return "notags"
+        else:
+            return tags
 
 def print_index(index):
     output = "\n---\n" + xapian.Database.__repr__(index) + "\n---\n"
@@ -96,7 +100,7 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
                                          xapian.DB_CREATE_OR_OVERWRITE)
         sample = axi_search_pkgs(axi,pkgs_list)
         for package in sample:
-            doc_id = self.add_document(axi.get_document(package.docid))
+            doc_id = self.add_document(axi.get_document(package))
 
     def __str__(self):
         return print_index(self)
@@ -114,6 +118,14 @@ class PopconSubmission():
         for pkg, weight in self.packages.items():
             output += "\n "+pkg+": "+str(weight)
         return output
+
+    def apps(self,axi):
+        apps = {}
+        for pkg in self.packages.keys():
+            tags = axi_search_pkg_tags(self.axi,pkg)
+            if "XTrole::program" in tags:
+                apps[pkg] = self.packages[pkg]
+        return apps
 
     def load(self,binary=1):
     	"""
@@ -159,6 +171,16 @@ class PopconXapianIndex(xapian.WritableDatabase):
         self.path = os.path.expanduser(cfg.popcon_index)
         self.source_dir = os.path.expanduser(cfg.popcon_dir)
         self.max_popcon = cfg.max_popcon
+        self.valid_pkgs = []
+        # file format: one pkg_name per line
+        with open(os.path.join(cfg.filters,cfg.pkgs_filter)) as valid_pkgs:
+            self.valid_pkgs = [line.strip() for line in valid_pkgs
+                               if not line.startswith("#")]
+        logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
+        with open(os.path.join(cfg.filters,"tags")) as valid_tags:
+            self.valid_tags = [line.strip() for line in valid_tags
+                               if not line.startswith("#")]
+        logging.debug("Considering %d valid tags" % len(self.valid_tags))
         if not cfg.index_mode == "old" or not self.load_index():
             if not os.path.exists(cfg.popcon_dir):
                 os.makedirs(cfg.popcon_dir)
@@ -243,10 +265,16 @@ class PopconXapianIndex(xapian.WritableDatabase):
                 logging.debug("Parsing popcon submission \'%s\'" %
                               submission.user_id)
                 for pkg, freq in submission.packages.items():
-                    doc.add_term("XP"+pkg,freq)
-                    #if axi_search_pkg_tags(self.axi,pkg):
-                    #    for tag in axi_search_pkg_tags(self.axi,pkg):
-                    #        doc.add_term(tag,freq)
+                    if pkg in self.valid_pkgs:
+                        tags = axi_search_pkg_tags(self.axi,pkg)
+                        # if the package was foung in axi
+                        if tags:
+                            doc.add_term("XP"+pkg,freq)
+                            # if the package has tags associated with it
+                            if not tags == "notags":
+                                for tag in tags:
+                                    if tag in self.valid_tags:
+                                        doc.add_term(tag,freq)
                 doc_id = self.add_document(doc)
                 doc_count += 1
                 logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
@@ -256,7 +284,7 @@ class PopconXapianIndex(xapian.WritableDatabase):
         try:
             self.commit()
         except:
-            self.flush() # deprecated function, used for old lib version
+            self.flush() # deprecated function, used for compatibility with old lib version
 
     def get_submissions(self,submissions_dir):
         """
@@ -288,9 +316,7 @@ class KMedoidsClustering(cluster.KMeansClustering):
             data_sample = data
         else:
             data_sample = random.sample(data,max_data)
-        print data_sample
         cluster.KMeansClustering.__init__(self, data_sample, distance)
-       # cluster.KMeansClustering.__init__(self, data, distance)
         self.distanceMatrix = {}
         for submission in self._KMeansClustering__data:
             self.distanceMatrix[submission.user_id] = {}

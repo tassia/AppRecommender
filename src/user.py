@@ -19,8 +19,10 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import random
 import commands
+import datetime
 import xapian
 import logging
 import apt
@@ -43,9 +45,10 @@ class FilterDescription(xapian.ExpandDecider):
     """
     def __call__(self, term):
         """
-        Return true if the term is a tag, else false.
+        Return true if the term or its stemmed version is part of a package
+        description.
         """
-        return term.islower() #or term.startswith("Z")
+        return term.islower() or term.startswith("Z")
 
 class DemographicProfile(Singleton):
     def __init__(self):
@@ -84,7 +87,7 @@ class User:
         self.pkg_profile = self.items()
 
         if user_id:
-            self.id = user_id
+            self.user_id = user_id
         else:
             random.seed()
             self.id = random.getrandbits(128)
@@ -105,7 +108,7 @@ class User:
         """
         self.demographic_profile = DemographicProfile()(profiles_set)
 
-    def profile(self,items_repository,content,size):
+    def content_profile(self,items_repository,content,size):
         """
         Get user profile for a specific type of content: packages tags,
         description or both (full_profile)
@@ -119,10 +122,10 @@ class User:
         Return most relevant tags for a list of packages.
         """
         enquire = xapian.Enquire(items_repository)
-        matches = data.axi_search_pkgs(items_repository,self.pkg_profile)
+        docs = data.axi_search_pkgs(items_repository,self.pkg_profile)
         rset_packages = xapian.RSet()
-        for m in matches:
-            rset_packages.add_document(m.docid)
+        for docid in docs:
+            rset_packages.add_document(docid)
         # statistically good differentiators
         eset_tags = enquire.get_eset(size, rset_packages, FilterTag())
         profile = [res.term for res in eset_tags]
@@ -134,10 +137,10 @@ class User:
         text descriptions.
         """
         enquire = xapian.Enquire(items_repository)
-        matches = data.axi_search_pkgs(items_repository,self.pkg_profile)
+        docs = data.axi_search_pkgs(items_repository,self.pkg_profile)
         rset_packages = xapian.RSet()
-        for m in matches:
-            rset_packages.add_document(m.docid)
+        for docid in docs:
+            rset_packages.add_document(docid)
         eset_keywords = enquire.get_eset(size, rset_packages,
                                          FilterDescription())
         profile = [res.term for res in eset_keywords]
@@ -152,21 +155,19 @@ class User:
         desc_profile = self.desc_profile(items_repository,size)[:size/2]
         return tag_profile+desc_profile
 
-    def app_pkg_profile(self,axi):
+    def filter_pkg_profile(self,filter_file):
         """
-        Return list of packages that are applications.
+        Return list of packages from profile listed in the filter_file.
         """
         old_profile_size = len(self.pkg_profile)
-        for p in self.pkg_profile[:]:     #iterate list copy
-            tags = data.axi_search_pkg_tags(axi,p)
-            try:
-
-                if not "XTrole::program" in tags:
-                    self.pkg_profile.remove(p)
-            except:
-                logging.debug("Package not found in axi: %s" % p)
+        with open(filter_file) as valid:
+            valid_pkgs = [line.strip() for line in valid]
+            for pkg in self.pkg_profile[:]:     #iterate list copy
+                if pkg not in valid_pkgs:
+                    self.pkg_profile.remove(pkg)
+                    logging.debug("Discarded package %s during profile filtering" % pkg)
         profile_size = len(self.pkg_profile)
-        logging.debug("App package profile: reduced packages profile size \
+        logging.debug("Filtered package profile: reduced packages profile size \
                        from %d to %d." % (old_profile_size, profile_size))
         return self.pkg_profile
 
@@ -193,6 +194,33 @@ class User:
                        from %d to %d." % (old_profile_size, profile_size))
         return self.pkg_profile
 
+class RandomPopcon(User):
+    def __init__(self,submissions_dir,pkgs_filter=0):
+        """
+        Set initial parameters.
+        """
+        item_score = {}
+        len_profile = 0
+        while len_profile < 100:
+            path = random.choice([os.path.join(root, submission) for
+                                  root, dirs, files in os.walk(submissions_dir)
+                                  for submission in files])
+            user = PopconSystem(path)
+            if pkgs_filter:
+                user.filter_pkg_profile(pkgs_filter)
+            len_profile = len(user.pkg_profile)
+        submission = data.PopconSubmission(path)
+        User.__init__(self,submission.packages,submission.user_id)
+
+class PopconSystem(User):
+    def __init__(self,path):
+        """
+        Set initial parameters.
+        """
+        item_score = {}
+        submission = data.PopconSubmission(path)
+        User.__init__(self,submission.packages,submission.user_id)
+
 class LocalSystem(User):
     """
     Extend the class User to consider the packages installed on the local
@@ -207,6 +235,7 @@ class LocalSystem(User):
         for line in dpkg_output.splitlines():
             pkg = line.split('\t')[0]
             item_score[pkg] = 1
+        self.user_id = "local-"+str(datetime.datetime.now())
         User.__init__(self,item_score)
 
     def no_auto_pkg_profile(self):

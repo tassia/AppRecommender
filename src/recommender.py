@@ -78,15 +78,23 @@ class Recommender:
         """
         Set the recommendation strategy.
         """
-        if strategy_str == "cb":
-            self.strategy = strategy.ContentBasedStrategy("full")
-        if strategy_str == "cbt":
-            self.strategy = strategy.ContentBasedStrategy("tag")
-        if strategy_str == "cbd":
-            self.strategy = strategy.ContentBasedStrategy("desc")
-        if strategy_str == "col":
+        self.items_repository = xapian.Database(self.cfg.axi)
+        if "desktop" in strategy_str:
+            self.items_repository = xapian.Database("/root/.app-recommender/DesktopAxi")
+            self.cfg.popcon_index = "/root/.app-recommender/popcon-index_desktop_1000"
+
+        if strategy_str == "cb" or strategy_str == "cb_desktop":
+            self.strategy = strategy.ContentBasedStrategy("full",
+                                                          self.cfg.profile_size)
+        if strategy_str == "cbt" or strategy_str == "cbt_desktop":
+            self.strategy = strategy.ContentBasedStrategy("tag",
+                                                          self.cfg.profile_size)
+        if strategy_str == "cbd" or strategy_str == "cbd_desktop":
+            self.strategy = strategy.ContentBasedStrategy("desc",
+                                                          self.cfg.profile_size)
+        if "col" in strategy_str:
             self.users_repository = data.PopconXapianIndex(self.cfg)
-            self.strategy = strategy.CollaborativeStrategy(20)
+            self.strategy = strategy.CollaborativeStrategy(self.cfg.k_neighbors)
 
     def get_recommendation(self,user,result_size=100):
         """

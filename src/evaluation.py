@@ -25,6 +25,7 @@ import random
 from collections import defaultdict
 import logging
 
+from error import Error
 from user import *
 from recommender import *
 from singleton import Singleton
@@ -271,11 +272,15 @@ class CrossValidation:
         """
         Perform cross-validation.
         """
-        #
-        cross_item_score = dict.fromkeys(user.pkg_profile,1)
+        # Extracting user profile scores from cross validation
+        cross_item_score = {}
+        for pkg in user.pkg_profile:
+            cross_item_score[pkg] = user.item_score[pkg]
         partition_size = int(len(cross_item_score)*self.partition_proportion)
+        # main iteration
         for r in range(self.rounds):
             round_partition = {}
+            # move items from cross_item_score to round-partition
             for j in range(partition_size):
                 if len(cross_item_score)>0:
                     random_key = random.choice(cross_item_score.keys())
@@ -283,20 +288,25 @@ class CrossValidation:
                     logging.critical("Empty cross_item_score.")
                     raise Error
                 round_partition[random_key] = cross_item_score.pop(random_key)
-            #logging.debug("Round partition: %s",str(round_partition))
-            #logging.debug("Cross item-score: %s",str(cross_item_score))
+            logging.debug("Round partition: %s",str(round_partition))
+            logging.debug("Cross item-score: %s",str(cross_item_score))
+            # round user is created with remaining items
             round_user = User(cross_item_score)
             result_size = int(self.recommender.items_repository.get_doccount()*
                               self.result_proportion)
             predicted_result = self.recommender.get_recommendation(round_user,result_size)
-            #print len(round_partition)
+            if not predicted_result.size:
+                logging.critical("No recommendation produced. Abort cross-validation.")
+                raise Error
+            # partition is considered the expected result
             real_result = RecommendationResult(round_partition)
-            #logging.debug("Predicted result: %s",predicted_result)
+            logging.debug("Predicted result: %s",predicted_result)
             evaluation = Evaluation(predicted_result,real_result,
                                     self.recommender.items_repository.get_doccount())
             for metric in self.metrics_list:
                 result = evaluation.run(metric)
                 self.cross_results[metric.desc].append(result)
+            # moving back items from round_partition to cross_item_score
             while len(round_partition)>0:
                 item,score = round_partition.popitem()
                 cross_item_score[item] = score
