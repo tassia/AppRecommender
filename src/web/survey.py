@@ -156,8 +156,10 @@ class Save:
 
 class Survey:
     def __init__(self):
-        self.strategies = ["cb","cbd","cbt"]
+        self.strategies = ["cb","cbd","cbt","col","cb-desktop","cbd-desktop",
+                           "cbt-desktop","col-desktop"]
         self.rec = Recommender(Config())
+        #print rec.users_repository.get_doccount()
         self.submissions_dir = "./submissions/"
         if not os.path.exists(self.submissions_dir):
             os.makedirs(self.submissions_dir)

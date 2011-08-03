@@ -67,7 +67,7 @@ $for pkg in pkg_details:
 			<img height="70px" src="http://screenshots.debian.net/thumbnail/$pkg['package']" 
 			alt="Screenshot $pkg['package']" /></a>
 		    </div><!-- screenshot -->
-			<h1 style="float: right;">($pkg_details.index(pkg)/10)</h1>
+			<h1 style="float: right;">($(pkg_details.index(pkg)+1)/10)</h1>
 			<h1 id="title_pkg"> $pkg['package'] <br />
 			<span>$pkg['description']</span></h1>
 			<br style="clear: both;" />
@@ -83,7 +83,7 @@ $for pkg in pkg_details:
 			</label><br />
        			<label class="radioButton">
 			<input class="radio yesb" type="radio" name="evaluation-$pkg_details.index(pkg)" value="good" />
-			Usefull
+			Useful
 			<!--<div class="tip tip">
 			<p>Good $pkg['package'] FIXME </p>
 			</div>-->
