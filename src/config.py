@@ -38,13 +38,15 @@ class Config():
         self.debug = 0
         self.verbose = 0
         self.output = "/dev/null"
-        self.survey_mode = 1
-        self.axi = "/var/lib/apt-xapian-index/index"
+        self.filters = os.path.expanduser("~/.app-recommender/filters")
+        #self.axi = "/var/lib/apt-xapian-index/index"
+        self.axi = os.path.expanduser("~/.app-recommender/DesktopAxi")
         #self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
         self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
-        self.popcon_index = os.path.expanduser("~/.app-recommender/popcon_index")
-        self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon_dir")
-        self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters_dir")
+        self.popcon_index = os.path.expanduser("~/.app-recommender/popcon-index")
+        self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon-entries")
+        self.pkgs_filter = "program"
+        self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters-dir")
         self.k_medoids = 100
         self.max_popcon = 1000
         self.index_mode = "old"
@@ -52,7 +54,7 @@ class Config():
         self.weight = "bm25"
         self.profile_size = 50
         # options: maximal, voted, desktop
-        self.profiling = "maximal"
+        self.profiling = ["maximal"]
         self.k_neighbors = 100
         self.load_options()
         self.set_logger()
@@ -68,11 +70,13 @@ class Config():
         print "  -o, --output=PATH          Path to file to save output"
         print ""
         print " [ data sources ]"
+        print "  -f, --filters=PATH         Path to filters directory"
+        print "  -b, --pkgsfilter=FILTER    File containing packages to be considered for recommendations"
         print "  -a, --axi=PATH             Path to apt-xapian-index"
         print "  -e, --dde=URL              DDE url"
         print "  -p, --popconindex=PATH     Path to popcon index"
         print "  -m, --popcondir=PATH       Path to popcon submissions dir"
-        print "  -u, --indexmode=           'old'|'reindex'|'cluster'|'recluster'"
+        print "  -u, --indexmode=MODE       'old'|'reindex'|'cluster'|'recluster'"
         print "  -l, --clustersdir=PATH     Path to popcon clusters dir"
         print "  -c, --medoids=k            Number of medoids for clustering"
         print "  -x, --maxpopcon=k          Number of submissions to be considered"
@@ -81,7 +85,7 @@ class Config():
         print "  -w, --weight=OPTION        Search weighting scheme"
         print "  -s, --strategy=OPTION      Recommendation strategy"
         print "  -z, --profilesize=k        Size of user profile"
-        print "  -f, --profiling=OPTION     Profile filter strategy"
+        print "  -i, --profiling=OPTION     Profile filter strategy"
         print "  -n, --neighbors=k          Size of neighborhood for collaboration"
         print ""
         print " [ weight options ] "
@@ -121,10 +125,11 @@ class Config():
 
         self.debug = int(self.read_option('general', 'debug'))
         self.debug = int(self.read_option('general', 'verbose'))
-        self.output_filename = self.read_option('general', 'output')
-        self.survey_mode = self.read_option('general', 'survey_mode')
+        self.output = self.read_option('general', 'output')
 
-        self.axi = self.read_option('data_sources', 'axi')
+        self.filters = os.path.expanduser(self.read_option('data_sources','filters'))
+        self.pkgs_filter = self.read_option('data_sources', 'pkgs_filter')
+        self.axi = os.path.expanduser(self.read_option('data_sources', 'axi'))
         self.dde_url = self.read_option('data_sources', 'dde_url')
         self.popcon_index = os.path.expanduser(self.read_option('data_sources','popcon_index'))
         self.popcon_dir = os.path.expanduser(self.read_option('data_sources', 'popcon_dir'))
@@ -141,11 +146,12 @@ class Config():
         self.k_neighbors = int(self.read_option('recommender',
                                                  'k_neighbors'))
 
-        short_options = "hdvo:a:e:p:m:ul:c:x:w:s:z:f:n:"
-        long_options = ["help", "debug", "verbose", "output=",
-                        "axi=", "dde=", "popconindex=", "popcondir=", "indexmode=",
-                        "clustersdir=", "kmedoids=", "maxpopcon=", "weight=", "strategy=",
-                        "profile_size=", "profiling=", "neighbors="]
+        short_options = "hdvo:f:b:a:e:p:m:u:l:c:x:w:s:z:i:n:"
+        long_options = ["help", "debug", "verbose", "output=", "filters=",
+                        "pkgsfilter=", "axi=", "dde=", "popconindex=",
+                        "popcondir=", "indexmode=", "clustersdir=", "kmedoids=",
+                        "maxpopcon=", "weight=", "strategy=", "profile_size=",
+                        "profiling=", "neighbors="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
@@ -165,6 +171,10 @@ class Config():
                 self.verbose = 1
             elif o in ("-o", "--output"):
                 self.output = p
+            elif o in ("-f", "--filters"):
+                self.filters = p
+            elif o in ("-b", "--pkgsfilter"):
+                self.pkgs_filter = p
             elif o in ("-a", "--axi"):
                 self.axi = p + "/index"
             elif o in ("-e", "--dde"):
@@ -211,10 +221,10 @@ class Config():
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
         console_handler.setLevel(log_level)
-        self.logger.addHandler(console_handler)
+        #self.logger.addHandler(console_handler)
 
         file_handler = logging.handlers.RotatingFileHandler(self.output,
-                                                            maxBytes=5000,
+                                                            maxBytes=50000000,
                                                             backupCount=5)
         log_format = '%(asctime)s AppRecommender %(levelname)-8s %(message)s'
         file_handler.setFormatter(logging.Formatter(log_format))
