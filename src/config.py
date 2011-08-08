@@ -26,8 +26,9 @@ import logging
 import logging.handlers
 
 from ConfigParser import *
+from singleton import Singleton
 
-class Config():
+class Config(Singleton):
     """
     Class to handle configuration options.
     """
@@ -35,29 +36,33 @@ class Config():
         """
         Set default configuration options.
         """
-        self.debug = 0
-        self.verbose = 1
-        self.output = "/dev/null"
-        self.filters = os.path.expanduser("~/.app-recommender/filters")
-        #self.axi = "/var/lib/apt-xapian-index/index"
-        self.axi = os.path.expanduser("~/.app-recommender/ProgramAxi")
-        #self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
-        self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
-        self.popcon_index = os.path.expanduser("~/.app-recommender/popcon-index")
-        self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon-entries")
-        self.pkgs_filter = "program"
-        self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters-dir")
-        self.k_medoids = 100
-        self.max_popcon = 1000
-        self.index_mode = "old"
-        self.strategy = "cb"
-        self.weight = "bm25"
-        self.profile_size = 50
-        # options: maximal, voted, desktop
-        self.profiling = ["maximal"]
-        self.k_neighbors = 100
-        self.load_options()
-        self.set_logger()
+        if not hasattr(self, 'initialized'):
+            self.debug = 0
+            self.verbose = 1
+            #self.output = "/dev/null"
+            self.output = "log"
+            self.filters = os.path.expanduser("~/.app-recommender/filters")
+            #self.axi = "/var/lib/apt-xapian-index/index"
+            self.axi = os.path.expanduser("~/.app-recommender/ProgramAxi")
+            #self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
+            self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
+            self.popcon_index = os.path.expanduser("~/.app-recommender/popcon-index")
+            self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon-entries")
+            self.pkgs_filter = "program"
+            self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters-dir")
+            self.k_medoids = 100
+            self.max_popcon = 1000
+            self.index_mode = "old"
+            self.strategy = "cb"
+            self.weight = "bm25"
+            self.profile_size = 50
+            # options: maximal, voted, desktop
+            self.profiling = ["maximal"]
+            self.k_neighbors = 100
+            self.load_options()
+            self.set_logger()
+            self.initialized = 1
+            logging.info("Basic config")
 
     def usage(self):
         """
@@ -226,7 +231,9 @@ class Config():
         file_handler = logging.handlers.RotatingFileHandler(self.output,
                                                             maxBytes=50000000,
                                                             backupCount=5)
-        log_format = '%(asctime)s AppRecommender %(levelname)-8s %(message)s'
-        file_handler.setFormatter(logging.Formatter(log_format))
+        log_format = '%(asctime)s %(levelname)-8s %(message)s'
+        file_handler.setFormatter(logging.Formatter(log_format,
+                                                    datefmt='%Y-%m-%d %H:%M:%S'))
         file_handler.setLevel(log_level)
         self.logger.addHandler(file_handler)
+        logging.info("Set up logger")
