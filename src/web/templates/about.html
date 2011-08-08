@@ -19,28 +19,32 @@ $var jsfiles: static/js/facebox.js
 <h2>About</h2>
 
 <p align="justify">This experiment aims to compare and validate automated application
-recommendations produced by various strategies and algorithms tuning. We
+recommendations produced by different strategies and algorithms tuning. We
 believe that real users evaluation regarding the relevance of recommendations is
 the most accurate data source for computing recommender system effectiveness.</p>
 <br/>
-
-<a rel="facebox" href="/static/images/diaappr.png" title="AppRecommender Diagram">
-<img style="float: right; margin: 10px;" alt="AppRecommender dataflow"
-src="/static/images/diaappr.png" width="230px" /></a>
 
 <p align="justify">The engine that is being tested is a free software called <a
 href="http://github.com/tassia/AppRecommender">AppRecommender</a>. It was
 initially developed using the Debian Project infrasctructure, but the solution
 is essentially distro-independent and can even be adapted to non GNU/Linux
 systems given that there is available data for that.</p>
+
+<a rel="facebox" href="/static/images/diaappr.png" title="AppRecommender Diagram">
+<img style="float: right; margin: 10px;" alt="AppRecommender dataflow"
+src="/static/images/diaappr.png" width="230px" /></a>
 <br />
 
 <p align="justify">The picture on the right gives an idea of the data workflow
 for AppRecommender. The user provides a set of applications installed in his
-system and the recommender suggestes a set of applications that he might also
-be interested in. Different strategies can be used to compose the recommendation,
-based on this user and other similar users profiles, using Apt-xapian-index,
-Popcon and UDD as data sources.</p>
+system and the recommender suggests a set of programs that he might also
+be interested in, based on the profile deduced from the his previous choices
+and other similar users choices. The recommendations are composed using
+classification and information retrieval techniques using
+<a href="http://wiki.debian.org/Debtags">debtags</a>,
+<a href="http://www.enricozini.org/sw/apt-xapian-index/">apt-xapian-index</a>,
+<a href="http://popcon.debian.org/">Popcon</a> and <a
+href="http://udd.debian.org/">UDD</a> as data sources.</p>
 
 </div><!-- id="innertube" -->
 </div><!-- id="maincontent" -->

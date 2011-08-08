@@ -13,20 +13,20 @@ $var cssfiles: static/css/survey.css
 
 <center>
 <h1>Thanks!</h1>
-<p>Thank you very much for participating in this survey.</p><br />
+<p>Thank you very much for participating in this survey. Your help is very much
+appreciated!</p><br />
 
 <div id="optionalform">
 <center>
 <h2>Optional Info</h2>
 <p>
- Tell us your name if you want it to be published in our 
- thanks page. If you also provide a valid e-mail address 
- you will be sent the survey report as soon as it is ready.
+ Provide your name or nick if you agree with that being published in our
+ thanks page and final report. If you also provide a valid e-mail address we'll
+ be able to send you the survey report as soon as it is ready.
 </p><br />
 </center>
 
 	<form action="/thanks" method="post" enctype="multipart/form-data" name="identification_form">
-	
 	<label>
 	<input type="hidden" name="user_id" value=$user_id>
 	Name: <input class="text" type="text" name="name" value="" size="40">
@@ -34,7 +34,7 @@ $var cssfiles: static/css/survey.css
 	<p>
 	<label>
 	E-mail: <input class="text" type="text" name="email" value="" size="40">
-	</label></p>
+	</label></p><!--
 	<p>
 	<label>
 	Country: <select name="Country">
@@ -299,9 +299,8 @@ $var cssfiles: static/css/survey.css
     <option value="Zambia">Zambia</option>
     <option value="Zimbabwe">Zimbabwe</option>
     </select>
-	</label></p><br />
-	<p>
-	<label class="text-left">
+	</label></p><br />-->
+	<p>	<label class="text-left">
 	Comments:<br />
 	<textarea name="comments" value="" rows="2" cols="50"></textarea>
 	</label></p>

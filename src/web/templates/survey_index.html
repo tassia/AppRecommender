@@ -18,20 +18,32 @@ window.onload = function() {
 <h2>Help us learn your needs</h2>
 
 <p>Participate in this survey and contribute for the development of
-AppRecommender, a recommender system for GNU/Linux applications.</p>
-<br />
-<p>Please provide a list of packages installed in a real running system and a
-set of applications will be suggested for it. You can upload a
-popularity-contest submission file (usually located at
-'/var/log/popularity-contest') or any other file with packages name as first
-field of each line. For instance, you can run the following command and upload the
-generated 'packages.list' file.</p>
-<p><code> # dpkg-query --show > packages.list </code></p>
-<br />
-<p>Given the produced recommendations you will be asked to evaluate the list of
-applications suggested.</p>
-<br />
-<p>Your help is very much appreciated!</p>
+<a href="http://github.com/tassia/AppRecommender">AppRecommender</a>,
+a recommender system for GNU/Linux applications.</p>
+<table>
+<tr>
+  <td><h3>1.</h3></td>
+  <td><p align="justify"> Provide a list of packages installed in a real
+  running system and a set of applications will be suggested for it. You can
+  upload a popularity-contest submission file (usually located at
+  '/var/log/popularity-contest') or any other file with packages name as first
+  field of each line. For instance, you can run the following command and
+  upload the generated 'packages.list' file.</p>
+  <p><code> # dpkg-query --show > packages.list </code></p></td>
+</tr>
+<tr>
+  <td><h3>2.</h3></td>
+  <td><p align="justify">Given a list of 10 suggested applications you will be
+  asked to evaluate each recommendation. Upon completion of one round of
+  evaluations, if you choose to continue another suggestion will be generated
+  using a different recommender strategy. Alternativelly, you can conclude your
+  participation.</p></td>
+</tr>
+<tr>
+  <td><h3>3.</h3></td>
+  <td><p align="justify">Identification and comments are facultative.</p></td>
+</tr>
+<table>
 </div>
 
 </div><!-- class="innertube" -->
