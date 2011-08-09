@@ -11,7 +11,8 @@ import re
 
 sys.path.insert(0,"../")
 
-from config import *
+import logging
+from config import Config
 from recommender import *
 from user import *
 
@@ -30,7 +31,7 @@ class Thanks:
         web_input = web.input()
         user_id = web_input['user_id'].encode('utf8')
         with open("./submissions/%s/ident" % user_id,'w') as ident:
-            for key in ["name","email","country","public","comments"]:
+            for key in ["name","email","comments"]:
                 if web_input.has_key(key):
                     ident.write("%s: %s\n" % (key,web_input[key].encode("utf-8")))
         return render.thanks_id()
@@ -79,22 +80,30 @@ class Package:
 class Request:
     def __init__(self,web_input,submissions_dir,user_id=0,pkgs_list=0):
         self.strategy = ""
-        print "Request from user",user_id
         if user_id:
             self.user_id = user_id
             self.outputdir = os.path.join(submissions_dir,user_id)
+            logging.info("New round for user %s" % self.user_id)
         else:
             self.outputdir = tempfile.mkdtemp(prefix='',dir=submissions_dir)
-            print ("created dir %s" % self.outputdir)
             self.user_id = self.outputdir.lstrip(submissions_dir)
+            logging.info("Request from user %s" % self.user_id)
+            logging.debug("Created dir %s" % self.outputdir)
 
+        pkgs_list_file = os.path.join(self.outputdir,"packages_list")
         if pkgs_list:
             self.pkgs_list = pkgs_list
+            if not os.path.exists(pkgs_list_file):
+                with open(pkgs_list_file,"w") as f:
+                    for pkg in pkgs_list:
+                        f.write(pkg+"\n")
         else:
             self.pkgs_list = []
             if web_input['pkgs_file'].value:
-                f = open(self.outputdir + "/packages_list", "wb")
+                f = open(pkgs_list_file, "w")
                 lines = web_input['pkgs_file'].file.readlines()
+                with open(os.path.join(self.outputdir,"upload"), "w") as upload:
+                    upload.writelines(lines)
                 # popcon submission format
                 if lines[0].startswith('POPULARITY-CONTEST'):
                     del lines[0]
@@ -122,15 +131,15 @@ class Request:
 class Save:
     def POST(self):
         web_input = web.input()
-        print web_input
+        logging.info("Saving user evaluation...")
+        logging.info(web_input)
         user_id = web_input['user_id'].encode('utf8')
         with open("./submissions/%s/packages_list" % user_id) as packages_list:
             pkgs_list = [line.strip() for line in packages_list.readlines()]
         strategy = web_input['strategy']
-        print user_id,strategy,pkgs_list
-        output_dir = "./submissions/%s/%s/" % (user_id,strategy)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        logging.debug("Saving evaluation for user %s, strategy %s and packages..."
+                      % (user_id,strategy))
+        logging.debug(pkgs_list)
         evaluations = {}
         evaluations["poor"] = []
         evaluations["good"] = []
@@ -138,16 +147,17 @@ class Save:
         for key, value in web_input.items():
             if key.startswith("evaluation-"):
                 evaluations[value.encode('utf8')].append(key.lstrip("evaluation-"))
+        output_dir = ("./submissions/%s/%s/" % (user_id,strategy))
         for key,value in evaluations.items():
-            with open(output_dir+key,'w') as output:
+            with open(os.path.join(output_dir,key),'w') as output:
                 for item in value:
                     output.write(item+"\n")
-        with open(output_dir+"report",'w') as report:
+        with open(os.path.join(output_dir,"report"),'w') as report:
             report.write("# User: %s\n# Strategy: %s\n# TP FP\n%d %d\n" %
                          (user_id,strategy,
                           len(evaluations["good"])+len(evaluations["surprising"]),
                           len(evaluations["poor"])))
-        if web_input.has_key('strategy_button'):
+        if web_input.has_key('continue_button'):
             return Survey().POST()
         elif web_input.has_key('finish_button'):
             return render.thanks(user_id)
@@ -156,23 +166,21 @@ class Save:
 
 class Survey:
     def __init__(self):
-        self.strategies = ["cb","cbd","cbt","col","cb-desktop","cbd-desktop",
-                           "cbt-desktop","col-desktop"]
+        logging.info("Setting up survey...")
         self.rec = Recommender(Config())
-        #print rec.users_repository.get_doccount()
         self.submissions_dir = "./submissions/"
         if not os.path.exists(self.submissions_dir):
             os.makedirs(self.submissions_dir)
 
     def POST(self):
         web_input = web.input(pkgs_file={})
-        print "WEB_INPUT",web_input
+        logging.debug("Survey web_input %s" % str(web_input))
+        self.strategies = ["cb","cbd","cbt","col"]
         # If it is not the first strategy round, save the previous evaluation
         if not web_input.has_key('user_id'):
             request = Request(web_input,self.submissions_dir)
         else:
             user_id = web_input['user_id'].encode('utf8')
-            print "Continue", user_id
             with open("./submissions/%s/packages_list" % user_id) as packages_list:
                 pkgs_list = [line.strip() for line in packages_list.readlines()]
             request = Request(web_input,self.submissions_dir,user_id,pkgs_list)
@@ -180,30 +188,43 @@ class Survey:
             return render.error_survey()
         else:
             user = User(dict.fromkeys(request.pkgs_list,1),request.user_id)
-            user.maximal_pkg_profile()
-            results = dict()
+            program_profile = user.filter_pkg_profile(os.path.join(self.rec.cfg.filters,"program"))
+            desktop_profile = user.filter_pkg_profile(os.path.join(self.rec.cfg.filters,"desktop"))
+            if (len(desktop_profile)>10 or
+                len(desktop_profile)>len(program_profile)/2):
+                self.strategies = [strategy_str+"_desktop" for strategy_str
+                                   in self.strategies[:]]
             old_strategies = [dirs for root, dirs, files in
                               os.walk(os.path.join(self.submissions_dir,
                                                    request.user_id))]
             if old_strategies:
                 strategies = [s for s in self.strategies if s not in old_strategies[0]]
-                print "OLD Strategies", old_strategies[0]
+                logging.info("Already used strategies %s" % old_strategies[0])
             else:
                 strategies = self.strategies
-            print "LEFT",strategies
             if not strategies:
                 return render.thanks(user_id)
             request.strategy = random.choice(strategies)
-            print "selected",request.strategy
+            logging.info("Selected \'%s\' from %s" % (request.strategy,strategies))
             self.rec.set_strategy(request.strategy)
             prediction = self.rec.get_recommendation(user,10).get_prediction()
-            print prediction
+            logging.info("Prediction for user %s" % user.user_id)
+            logging.info(str(prediction))
+            output_dir = ("./submissions/%s/%s/" %
+                          (user.user_id,request.strategy))
+            os.makedirs(output_dir)
+            with open(os.path.join(output_dir,"prediction"),"w") as prediction_file:
+                for pkg,rating in prediction:
+                    prediction_file.write("%s %f.2\n" % (pkg,rating))
+            logging.debug("Saved %s/%s prediction to file" %
+                          (user.user_id,request.strategy))
             recommendation = [result[0] for result in prediction]
             pkg_summaries = {}
             pkg_details = []
             cache = apt.Cache()
             for pkg in recommendation:
                 try:
+                    logging.debug("Getting details of package %s" % pkg)
                     pkg_details.append(Package().get_details_from_dde(pkg))
                     pkg_summaries[pkg] = cache[pkg].candidate.summary
                 except:
@@ -236,7 +257,7 @@ urls = ('/',   		        'Index',
 web.webapi.internalerror = web.debugerror
 
 if __name__ == "__main__":
-   apprec = web.application(urls, globals())
-   apprec.add_processor(add_global_hook())
-   apprec.run()
-
+    cfg = Config()
+    apprec = web.application(urls, globals())
+    apprec.add_processor(add_global_hook())
+    apprec.run()

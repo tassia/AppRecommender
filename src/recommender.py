@@ -19,6 +19,8 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
+import os
 import xapian
 import operator
 import data
@@ -73,14 +75,20 @@ class Recommender:
             self.weight = xapian.BM25Weight()
         else:
             self.weight = xapian.TradWeight()
+        self.valid_pkgs = []
+        # file format: one pkg_name per line
+        with open(os.path.join(cfg.filters,cfg.pkgs_filter)) as valid_pkgs:
+            self.valid_pkgs = [line.strip() for line in valid_pkgs
+                               if not line.startswith("#")]
 
     def set_strategy(self,strategy_str):
         """
         Set the recommendation strategy.
         """
+        logging.info("Setting recommender strategy to \'%s\'" % strategy_str)
         self.items_repository = xapian.Database(self.cfg.axi)
         if "desktop" in strategy_str:
-            self.items_repository = xapian.Database("/root/.app-recommender/DesktopAxi")
+            self.items_repository = xapian.Database("/root/.app-recommender/axi_desktop")
             self.cfg.popcon_index = "/root/.app-recommender/popcon-index_desktop_1000"
 
         if strategy_str == "cb" or strategy_str == "cb_desktop":

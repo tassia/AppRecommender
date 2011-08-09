@@ -26,6 +26,7 @@ import datetime
 import xapian
 import logging
 import apt
+from error import Error
 from singleton import Singleton
 import data
 
@@ -113,9 +114,14 @@ class User:
         Get user profile for a specific type of content: packages tags,
         description or both (full_profile)
         """
-        if content == "tag": return self.tag_profile(items_repository,size)
-        if content == "desc": return self.desc_profile(items_repository,size)
-        if content == "full": return self.full_profile(items_repository,size)
+        if content == "tag":
+            profile = self.tag_profile(items_repository,size)
+        if content == "desc":
+            profile = self.desc_profile(items_repository,size)
+        if content == "full":
+            profile = self.full_profile(items_repository,size)
+        logging.debug("User profile: %s" % profile)
+        return profile
 
     def tag_profile(self,items_repository,size):
         """
@@ -155,17 +161,28 @@ class User:
         desc_profile = self.desc_profile(items_repository,size)[:size/2]
         return tag_profile+desc_profile
 
-    def filter_pkg_profile(self,filter_file):
+    def filter_pkg_profile(self,filter_list_or_file):
         """
         Return list of packages from profile listed in the filter_file.
         """
+        if type(filter_list_or_file).__name__ == "list":
+            valid_pkgs = filter_list_or_file
+        elif type(filter_list_or_file).__name__ == "str":
+            try:
+                with open(filter_list_or_file) as valid:
+                    valid_pkgs = [line.strip() for line in valid]
+            except IOError:
+                logging.critical("Could not open profile filter file.")
+                raise Error
+        else:
+            logging.debug("No filter provided for user profiling.")
+            return self.pkg_profile
+
         old_profile_size = len(self.pkg_profile)
-        with open(filter_file) as valid:
-            valid_pkgs = [line.strip() for line in valid]
-            for pkg in self.pkg_profile[:]:     #iterate list copy
-                if pkg not in valid_pkgs:
-                    self.pkg_profile.remove(pkg)
-                    logging.debug("Discarded package %s during profile filtering" % pkg)
+        for pkg in self.pkg_profile[:]:     #iterate list copy
+            if pkg not in valid_pkgs:
+                self.pkg_profile.remove(pkg)
+                logging.debug("Discarded package %s during profile filtering" % pkg)
         profile_size = len(self.pkg_profile)
         logging.debug("Filtered package profile: reduced packages profile size \
                        from %d to %d." % (old_profile_size, profile_size))
@@ -199,7 +216,6 @@ class RandomPopcon(User):
         """
         Set initial parameters.
         """
-        item_score = {}
         len_profile = 0
         while len_profile < 100:
             path = random.choice([os.path.join(root, submission) for
@@ -217,9 +233,28 @@ class PopconSystem(User):
         """
         Set initial parameters.
         """
-        item_score = {}
         submission = data.PopconSubmission(path)
         User.__init__(self,submission.packages,submission.user_id)
+
+class PkgsListSystem(User):
+    def __init__(self,pkgs_list_or_file):
+        """
+        Set initial parameters.
+        """
+        if type(pkgs_list_or_file).__name__ == "list":
+            pkgs_list = filter_list_or_file
+        elif type(pkgs_list_or_file).__name__ == "str":
+            try:
+                with open(pkgs_list_or_file) as pkgs_list_file:
+                    pkgs_list = [line.split()[0] for line in pkgs_list_file]
+            except IOError:
+                logging.critical("Could not open packages list file.")
+                raise Error
+        else:
+            logging.debug("No packages provided for user profiling.")
+            return self.pkg_profile
+
+        User.__init__(self,dict.fromkeys(pkgs_list,1))
 
 class LocalSystem(User):
     """

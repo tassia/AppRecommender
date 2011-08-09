@@ -40,85 +40,102 @@ class PkgMatchDecider(xapian.MatchDecider):
         """
         True if the package is not already installed.
         """
-        return doc.get_data() not in self.pkgs_list
-
-class AppMatchDecider(xapian.MatchDecider):
-    """
-    Extend xapian.MatchDecider to not consider only applications packages.
-    """
-    def __init__(self, pkgs_list, axi):
-        """
-        Set initial parameters.
-        """
-        xapian.MatchDecider.__init__(self)
-        self.pkgs_list = pkgs_list
-        self.axi = axi
-
-    def __call__(self, doc):
-        """
-        True if the package is not already installed.
-        """
-        tags = axi_search_pkg_tags(self.axi,doc.get_data())
-        return (("XTrole::program" in tags) and
-                (doc.get_data() not in self.pkgs_list))
-
-class UserMatchDecider(xapian.MatchDecider):
-    """
-    Extend xapian.MatchDecider to match similar profiles.
-    """
-
-    def __init__(self, profile):
-        """
-        Set initial parameters.
-        """
-        xapian.MatchDecider.__init__(self)
-        self.profile = profile
-
-    def __call__(self, doc):
-        """
-        True if the user has more the half of packages from profile.
-        """
-        match=0
-        for term in doc:
-            if term.term in self.profile:
-                match = match+1
-        return (match >= len(self.profile)/2)
+        pkg = doc.get_data()
+        is_new = pkg not in self.pkgs_list
+        if "kde" in pkg:
+            return is_new and "kde" in self.pkgs_list
+        if "gnome" in pkg:
+            return is_new and "gnome" in self.pkgs_list
+        return is_new
 
 class PkgExpandDecider(xapian.ExpandDecider):
     """
     Extend xapian.ExpandDecider to consider packages only.
     """
-    def __call__(self, term):
+    def __init__(self, pkgs_list):
         """
-        True if the term is a package.
+        Set initial parameters.
         """
-        # [FIXME] return term.startswith("XP")
-        #return not term.startswith("XT")
-        return term.startswith("XP")
-
-class AppExpandDecider(xapian.ExpandDecider):
-    """
-    Extend xapian.ExpandDecider to consider applications only.
-    """
-    def __init__(self,axi):
         xapian.ExpandDecider.__init__(self)
-        self.axi = axi
+        self.pkgs_list = pkgs_list
 
     def __call__(self, term):
         """
         True if the term is a package.
         """
-        if not term.startswith("XT"):
-            package = term.lstrip("XP")
-            print package
-            tags = axi_search_pkg_tags(self.axi,package)
-            if "XTrole::program" in tags:
-                print tags
-                return True
-            else:
-                return False
-        else:
-            return False
+        pkg = term.lstrip("XP") 
+        is_new_pkg = pkg not in self.pkgs_list and term.startswith("XP")
+        if "kde" in pkg:
+            return is_new_pkg and "kde" in self.pkgs_list
+        if "gnome" in pkg:
+            return is_new_pkg and "gnome" in self.pkgs_list
+        return is_new_pkg
+
+#class AppMatchDecider(xapian.MatchDecider):
+#    """
+#    Extend xapian.MatchDecider to not consider only applications packages.
+#    """
+#    def __init__(self, pkgs_list, axi):
+#        """
+#        Set initial parameters.
+#        """
+#        xapian.MatchDecider.__init__(self)
+#        self.pkgs_list = pkgs_list
+#        self.axi = axi
+#
+#    def __call__(self, doc):
+#        """
+#        True if the package is not already installed.
+#        """
+#        tags = axi_search_pkg_tags(self.axi,doc.get_data())
+#        return (("XTrole::program" in tags) and
+#                (doc.get_data() not in self.pkgs_list))
+#
+#class UserMatchDecider(xapian.MatchDecider):
+#    """
+#    Extend xapian.MatchDecider to match similar profiles.
+#    """
+#
+#    def __init__(self, profile):
+#        """
+#        Set initial parameters.
+#        """
+#        xapian.MatchDecider.__init__(self)
+#        self.profile = profile
+#
+#    def __call__(self, doc):
+#        """
+#        True if the user has more the half of packages from profile.
+#        """
+#        match=0
+#        for term in doc:
+#            if term.term in self.profile:
+#                match = match+1
+#        return (match >= len(self.profile)/2)
+
+#class AppExpandDecider(xapian.ExpandDecider):
+#    """
+#    Extend xapian.ExpandDecider to consider applications only.
+#    """
+#    def __init__(self,axi):
+#        xapian.ExpandDecider.__init__(self)
+#        self.axi = axi
+#
+#    def __call__(self, term):
+#        """
+#        True if the term is a package.
+#        """
+#        if not term.startswith("XT"):
+#            package = term.lstrip("XP")
+#            print package
+#            tags = axi_search_pkg_tags(self.axi,package)
+#            if "XTrole::program" in tags:
+#                print tags
+#                return True
+#            else:
+#                return False
+#        else:
+#            return False
 
 class TagExpandDecider(xapian.ExpandDecider):
     """
@@ -149,8 +166,10 @@ class ContentBasedStrategy(RecommendationStrategy):
         """
         Perform recommendation strategy.
         """
+        logging.debug("Composing user profile...")
         profile = user.content_profile(rec.items_repository,self.content,
                                        self.profile_size)
+        logging.debug(profile)
         # prepair index for querying user profile
         query = xapian.Query(xapian.Query.OP_OR,profile)
         enquire = xapian.Enquire(rec.items_repository)
@@ -188,8 +207,10 @@ class CollaborativeStrategy(RecommendationStrategy):
         """
         Perform recommendation strategy.
         """
+        logging.debug("Composing user profile...")
         profile = ["XP"+package for package in
-                   user.filter_pkg_profile("/root/.app-recommender/filters/program")]
+                   user.filter_pkg_profile(rec.valid_pkgs)]
+        logging.debug(profile)
         # prepair index for querying user profile
         query = xapian.Query(xapian.Query.OP_OR,profile)
         enquire = xapian.Enquire(rec.users_repository)
@@ -208,13 +229,14 @@ class CollaborativeStrategy(RecommendationStrategy):
         # retrieve most relevant packages
         #eset = enquire.get_eset(recommendation_size,rset,
         #                        AppExpandDecider(rec.items_repository))
-        eset = enquire.get_eset(recommendation_size,rset,PkgExpandDecider())
+        eset = enquire.get_eset(recommendation_size,rset,
+                                PkgExpandDecider(user.items()))
         # compose result dictionary
         item_score = {}
         ranking = []
         for e in eset:
             package = e.term.lstrip("XP")
-            tags = axi_search_pkg_tags(rec.items_repository,package)
+            #tags = axi_search_pkg_tags(rec.items_repository,package)
             #[FIXME] set this constraint somehow
             #if "XTrole::program" in tags:
             item_score[package] = e.weight
