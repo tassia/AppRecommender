@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-    Clustering - A python script to perform clustering of popcon data.
+    pkgindex.py - generate a pkgs index to be used by the recommender as the
+                  items repository, based on the pkgs filter provided by config
 """
 __author__ = "Tassia Camoes Araujo <tassia@gmail.com>"
 __copyright__ = "Copyright (C) 2011 Tassia Camoes Araujo"
@@ -38,7 +39,7 @@ if __name__ == '__main__':
         pkgs_list = [line.strip() for line in valid]
         logging.info("Packages list length: %d" % len(pkgs_list))
 
-    # use config file or command line options 
+    # use config file or command line options
     pkgindex = data.SampleAptXapianIndex(pkgs_list,xapian.Database(cfg.axi),
                                          cfg.axi+"-"+cfg.pkgs_filter)
     end_time = datetime.datetime.now()

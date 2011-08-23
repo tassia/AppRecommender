@@ -67,7 +67,7 @@ def print_index(index):
 
 class AppAptXapianIndex(xapian.WritableDatabase):
     """
-    Sample data source for packages information, mainly useful for tests.
+    Data source for application packages information
     """
     def __init__(self,axi_path,path):
         xapian.WritableDatabase.__init__(self,path,
@@ -93,7 +93,8 @@ class AppAptXapianIndex(xapian.WritableDatabase):
 
 class SampleAptXapianIndex(xapian.WritableDatabase):
     """
-    Sample data source for packages information, mainly useful for tests.
+    Sample data source for packages information, generated from a list of
+    packages.
     """
     def __init__(self,pkgs_list,axi,path):
         xapian.WritableDatabase.__init__(self,path,
@@ -106,9 +107,10 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
         return print_index(self)
 
 class PopconSubmission():
-    def __init__(self,path,user_id=0):
+    def __init__(self,path,user_id=0,binary=1):
         self.packages = dict()
         self.path = path
+        self.binary = binary
         self.load()
         if user_id:
             self.user_id = user_id
@@ -142,7 +144,7 @@ class PopconSubmission():
                         if len(data) > 3:
                             exec_file = data[3]
                             # Binary weight
-                            if binary:
+                            if self.binary:
                                 self.packages[pkg] = 1
                             # Weights inherited from Enrico's anapop
                             # No executable files to track
@@ -171,7 +173,7 @@ class PopconXapianIndex(xapian.WritableDatabase):
         self.source_dir = os.path.expanduser(cfg.popcon_dir)
         self.max_popcon = cfg.max_popcon
         self.valid_pkgs = []
-        # file format: one pkg_name per line
+        # file format for filter: one package name per line
         with open(os.path.join(cfg.filters,cfg.pkgs_filter)) as valid_pkgs:
             self.valid_pkgs = [line.strip() for line in valid_pkgs
                                if not line.startswith("#")]

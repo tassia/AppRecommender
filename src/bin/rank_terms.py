@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+#
+# rank_terms.py - rank index terms by frequency
 
 import xapian
 import os

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-    Clustering - A python script to perform clustering of popcon data.
+    popindex.py - generate a popcon index to be used by the recommender as the
+                  users repository, based on filters provided by config
 """
 __author__ = "Tassia Camoes Araujo <tassia@gmail.com>"
 __copyright__ = "Copyright (C) 2011 Tassia Camoes Araujo"

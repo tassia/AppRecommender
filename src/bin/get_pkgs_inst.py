@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+#
+# get_pkgs_inst.py - get tuple (package,installation) from popcon results file
 
 from operator import itemgetter
 if __name__ == '__main__':
