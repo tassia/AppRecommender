@@ -27,6 +27,9 @@ import logging
 import random
 import cluster
 import shutil
+import apt
+import re
+import operator
 
 from error import Error
 from singleton import Singleton
@@ -38,8 +41,8 @@ def axi_search_pkgs(axi,pkgs_list):
     query = xapian.Query(xapian.Query.OP_OR, terms)
     enquire = xapian.Enquire(axi)
     enquire.set_query(query)
-    matches = enquire.get_mset(0,axi.get_doccount())
-    return [m.docid for m in matches]
+    mset = enquire.get_mset(0,axi.get_doccount())
+    return mset
 
 def axi_search_pkg_tags(axi,pkg):
     enquire = xapian.Enquire(axi)
@@ -64,6 +67,39 @@ def print_index(index):
                        for posting in index.postlist(term.term)])
         output += "\n---"
     return output
+
+def tfidf_weighting(index,docs,content_filter,plus=0):
+    """
+    Return a dictionary of terms and weights of all terms of a set of
+    documents, based on the frequency of terms in the selected set (docids).
+    """
+    # Store all terms in one single document
+    terms_doc = xapian.Document()
+    for d in docs:
+        for term in index.get_document(d.docid).termlist():
+            if content_filter(term.term):
+                if plus:
+                    terms_doc.add_term(term.term,int(d.weight))
+                else:
+                    terms_doc.add_term(term.term)
+    # Compute sublinear tfidf for each term
+    weights = {}
+    for term in terms_doc.termlist():
+        tf = 1+math.log(term.wdf)
+        idf = math.log(index.get_doccount()/
+                       float(index.get_termfreq(term.term)))
+        weights[term.term] = tf*idf
+    sorted_weights = list(reversed(sorted(weights.items(),
+                                          key=operator.itemgetter(1))))
+    #print sorted_weights
+    return sorted_weights
+
+def tfidf_plus(index,docs,content_filter):
+    """
+    Return a dictionary of terms and weights of all terms of a set of
+    documents, based on the frequency of terms in the selected set (docids).
+    """
+    return tfidf_weighting(index,docs,content_filter,1)
 
 class AppAptXapianIndex(xapian.WritableDatabase):
     """
@@ -101,10 +137,106 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
                                          xapian.DB_CREATE_OR_OVERWRITE)
         sample = axi_search_pkgs(axi,pkgs_list)
         for package in sample:
-            doc_id = self.add_document(axi.get_document(package))
+            doc_id = self.add_document(axi.get_document(package.docid))
 
     def __str__(self):
         return print_index(self)
+
+class DebianPackage():
+    """
+    Class to load package information.
+    """
+    def __init__(self,pkg_name):
+        self.name = pkg_name
+
+    def load_details_from_apt(self):
+        pkg_version = apt.Cache()[self.name].candidate
+
+        self.maintainer = pkg_version.record['Maintainer']
+        self.version = pkg_version.version
+        self.summary = pkg_version.summary
+        self.description = self.format_description(pkg_version.description)
+        self.summary = pkg_version.section
+        if pkg_version.record.has_key('Homepage'):
+            self.homepage = pkg_version.record['Homepage']
+        if pkg_version.record.has_key('Tag'):
+            self.tags = self.debtags_str_to_dict(pkg_version.record['Tag'])
+        if pkg_version.record.has_key('Depends'):
+            self.depends = pkg_version.record['Depends']
+        if pkg_version.record.has_key('Pre-Depends'):
+            self.predepends = pkg_version.record['Pre-Depends']
+        if pkg_version.record.has_key('Recommends'):
+            self.recommends = pkg_version.record['Recommends']
+        if pkg_version.record.has_key('Suggests'):
+            self.suggests = pkg_version.record['Suggests']
+        if pkg_version.record.has_key('Breaks'):
+            self.breaks = pkg_version.record['Breaks']
+        if pkg_version.record.has_key('Conflicts'):
+            self.conflicts = pkg_version.record['Conflicts']
+        if pkg_version.record.has_key('Replaces'):
+            self.conflicts = pkg_version.record['Replaces']
+        if pkg_version.record.has_key('Provides'):
+            self.provides = pkg_version.record['Provides']
+
+    def load_details_from_dde(self,dde_server,dde_port):
+        json_data = json.load(urllib.urlopen("http://%s:%s/q/udd/packages/all/%s?t=json"
+                                             % dde_server,dde_port,self.name))
+
+        self.maintainer = json_data['r']['maintainer']
+        self.version = json_data['r']['version']
+        self.summary = json_data['r']['description']
+        self.description = self.format_description(json_data['r']['long_description'])
+        self.section = json_data['r']['section']
+        if json_data['r']['homepage']:
+            self.conflicts = json_data['r']['homepage']
+        if json_data['r']['tag']:
+            self.tags = self.debtags_list_to_dict(json_data['r']['tag'])
+        if json_data['r']['depends']:
+            self.depends = json_data['r']['depends']
+        if json_data['r']['pre_depends']:
+            self.conflicts = json_data['r']['pre_depends']
+        if json_data['r']['recommends']:
+            self.conflicts = json_data['r']['recommends']
+        if json_data['r']['suggests']:
+            self.conflicts = json_data['r']['suggests']
+        if json_data['r']['conflicts']:
+            self.conflicts = json_data['r']['conflicts']
+        if json_data['r']['replaces']:
+            self.conflicts = json_data['r']['replaces']
+        if json_data['r']['provides']:
+            self.conflicts = json_data['r']['provides']
+        self.popcon_insts = json_data['r']['popcon']['insts']
+
+    def format_description(self,description):
+        return description.replace('.\n','').replace('\n','<br />')
+
+    def debtags_str_to_dict(self, debtags_str):
+        debtags_list = [tag.rstrip(",") for tag in debtags_str.split()]
+        return self.debtags_list_to_dict(debtags_list)
+
+    def debtags_list_to_dict(self, debtags_list):
+        """ input:  ['use::editing',
+        	         'works-with-format::gif',
+                     'works-with-format::jpg',
+                     'works-with-format::pdf']
+            output: {'use': [editing],
+                     'works-with-format': ['gif', 'jpg', 'pdf']'}
+        """
+        debtags = {}
+        subtags = []
+        for tag in debtags_list:
+            match = re.search(r'^(.*)::(.*)$', tag)
+            if not match:
+                logging.info("Could not parse debtags format from tag: %s", tag)
+            facet, subtag = match.groups()
+            subtags.append(subtag)
+            if facet not in debtags:
+               debtags[facet] = subtags
+            else:
+               debtags[facet].append(subtag)
+            subtags = []
+        print "debtags_list",debtags
+        return debtags
 
 class PopconSubmission():
     def __init__(self,path,user_id=0,binary=1):
@@ -174,11 +306,11 @@ class PopconXapianIndex(xapian.WritableDatabase):
         self.max_popcon = cfg.max_popcon
         self.valid_pkgs = []
         # file format for filter: one package name per line
-        with open(os.path.join(cfg.filters,cfg.pkgs_filter)) as valid_pkgs:
+        with open(cfg.pkgs_filter) as valid_pkgs:
             self.valid_pkgs = [line.strip() for line in valid_pkgs
                                if not line.startswith("#")]
         logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
-        with open(os.path.join(cfg.filters,"tags")) as valid_tags:
+        with open(os.path.join(cfg.filters_dir,"debtags")) as valid_tags:
             self.valid_tags = [line.strip() for line in valid_tags
                                if not line.startswith("#")]
         logging.debug("Considering %d valid tags" % len(self.valid_tags))
