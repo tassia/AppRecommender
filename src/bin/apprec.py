@@ -35,9 +35,9 @@ if __name__ == '__main__':
     cfg = Config()
     rec = Recommender(cfg)
     logging.info("Computation started at %s" % begin_time)
-    user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters,"desktop"))
-    #user = LocalSystem()
-    user.filter_pkg_profile(os.path.join(cfg.filters,"desktop"))
+    #user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,"desktopapps"))
+    user = LocalSystem()
+    user.filter_pkg_profile(os.path.join(cfg.filters_dir,"desktopapps"))
     user.maximal_pkg_profile()
 
     logging.info("Recommending applications for user %s" % user.user_id)

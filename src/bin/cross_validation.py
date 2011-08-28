@@ -29,13 +29,16 @@ import datetime
 from config import Config
 from evaluation import CrossValidation, Precision, Recall, F1, Accuracy, SimpleAccuracy
 from recommender import Recommender
-from user import RandomPopcon
+from user import RandomPopcon,LocalSystem,PopconSystem
 
 if __name__ == '__main__':
     cfg = Config()
     rec = Recommender(cfg)
-    user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters,"desktop"))
-    user.filter_pkg_profile(os.path.join(cfg.filters,"desktop"))
+    #user = LocalSystem()
+    #user = RandomPopcon(cfg.popcon_dir)
+    #user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,"desktopapps"))
+    user = PopconSystem("/home/tassia/.app-recommender/popcon-entries/4a/4a67a295ec14826db2aa1d90be2f1623")
+    user.filter_pkg_profile(os.path.join(cfg.filters_dir,"desktopapps"))
     user.maximal_pkg_profile()
     begin_time = datetime.datetime.now()
 
@@ -45,7 +48,7 @@ if __name__ == '__main__':
     metrics.append(F1())
     metrics.append(Accuracy())
     metrics.append(SimpleAccuracy())
-    validation = CrossValidation(0.9,10,rec,metrics,0.01)
+    validation = CrossValidation(0.9,10,rec,metrics,0.005)
     validation.run(user)
     print validation
 

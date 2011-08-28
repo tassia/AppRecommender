@@ -35,13 +35,14 @@ if __name__ == '__main__':
     cfg = Config()
     begin_time = datetime.datetime.now()
     logging.info("Sample package indexing started at %s" % begin_time)
-    with open(os.path.join(cfg.filters,cfg.pkgs_filter)) as valid:
+    with open(cfg.pkgs_filter) as valid:
         pkgs_list = [line.strip() for line in valid]
         logging.info("Packages list length: %d" % len(pkgs_list))
 
     # use config file or command line options
+    pkgs_filter = cfg.pkgs_filter.lstrip(cfg.filters_dir)
     pkgindex = data.SampleAptXapianIndex(pkgs_list,xapian.Database(cfg.axi),
-                                         cfg.axi+"-"+cfg.pkgs_filter)
+                                         os.path.join(cfg.base_dir,"axi_"+pkgs_filter))
     end_time = datetime.datetime.now()
     logging.info("Sample package indexing completed at %s" % end_time)
     logging.info("Number of documents (packages): %d" %
