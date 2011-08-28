@@ -37,28 +37,52 @@ class Config(Singleton):
         Set default configuration options.
         """
         if not hasattr(self, 'initialized'):
+            ## general options
             self.debug = 0
             self.verbose = 1
-            #self.output = "/dev/null"
             self.output = "log"
-            self.filters = os.path.expanduser("~/.app-recommender/filters")
-            #self.axi = "/var/lib/apt-xapian-index/index"
-            self.axi = os.path.expanduser("~/.app-recommender/ProgramAxi")
-            #self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
-            self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
-            self.popcon_index = os.path.expanduser("~/.app-recommender/popcon-index")
-            self.popcon_dir = os.path.expanduser("~/.app-recommender/popcon-entries")
-            self.pkgs_filter = "program"
-            self.clusters_dir = os.path.expanduser("~/.app-recommender/clusters-dir")
-            self.k_medoids = 100
-            self.max_popcon = 1000
+
+            ## data_source options
+            self.base_dir = os.path.expanduser("~/.app-recommender/")
+            # filters for valid packages
+            self.filters_dir = os.path.join(self.base_dir,"filters")
+            self.pkgs_filter = os.path.join(self.filters_dir,"programs")
+            # package information packages
+            self.axi = "/var/lib/apt-xapian-index/index"
+            self.axi_programs = os.path.join(self.base_dir,"axi_programs")
+            self.axi_desktopapps = os.path.join(self.base_dir,"axi_desktopapps")
+            # popcon indexes
             self.index_mode = "old"
+            # check if there are popcon indexes available
+            self.popcon = 1
+            self.popcon_programs = os.path.join(self.base_dir,"popcon_programs")
+            self.popcon_desktopapps = os.path.join(self.base_dir,"popcon_desktopapps")
+            self.popcon_index = self.popcon_programs
+            self.popcon_dir = os.path.join(self.base_dir,"popcon-entries")
+            self.max_popcon = 1000
+            # popcon clustering
+            self.clusters_dir = os.path.join(self.base_dir,"clusters-dir")
+            self.k_medoids = 100
+            # self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
+            self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
+            self.dde_server = "46.4.235.200"
+            self.dde_port = "8000"
+
+            ## recomender options
             self.strategy = "cb"
             self.weight = "bm25"
+            self.bm25_k1 = 1.2 
+            self.bm25_k2 = 0
+            self.bm25_k3 = 7
+            self.bm25_b = 0.75
+            self.bm25_nl = 0.5
+            # user content profile size
             self.profile_size = 50
-            # options: maximal, voted, desktop
-            self.profiling = ["maximal"]
-            self.k_neighbors = 100
+            # neighborhood size
+            self.k_neighbors = 50
+            # popcon profiling method: full, voted
+            self.popcon_profiling = "full"
+
             self.load_options()
             self.set_logger()
             self.initialized = 1
@@ -68,6 +92,7 @@ class Config(Singleton):
         """
         Print usage help.
         """
+        print "[FIXME: deprecated help]"
         print "\n [ general ]"
         print "  -h, --help                 Print this help"
         print "  -d, --debug                Set logging level to debug"
@@ -75,7 +100,7 @@ class Config(Singleton):
         print "  -o, --output=PATH          Path to file to save output"
         print ""
         print " [ data sources ]"
-        print "  -f, --filters=PATH         Path to filters directory"
+        print "  -f, --filtersdir=PATH      Path to filters directory"
         print "  -b, --pkgsfilter=FILTER    File containing packages to be considered for recommendations"
         print "  -a, --axi=PATH             Path to apt-xapian-index"
         print "  -e, --dde=URL              DDE url"
@@ -130,29 +155,60 @@ class Config(Singleton):
 
         self.debug = int(self.read_option('general', 'debug'))
         self.debug = int(self.read_option('general', 'verbose'))
-        self.output = self.read_option('general', 'output')
-
-        self.filters = os.path.expanduser(self.read_option('data_sources','filters'))
-        self.pkgs_filter = self.read_option('data_sources', 'pkgs_filter')
-        self.axi = os.path.expanduser(self.read_option('data_sources', 'axi'))
-        self.dde_url = self.read_option('data_sources', 'dde_url')
-        self.popcon_index = os.path.expanduser(self.read_option('data_sources','popcon_index'))
-        self.popcon_dir = os.path.expanduser(self.read_option('data_sources', 'popcon_dir'))
-        self.index_mode = self.read_option('data_sources', 'index_mode')
-        self.clusters_dir = os.path.expanduser(self.read_option('data_sources', 'clusters_dir'))
-        self.k_medoids = int(self.read_option('data_sources', 'k_medoids'))
+        self.output = os.path.join(self.base_dir,
+                                   self.read_option('general','output'))
+        self.filters_dir = os.path.join(self.base_dir,
+                                        self.read_option('data_sources',
+                                                         'filters_dir'))
+        self.pkgs_filter = os.path.join(self.filters_dir,
+                                        self.read_option('data_sources',
+                                                         'pkgs_filter'))
+        self.axi = self.read_option('data_sources', 'axi')
+        self.axi_programs = os.path.join(self.base_dir,
+                                         self.read_option('data_sources',
+                                                          'axi_programs'))
+        self.axi_desktopapps = os.path.join(self.base_dir,
+                                            self.read_option('data_sources',
+                                                             'axi_desktopapps'))
+        #self.index_mode = self.read_option('data_sources', 'index_mode')
+        self.popcon = int(self.read_option('data_sources', 'popcon'))
+        self.popcon_programs = os.path.join(self.base_dir,
+                                            self.read_option('data_sources',
+                                                             'popcon_programs'))
+        self.popcon_desktopapps = os.path.join(self.base_dir,
+                                               self.read_option('data_sources',
+                                                                'popcon_desktopapps'))
+        self.popcon_index = os.path.join(self.base_dir,
+                                         self.read_option('data_sources',
+                                                          'popcon_index'))
+        self.popcon_dir = os.path.join(self.base_dir,
+                                       self.read_option('data_sources',
+                                                        'popcon_dir'))
         self.max_popcon = int(self.read_option('data_sources', 'max_popcon'))
+        self.clusters_dir = os.path.join(self.base_dir,
+                                         self.read_option('data_sources',
+                                                          'clusters_dir'))
+        self.k_medoids = int(self.read_option('data_sources', 'k_medoids'))
+        self.dde_url = self.read_option('data_sources', 'dde_url')
+        self.dde_server = self.read_option('data_sources', 'dde_server')
+        self.dde_port = self.read_option('data_sources', 'dde_port')
 
         self.weight = self.read_option('recommender', 'weight')
+        self.bm25_k1 = float(self.read_option('recommender', 'bm25_k1'))
+        self.bm25_k2 = float(self.read_option('recommender', 'bm25_k2'))
+        self.bm25_k3 = float(self.read_option('recommender', 'bm25_k3'))
+        self.bm25_b = float(self.read_option('recommender', 'bm25_b'))
+        self.bm25_nl = float(self.read_option('recommender', 'bm25_nl'))
         self.strategy = self.read_option('recommender', 'strategy')
         self.profile_size = int(self.read_option('recommender',
                                                  'profile_size'))
-        self.profiling = self.read_option('recommender', 'profiling')
         self.k_neighbors = int(self.read_option('recommender',
-                                                 'k_neighbors'))
+                                                'k_neighbors'))
+        self.popcon_profiling = self.read_option('recommender',
+                                                 'popcon_profiling')
 
         short_options = "hdvo:f:b:a:e:p:m:u:l:c:x:w:s:z:i:n:"
-        long_options = ["help", "debug", "verbose", "output=", "filters=",
+        long_options = ["help", "debug", "verbose", "output=", "filtersdir=",
                         "pkgsfilter=", "axi=", "dde=", "popconindex=",
                         "popcondir=", "indexmode=", "clustersdir=", "kmedoids=",
                         "maxpopcon=", "weight=", "strategy=", "profile_size=",
@@ -176,8 +232,8 @@ class Config(Singleton):
                 self.verbose = 1
             elif o in ("-o", "--output"):
                 self.output = p
-            elif o in ("-f", "--filters"):
-                self.filters = p
+            elif o in ("-f", "--filtersdir"):
+                self.filters_dir = p
             elif o in ("-b", "--pkgsfilter"):
                 self.pkgs_filter = p
             elif o in ("-a", "--axi"):
