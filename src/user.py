@@ -29,16 +29,29 @@ import apt
 from error import Error
 from singleton import Singleton
 import data
+import operator
+import math
 
 class FilterTag(xapian.ExpandDecider):
     """
     Extend xapian.ExpandDecider to consider only tag terms.
     """
+    def __init__(self, valid_tags):
+        """
+        Set initial parameters.
+        """
+        xapian.ExpandDecider.__init__(self)
+        self.valid_tags = valid_tags
+
     def __call__(self, term):
         """
         Return true if the term is a tag, else false.
         """
-        return term.startswith("XT")
+        if self.valid_tags:
+            is_valid = term.lstrip("XT") in self.valid_tags
+        else:
+            is_valid = 1
+        return term.startswith("XT") and is_valid
 
 class FilterDescription(xapian.ExpandDecider):
     """
@@ -50,6 +63,26 @@ class FilterDescription(xapian.ExpandDecider):
         description.
         """
         return term.islower() or term.startswith("Z")
+
+class FilterTag_or_Description(xapian.ExpandDecider):
+    """
+    Extend xapian.ExpandDecider to consider only package description terms.
+    """
+    def __init__(self, valid_tags):
+        """
+        Set initial parameters.
+        """
+        xapian.ExpandDecider.__init__(self)
+        self.valid_tags = valid_tags
+
+    def __call__(self, term):
+        """
+        Return true if the term or its stemmed version is part of a package
+        description.
+        """
+        is_tag = FilterTag(self.valid_tags)(term)
+        is_description = FilterDescription()(term)
+        return is_tag or is_description
 
 class DemographicProfile(Singleton):
     def __init__(self):
@@ -109,57 +142,83 @@ class User:
         """
         self.demographic_profile = DemographicProfile()(profiles_set)
 
-    def content_profile(self,items_repository,content,size):
+    def content_profile(self,items_repository,content,size,valid_tags=0):
         """
         Get user profile for a specific type of content: packages tags,
-        description or both (full_profile)
+        description or both (mixed and half-half profiles)
         """
         if content == "tag":
-            profile = self.tag_profile(items_repository,size)
-        if content == "desc":
-            profile = self.desc_profile(items_repository,size)
-        if content == "full":
-            profile = self.full_profile(items_repository,size)
-        logging.debug("User profile: %s" % profile)
+            profile = self.tfidf_profile(items_repository,size,FilterTag(valid_tags))
+        elif content == "desc":
+            profile = self.tfidf_profile(items_repository,size,FilterDescription())
+        elif content == "mix":
+            profile = self.tfidf_profile(items_repository,size,FilterTag_or_Description(valid_tags))
+        elif content == "half":
+            tag_profile = self.tfidf_profile(items_repository,size,FilterTag(valid_tags))
+            desc_profile = self.tfidf_profile(items_repository,size,FilterDescription())
+            profile = tag_profile[:size/2]+desc_profile[:size/2]
+        elif content == "tag_eset":
+            profile = self.eset_profile(items_repository,size,FilterTag(valid_tags))
+        elif content == "desc_eset":
+            profile = self.eset_profile(items_repository,size,FilterDescription())
+        elif content == "mix_eset":
+            profile = self.eset_profile(items_repository,size,FilterTag_or_Description(valid_tags))
+        elif content == "half_eset":
+            tag_profile = self.eset_profile(items_repository,size,FilterTag(valid_tags))
+            desc_profile = self.eset_profile(items_repository,size,FilterDescription())
+            profile = tag_profile[:size/2]+desc_profile[:size/2]
+        else:
+            logging.debug("Unknown content type %s." % content)
+            raise Error
+        logging.debug("User %s profile: %s" % (content, profile))
         return profile
 
-    def tag_profile(self,items_repository,size):
+    def tfidf_profile(self,items_repository,size,content_filter):
+        """
+        Return the most relevant tags for the user list of packages based on
+        the sublinear tfidf weight of packages' tags.
+        """
+        docs = data.axi_search_pkgs(items_repository,self.pkg_profile)
+        #weights = data.tfidf_plus(items_repository,docs,content_filter)
+        weights = data.tfidf_weighting(items_repository,docs,content_filter)
+        # Eliminate duplicated stemmed term
+        profile = self._eliminate_duplicated([w[0] for w in weights],size)
+        return profile
+
+    def eset_profile(self,items_repository,size,content_filter):
         """
         Return most relevant tags for a list of packages.
         """
+        # Store package documents in a relevant set
         enquire = xapian.Enquire(items_repository)
         docs = data.axi_search_pkgs(items_repository,self.pkg_profile)
         rset_packages = xapian.RSet()
-        for docid in docs:
-            rset_packages.add_document(docid)
-        # statistically good differentiators
-        eset_tags = enquire.get_eset(size, rset_packages, FilterTag())
-        profile = [res.term for res in eset_tags]
+        for d in docs:
+            rset_packages.add_document(d.docid)
+        # Get expanded query terms (statistically good differentiators)
+        eset_tags = enquire.get_eset(size*2,rset_packages,
+                                     xapian.Enquire.INCLUDE_QUERY_TERMS,
+                                     1,content_filter)
+        # Eliminate duplicated stemmed term
+        profile = self._eliminate_duplicated([res.term for res in eset_tags],size)
         return profile
 
-    def desc_profile(self,items_repository,size):
-        """
-        Return most relevant keywords for a list of packages based on their
-        text descriptions.
-        """
-        enquire = xapian.Enquire(items_repository)
-        docs = data.axi_search_pkgs(items_repository,self.pkg_profile)
-        rset_packages = xapian.RSet()
-        for docid in docs:
-            rset_packages.add_document(docid)
-        eset_keywords = enquire.get_eset(size, rset_packages,
-                                         FilterDescription())
-        profile = [res.term for res in eset_keywords]
+    def _eliminate_duplicated(self,sorted_list,size):
+        profile = sorted_list[:size]
+        next_index = size
+        duplicate = 1
+        while duplicate:
+            duplicate = 0
+            for term in profile[:]:
+                if term.startswith("Z"):
+                    for p in profile[:]:
+                        if p.startswith(term.lstrip("Z")):
+                            duplicate = 1
+                            profile.remove(p)
+                            if len(sorted_list)>next_index:
+                                profile.append(sorted_list[next_index])
+                            next_index +=1
         return profile
-
-    def full_profile(self,items_repository,size):
-        """
-        Return most relevant tags and keywords for a list of packages based
-        their tags and descriptions.
-        """
-        tag_profile = self.tag_profile(items_repository,size)[:size/2]
-        desc_profile = self.desc_profile(items_repository,size)[:size/2]
-        return tag_profile+desc_profile
 
     def filter_pkg_profile(self,filter_list_or_file):
         """
@@ -172,7 +231,8 @@ class User:
                 with open(filter_list_or_file) as valid:
                     valid_pkgs = [line.strip() for line in valid]
             except IOError:
-                logging.critical("Could not open profile filter file.")
+                logging.critical("Could not open profile filter file: %" %
+                                 filter_list_or_file)
                 raise Error
         else:
             logging.debug("No filter provided for user profiling.")
@@ -229,15 +289,17 @@ class RandomPopcon(User):
         User.__init__(self,submission.packages,submission.user_id)
 
 class PopconSystem(User):
-    def __init__(self,path):
+    def __init__(self,path,user_id=0):
         """
         Set initial parameters.
         """
         submission = data.PopconSubmission(path)
-        User.__init__(self,submission.packages,submission.user_id)
+        if not user_id:
+            user_id = submission.user_id
+        User.__init__(self,submission.packages,user_id)
 
 class PkgsListSystem(User):
-    def __init__(self,pkgs_list_or_file):
+    def __init__(self,pkgs_list_or_file,user_id=0):
         """
         Set initial parameters.
         """
@@ -254,7 +316,7 @@ class PkgsListSystem(User):
             logging.debug("No packages provided for user profiling.")
             return self.pkg_profile
 
-        User.__init__(self,dict.fromkeys(pkgs_list,1))
+        User.__init__(self,dict.fromkeys(pkgs_list,1),user_id)
 
 class LocalSystem(User):
     """
