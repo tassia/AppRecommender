@@ -294,6 +294,10 @@ class CrossValidation:
             round_user = User(cross_item_score)
             result_size = int(self.recommender.items_repository.get_doccount()*
                               self.result_proportion)
+            logging.debug("size %d" % result_size)
+            if not result_size:
+                logging.critical("Recommendation size is zero.")
+                raise Error
             predicted_result = self.recommender.get_recommendation(round_user,result_size)
             if not predicted_result.size:
                 logging.critical("No recommendation produced. Abort cross-validation.")
