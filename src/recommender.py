@@ -25,6 +25,7 @@ import xapian
 import operator
 import data
 import strategy
+import apt
 
 class RecommendationResult:
     """
@@ -43,9 +44,13 @@ class RecommendationResult:
         """
         String representation of the object.
         """
+        #[FIXME] try alternative way to get pkgs summarys (efficiency)
+        #cache = apt.Cache()
         result = self.get_prediction()
         str = "\n"
         for i in range(len((list(result)))):
+            #summary = cache[result[i][0]].candidate.summary
+            #str += "%2d: %s\t\t- %s\n" % (i,result[i][0],summary)
             str += "%2d: %s\n" % (i,result[i][0])
         return str
 
@@ -69,40 +74,84 @@ class Recommender:
         Set initial parameters.
         """
         self.cfg = cfg
-        self.items_repository = xapian.Database(cfg.axi)
-        self.set_strategy(cfg.strategy)
+        # Load xapian indexes
+        self.axi_programs = xapian.Database(cfg.axi_programs)
+        self.axi_desktopapps = xapian.Database(cfg.axi_desktopapps)
+        if cfg.popcon:
+            self.popcon_programs = xapian.Database(cfg.popcon_programs)
+            self.popcon_desktopapps = xapian.Database(cfg.popcon_desktopapps)
+        # Load valid programs, desktopapps and tags
+        # format: one package or tag name per line
+        self.valid_programs = []
+        self.valid_desktopapps = []
+        self.valid_tags = []
+        logging.info("Loading recommender filters")
+        with open(os.path.join(cfg.filters_dir,"programs")) as pkgs:
+            self.valid_programs = [line.strip() for line in pkgs
+                                   if not line.startswith("#")]
+        with open(os.path.join(cfg.filters_dir,"desktopapps")) as pkgs:
+            self.valid_desktopapps = [line.strip() for line in pkgs
+                                      if not line.startswith("#")]
+        with open(os.path.join(cfg.filters_dir,"debtags")) as tags:
+            self.valid_tags = [line.strip() for line in tags
+                                      if not line.startswith("#")]
+        # Set xapian index weighting scheme
         if cfg.weight == "bm25":
-            self.weight = xapian.BM25Weight()
+            self.weight = xapian.BM25Weight(cfg.bm25_k1, cfg.bm25_k2,
+                                            cfg.bm25_k3, cfg.bm25_b,
+                                            cfg.bm25_nl)
         else:
             self.weight = xapian.TradWeight()
-        self.valid_pkgs = []
-        # file format: one pkg_name per line
-        with open(os.path.join(cfg.filters,cfg.pkgs_filter)) as valid_pkgs:
-            self.valid_pkgs = [line.strip() for line in valid_pkgs
-                               if not line.startswith("#")]
+        self.set_strategy(cfg.strategy)
 
     def set_strategy(self,strategy_str):
         """
         Set the recommendation strategy.
         """
         logging.info("Setting recommender strategy to \'%s\'" % strategy_str)
-        self.items_repository = xapian.Database(self.cfg.axi)
-        if "desktop" in strategy_str:
-            self.items_repository = xapian.Database("/root/.app-recommender/axi_desktop")
-            self.cfg.popcon_index = "/root/.app-recommender/popcon-index_desktop_1000"
-
-        if strategy_str == "cb" or strategy_str == "cb_desktop":
-            self.strategy = strategy.ContentBasedStrategy("full",
-                                                          self.cfg.profile_size)
-        if strategy_str == "cbt" or strategy_str == "cbt_desktop":
-            self.strategy = strategy.ContentBasedStrategy("tag",
-                                                          self.cfg.profile_size)
-        if strategy_str == "cbd" or strategy_str == "cbd_desktop":
-            self.strategy = strategy.ContentBasedStrategy("desc",
-                                                          self.cfg.profile_size)
-        if "col" in strategy_str:
-            self.users_repository = data.PopconXapianIndex(self.cfg)
-            self.strategy = strategy.CollaborativeStrategy(self.cfg.k_neighbors)
+        self.items_repository = self.axi_programs
+        self.valid_pkgs = self.valid_programs
+        # Check if collaborative strategies can be instanciated
+        if ("col" in strategy_str) or ("knn" in strategy_str):
+            if not self.cfg.popcon:
+                logging.info("Cannot perform collaborative strategy")
+                return 1
+            else:
+                self.users_repository = self.popcon_programs
+        # Set strategy based on strategy_str
+        if strategy_str == "cb":
+            self.strategy = strategy.ContentBased("mix",self.cfg.profile_size)
+        elif strategy_str == "cbt":
+            self.strategy = strategy.ContentBased("tag",self.cfg.profile_size)
+        elif strategy_str == "cbd":
+            self.strategy = strategy.ContentBased("desc",self.cfg.profile_size)
+        elif strategy_str == "cbh":
+            self.strategy = strategy.ContentBased("half",self.cfg.profile_size)
+        if strategy_str == "cb_eset":
+            self.strategy = strategy.ContentBased("mix_eset",self.cfg.profile_size)
+        elif strategy_str == "cbt_eset":
+            self.strategy = strategy.ContentBased("tag_eset",self.cfg.profile_size)
+        elif strategy_str == "cbd_eset":
+            self.strategy = strategy.ContentBased("desc_eset",self.cfg.profile_size)
+        elif strategy_str == "cbh_eset":
+            self.strategy = strategy.ContentBased("half_eset",self.cfg.profile_size)
+        #elif strategy_str == "col":
+        #    self.strategy = strategy.CollaborativeEset()
+        elif strategy_str == "knn":
+            self.strategy = strategy.Knn(self.cfg.k_neighbors)
+        elif strategy_str == "knn_plus":
+            self.strategy = strategy.KnnPlus(self.cfg.k_neighbors)
+        elif strategy_str == "knn_eset":
+            self.strategy = strategy.KnnEset(self.cfg.k_neighbors)
+        elif strategy_str == "knnco":
+            self.strategy = strategy.KnnContent(self.cfg.k_neighbors)
+        elif strategy_str == "knnco_eset":
+            self.strategy = strategy.KnnContentEset(self.cfg.k_neighbors)
+        elif strategy_str.startswith("demo"):
+            self.strategy = strategy.Demographic(strategy_str)
+        else:
+            logging.info("Strategy not defined.")
+            return
 
     def get_recommendation(self,user,result_size=100):
         """
