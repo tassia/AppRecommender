@@ -100,6 +100,7 @@ class ContentBased(RecommendationStrategy):
 
     def get_sugestion_from_profile(self,rec,user,profile,recommendation_size):
         query = xapian.Query(xapian.Query.OP_OR,profile)
+        print query
         enquire = xapian.Enquire(rec.items_repository)
         enquire.set_weighting_scheme(rec.weight)
         enquire.set_query(query)
@@ -295,7 +296,7 @@ class KnnContent(Collaborative):
         weights = data.tfidf_weighting(rec.users_repository,neighborhood,
                                        PkgExpandDecider(user.items()))
         profile = [w[0] for w in weights][:rec.cfg.profile_size]
-        result = ContentBased().get_sugestion_from_profile(rec,user,profile,recommendation_size)
+        result = ContentBased("tag",rec.cfg.profile_size).get_sugestion_from_profile(rec,user,profile,recommendation_size)
         return result
 
 class KnnContentEset(Collaborative):
@@ -313,10 +314,10 @@ class KnnContentEset(Collaborative):
         neighbors_rset = self.get_neighborhood_rset(user,rec)
         enquire = self.get_enquire(rec)
         # Retrieve relevant tags based on neighborhood profile expansion
-        eset = enquire.get_eset(rec.cfg.profile_size,rset,
+        eset = enquire.get_eset(rec.cfg.profile_size,neighbors_rset,
                                 TagExpandDecider())
         profile = [e.term for e in eset]
-        result = ContentBased().get_sugestion_from_profile(rec,user,profile,recommendation_size)
+        result = ContentBased("tag",rec.cfg.profile_size).get_sugestion_from_profile(rec,user,profile,recommendation_size)
         return result
 
 class Demographic(RecommendationStrategy):
