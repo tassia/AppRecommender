@@ -85,10 +85,15 @@ def tfidf_weighting(index,docs,content_filter,plus=0):
     # Compute sublinear tfidf for each term
     weights = {}
     for term in terms_doc.termlist():
-        tf = 1+math.log(term.wdf)
-        idf = math.log(index.get_doccount()/
-                       float(index.get_termfreq(term.term)))
-        weights[term.term] = tf*idf
+        try:
+            # Even if it shouldn't raise error...
+            # math.log: ValueError: math domain error
+            tf = 1+math.log(term.wdf)
+            idf = math.log(index.get_doccount()/
+                           float(index.get_termfreq(term.term)))
+            weights[term.term] = tf*idf
+        except:
+            pass
     sorted_weights = list(reversed(sorted(weights.items(),
                                           key=operator.itemgetter(1))))
     #print sorted_weights
@@ -410,7 +415,7 @@ class PopconXapianIndex(xapian.WritableDatabase):
                             # if the package has tags associated with it
                             if not tags == "notags":
                                 for tag in tags:
-                                    if tag in self.valid_tags:
+                                    if tag.lstrip("XT") in self.valid_tags:
                                         doc.add_term(tag,freq)
                     doc_id = self.add_document(doc)
                     doc_count += 1
