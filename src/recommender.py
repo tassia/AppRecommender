@@ -109,8 +109,12 @@ class Recommender:
         Set the recommendation strategy.
         """
         logging.info("Setting recommender strategy to \'%s\'" % strategy_str)
-        self.items_repository = self.axi_programs
-        self.valid_pkgs = self.valid_programs
+        if self.cfg.pkgs_filter.split("/")[-1] == "desktopapps":
+            self.items_repository = self.axi_desktopapps
+            self.valid_pkgs = self.valid_desktopapps
+        else:
+            self.items_repository = self.axi_programs
+            self.valid_pkgs = self.valid_programs
         # Check if collaborative strategies can be instanciated
         if ("col" in strategy_str) or ("knn" in strategy_str):
             if not self.cfg.popcon:
