@@ -46,7 +46,7 @@ class Config(Singleton):
             self.base_dir = os.path.expanduser("~/.app-recommender/")
             # filters for valid packages
             self.filters_dir = os.path.join(self.base_dir,"filters")
-            self.pkgs_filter = os.path.join(self.filters_dir,"programs")
+            self.pkgs_filter = os.path.join(self.filters_dir,"desktopapps")
             # package information packages
             self.axi = "/var/lib/apt-xapian-index/index"
             self.axi_programs = os.path.join(self.base_dir,"axi_programs")
@@ -57,7 +57,7 @@ class Config(Singleton):
             self.popcon = 1
             self.popcon_programs = os.path.join(self.base_dir,"popcon_programs")
             self.popcon_desktopapps = os.path.join(self.base_dir,"popcon_desktopapps")
-            self.popcon_index = self.popcon_programs
+            self.popcon_index = self.popcon_desktopapps
             self.popcon_dir = os.path.join(self.base_dir,"popcon-entries")
             self.max_popcon = 1000
             # popcon clustering
