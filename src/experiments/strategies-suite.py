@@ -30,117 +30,245 @@ import logging
 import random
 import Gnuplot
 
-def write_recall_log(label,sample,recommendation,log_file):
+#iterations = 3
+#sample_proportions = [0.9]
+#weighting = [('bm25',1.2)]
+#collaborative = ['knn']
+#content_based = []
+#hybrid = ['knnco']
+#profile_size = [50,100]
+#popcon_size = ["1000"]
+#neighbors = [50]
+
+iterations = 10
+sample_proportions = [0.5, 0.6, 0.7, 0.8, 0.9]
+weighting = [('bm25',1.2), ('bm25',1.6), ('bm25',2.0), ('trad',0)]
+content_based = ['cb','cbt','cbd','cbh','cb_eset','cbt_eset','cbd_eset','cbh_eset']
+collaborative = ['knn_eset','knn','knn_plus']
+hybrid = ['knnco','knnco_eset']
+
+profile_size = range(20,100,20)
+#popcon_size = [1000,10000,50000,'full']
+neighbors = range(10,510,50)
+
+def write_recall_log(label,n,sample,recommendation,profile_size,repo_size,log_file):
     # Write recall log
-    output = open(log_file,'w')
-    output.write("# %s\n" % label["description"])
-    output.write("# %s\n" % label["values"])
-    notfound = []
-    ranks = []
-    for pkg in sample.keys():
-        if pkg in recommendation.ranking:
-            ranks.append(recommendation.ranking.index(pkg))
-        else:
-            notfound.append(pkg)
-    for r in sorted(ranks):
-        output.write(str(r)+"\n")
-    if notfound:
-        output.write("Out of recommendation:\n")
-        for pkg in notfound:
-            output.write(pkg+"\n")
+    output = open(("%s-%d" % (log_file,n)),'w')
+    output.write("# %s-n\n" % label["description"])
+    output.write("# %s-%d\n" % (label["values"],n))
+    output.write("\n%d %d %d\n" % \
+                 (repo_size,profile_size,len(sample)))
+    if hasattr(recommendation,"ranking"):
+        notfound = []
+        ranks = []
+        for pkg in sample.keys():
+            if pkg in recommendation.ranking:
+                ranks.append(recommendation.ranking.index(pkg))
+            else:
+                notfound.append(pkg)
+        for r in sorted(ranks):
+            output.write(str(r)+"\n")
+        if notfound:
+            output.write("Out of recommendation:\n")
+            for pkg in notfound:
+                output.write(pkg+"\n")
     output.close()
 
-def plot_summary(sample,recommendation,repo_size,log_file):
+def plot_summary(precision,recall,f1,f05,accuracy,log_file):
     # Plot metrics summary
-    accuracy = []
-    precision = []
-    recall = []
-    f1 = []
     g = Gnuplot.Gnuplot()
     g('set style data lines')
     g.xlabel('Recommendation size')
-    for size in range(1,len(recommendation.ranking)+1,100):
-        predicted = RecommendationResult(dict.fromkeys(recommendation.ranking[:size],1))
-        real = RecommendationResult(sample)
-        evaluation = Evaluation(predicted,real,repo_size)
-        accuracy.append([size,evaluation.run(Accuracy())])
-        precision.append([size,evaluation.run(Precision())])
-        recall.append([size,evaluation.run(Recall())])
-        f1.append([size,evaluation.run(F1())])
-
+    g.title("Setup: %s" % log_file.split("/")[-1])
     g.plot(Gnuplot.Data(accuracy,title="Accuracy"),
            Gnuplot.Data(precision,title="Precision"),
            Gnuplot.Data(recall,title="Recall"),
-           Gnuplot.Data(f1,title="F1"))
-    g.hardcopy(log_file+"-plot.ps", terminal="postscript")
-    g.hardcopy(log_file+"-plot.ps", terminal="postscript")
+           Gnuplot.Data(f1,title="F_1"),
+           Gnuplot.Data(f05,title="F_0.5"))
+    g.hardcopy(log_file+".png",terminal="png")
+    g.hardcopy(log_file+".ps",terminal="postscript",enhanced=1,color=1)
+    g('set logscale x')
+    g('replot')
+    g.hardcopy(log_file+"-logscale.png",terminal="png")
+    g.hardcopy(log_file+"-logscale.ps",terminal="postscript",enhanced=1,color=1)
 
-def run_iteration(user,cfg,label,sample):
-    rec = Recommender(cfg)
-    repo_size = rec.items_repository.get_doccount()
-    recommendation = rec.get_recommendation(user,repo_size)
-    log_file = "results/strategies/"+label["values"]
-    write_recall_log(label,sample,recommendation,log_file)
-    plot_summary(sample,recommendation,repo_size,log_file)
-
-def run_strategies(user,sample,n):
-    cfg = Config()
+def get_label(cfg,sample_proportion):
     label = {}
-    sample_proportion = (len(sample)/len(user.pkg_profile)+len(sample))
-    for k in bm25_k1:
-        cfg.bm25_k1 = k
-        if "content" in sys.argv or len(sys.argv)<2:
+    if cfg.strategy in content_based:
+        label["description"] = "strategy-filter-profile-k1_bm25-sample"
+        label["values"] = ("%s-profile%d-%s-kbm%.1f-sample%.1f" %
+                           (cfg.strategy,cfg.profile_size,
+                            cfg.pkgs_filter.split("/")[-1],
+                            cfg.bm25_k1,sample_proportion))
+    elif cfg.strategy in collaborative:
+       label["description"] = "strategy-knn-filter-k1_bm25-sample"
+       label["values"] = ("%s-k%d-%s-kbm%.1f-sample%.1f" %
+                          (cfg.strategy,cfg.k_neighbors,
+                           cfg.pkgs_filter.split("/")[-1],
+                           cfg.bm25_k1,sample_proportion))
+    elif cfg.strategy in hybrid:
+       label["description"] = "strategy-knn-filter-profile-k1_bm25-sample"
+       label["values"] = ("%s-k%d-profile%d-%s-kbm%.1f-sample%.1f" %
+                          (cfg.strategy,cfg.k_neighbors,cfg.profile_size,
+                           cfg.pkgs_filter.split("/")[-1],
+                           cfg.bm25_k1,sample_proportion))
+    else:
+        print "Unknown strategy"
+    return label
+
+class ExperimentResults:
+    def __init__(self,repo_size):
+        self.repository_size = repo_size
+        self.accuracy = {}
+        self.precision = {}
+        self.recall = {}
+        self.f1 = {}
+        self.f05 = {}
+        points = [1]+range(10,200,10)+range(200,self.repository_size,100)
+        for size in points:
+            self.accuracy[size] = []
+            self.precision[size] = []
+            self.recall[size] = []
+            self.f1[size] = []
+            self.f05[size] = []
+
+    def add_result(self,ranking,sample):
+        for size in self.accuracy.keys():
+            predicted = RecommendationResult(dict.fromkeys(ranking[:size],1))
+            real = RecommendationResult(sample)
+            evaluation = Evaluation(predicted,real,self.repository_size)
+            self.accuracy[size].append(evaluation.run(Accuracy()))
+            self.precision[size].append(evaluation.run(Precision()))
+            self.recall[size].append(evaluation.run(Recall()))
+            self.f1[size].append(evaluation.run(F_score(1)))
+            self.f05[size].append(evaluation.run(F_score(0.5)))
+
+    def get_precision_summary(self):
+        summary = [[size,sum(values)/len(values)] for size,values in self.precision.items()]
+        return sorted(summary)
+
+    def get_recall_summary(self):
+        summary = [[size,sum(values)/len(values)] for size,values in self.recall.items()]
+        return sorted(summary)
+
+    def get_f1_summary(self):
+        summary = [[size,sum(values)/len(values)] for size,values in self.f1.items()]
+        return sorted(summary)
+
+    def get_f05_summary(self):
+        summary = [[size,sum(values)/len(values)] for size,values in self.f05.items()]
+        return sorted(summary)
+
+    def get_accuracy_summary(self):
+        summary = [[size,sum(values)/len(values)] for size,values in self.accuracy.items()]
+        return sorted(summary)
+
+    def best_precision(self):
+        size = max(self.precision, key = lambda x: max(self.precision[x]))
+        return (size,max(self.precision[size]))
+
+    def best_f1(self):
+        size = max(self.f1, key = lambda x: max(self.f1[x]))
+        return (size,max(self.f1[size]))
+
+    def best_f05(self):
+        size = max(self.f05, key = lambda x: max(self.f05[x]))
+        return (size,max(self.f05[size]))
+
+def run_strategy(cfg,user):
+    for weight in weighting:
+        cfg.weight = weight[0]
+        cfg.bm25_k1 = weight[1]
+        rec = Recommender(cfg)
+        repo_size = rec.items_repository.get_doccount()
+        for proportion in sample_proportions:
+            results = ExperimentResults(repo_size)
+            label = get_label(cfg,proportion)
+            log_file = "results/strategies/"+label["values"]
+            for n in range(iterations):
+                # Fill sample profile
+                profile_size = len(user.pkg_profile)
+                item_score = {}
+                for pkg in user.pkg_profile:
+                    item_score[pkg] = user.item_score[pkg]
+                sample = {}
+                sample_size = int(profile_size*proportion)
+                for i in range(sample_size):
+                     key = random.choice(item_score.keys())
+                     sample[key] = item_score.pop(key)
+                iteration_user = User(item_score)
+                recommendation = rec.get_recommendation(iteration_user,repo_size)
+                write_recall_log(label,n,sample,recommendation,profile_size,repo_size,log_file)
+                if hasattr(recommendation,"ranking"):
+                    results.add_result(recommendation.ranking,sample)
+            with open(log_file,'w') as f:
+                precision_10 = sum(results.precision[10])/len(results.precision[10])
+                f1_10 = sum(results.f1[10])/len(results.f1[10])
+                f05_10 = sum(results.f05[10])/len(results.f05[10])
+                f.write("# %s\n# %s\n\ncoverage %d\n\n" %
+                        (label["description"],label["values"],recommendation.size))
+                f.write("# best results (recommendation size; metric)\n")
+                f.write("precision (%d; %.2f)\nf1 (%d; %.2f)\nf05 (%d; %.2f)\n\n" %
+                        (results.best_precision()[0],results.best_precision()[1],
+                         results.best_f1()[0],results.best_f1()[1],
+                         results.best_f05()[0],results.best_f05()[1]))
+                f.write("# recommendation size 10\nprecision (10; %.2f)\nf1 (10; %.2f)\nf05 (10; %.2f)" %
+                        (precision_10,f1_10,f05_10))
+            precision = results.get_precision_summary()
+            recall = results.get_recall_summary()
+            f1 = results.get_f1_summary()
+            f05 = results.get_f05_summary()
+            accuracy = results.get_accuracy_summary()
+            plot_summary(precision,recall,f1,f05,accuracy,log_file)
+
+def run_content(user,cfg):
+    for strategy in content_based:
+        cfg.strategy = strategy
+        for size in profile_size:
+            cfg.profile_size = size
+            run_strategy(cfg,user)
+
+def run_collaborative(user,cfg):
+    popcon_desktopapps = cfg.popcon_desktopapps
+    popcon_programs = cfg.popcon_programs
+    for strategy in collaborative:
+        cfg.strategy = strategy
+        for k in neighbors:
+            cfg.k_neighbors = k
+            #for size in popcon_size:
+            #    if size:
+            #        cfg.popcon_desktopapps = popcon_desktopapps+"_"+size
+            #        cfg.popcon_programs = popcon_programs+"_"+size
+            run_strategy(cfg,user)
+
+def run_hybrid(user,cfg):
+    popcon_desktopapps = cfg.popcon_desktopapps
+    popcon_programs = cfg.popcon_programs
+    for strategy in hybrid:
+        cfg.strategy = strategy
+        for k in neighbors:
+            cfg.k_neighbors = k
+            #for size in popcon_size:
+            #    if size:
+            #        cfg.popcon_desktopapps = popcon_desktopapps+"_"+size
+            #        cfg.popcon_programs = popcon_programs+"_"+size
             for size in profile_size:
                 cfg.profile_size = size
-                for strategy in content_based:
-                    cfg.strategy = strategy
-                    label["description"] = "k1_bm25-profile-strategy-sample-n"
-                    label["values"] = ("%.2f-%d-%s-%.2f-%d" %
-                                       (cfg.bm25_k1,cfg.profile_size,
-                                        cfg.strategy,sample_proportion,n))
-                    run_iteration(user,cfg,label,sample)
-        if "colaborative" in sys.argv or len(sys.argv)<2:
-            for strategy in collaborative:
-                cfg.strategy = strategy
-                for size in popcon_size:
-                    cfg.popcon_desktopapps = cfg.popcon_desktopapps+size
-                    cfg.popcon_programs = cfg.popcon_programs+size
-                    for k in neighbors:
-                        cfg.k_neighbors = k
-                        k_str = "k"+str(cfg.k_neighbors)
-                        label["description"] = "k1_bm25-popcon-strategy-k-sample-n"
-                        label["values"] = ("%.2f-%s-%s-%s-%.2f-%d" %
-                                           (cfg.bm25_k1,str(popcon_size),cfg.strategy,
-                                            k_str,sample_proportion,n))
-                        run_iteration(user,cfg,label,sample)
+                run_strategy(cfg,user)
 
 if __name__ == '__main__':
-    iterations = 10
-    samples_proportion = [0.5, 0.6, 0.7, 0.8, 0.9]
-    weights = ['bm25', 'trad']
-    bm25_k1 = [1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
-    content_based = ['cb','cbt','cbd','cbh',
-                     'cb_eset','cbt_eset','cbd_eset','cbh_eset']
-    collaborative = ['knn','knn_plus','knn_eset']
-    hybrid = ['knnco','knnco_eset']
-
-    profile_size = range(10,100,10)
-    popcon_size = [1000,10000,50000,'full']
-    neighbors = range(10,510,100)
-
-    user = LocalSystem()
+    #user = LocalSystem()
     #user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,"desktopapps"))
+
+    cfg = Config()
+    user = PopconSystem("/root/.app-recommender/popcon-entries/8b/8b44fcdbcf676e711a153d5db09979d7")
+    #user = PopconSystem("/root/.app-recommender/popcon-entries/4a/4a67a295ec14826db2aa1d90be2f1623")
+    user.filter_pkg_profile(cfg.pkgs_filter)
     user.maximal_pkg_profile()
-    for sample_proportion in samples_proportion:
-        for n in range(iterations):
-            # Fill user profile
-            item_score = {}
-            for pkg in user.pkg_profile:
-                item_score[pkg] = user.item_score[pkg]
-            # Prepare partition sample
-            sample = {}
-            sample_size = int(len(user.pkg_profile)*sample_proportion)
-            for i in range(sample_size):
-                 key = random.choice(item_score.keys())
-                 sample[key] = item_score.pop(key)
-            run_strategies(User(item_score),sample,n)
+
+    if "content" in sys.argv or len(sys.argv)<2:
+        run_content(user,cfg)
+    if "collaborative" in sys.argv or len(sys.argv)<2:
+        run_collaborative(user,cfg)
+    if "hybrid" in sys.argv or len(sys.argv)<2:
+        run_hybrid(user,cfg)
