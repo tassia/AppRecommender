@@ -123,16 +123,33 @@ class Recall(Metric):
         """
         return float(len(evaluation.true_positive))/len(evaluation.real_relevant)
 
-class F1(Metric):
+class FPR(Metric):
     """
-    Classification accuracy metric which correlates precision and recall into an
-    unique measure.
+    False positive rate (used for ploting ROC curve).
     """
     def __init__(self):
         """
         Set metric description.
         """
-        self.desc = "      F1     "
+        self.desc = "    FPR    "
+
+    def run(self,evaluation):
+        """
+        Compute metric.
+        """
+        return float(len(evaluation.false_positive))/evaluation.true_negatives_len
+
+class F_score(Metric):
+    """
+    Classification accuracy metric which correlates precision and recall into an
+    unique measure.
+    """
+    def __init__(self,k):
+        """
+        Set metric description.
+        """
+        self.desc = "  F_score   "
+        self.k = k
 
     def run(self,evaluation):
         """
@@ -140,8 +157,8 @@ class F1(Metric):
         """
         p = Precision().run(evaluation)
         r = Recall().run(evaluation)
-        if (p+r)>0:
-            return float(2*((p*r)/(p+r)))
+        if ((self.k*self.k*p)+r)>0:
+            return float(((1+(self.k*self.k))*((p*r)/((self.k*self.k*p)+r))))
         else:
             return 0
 
@@ -237,11 +254,12 @@ class Evaluation:
         self.false_negative = [v[0] for v in self.real_relevant if not v[0] in
                                [w[0] for w in self.predicted_relevant]]
 
-        logging.debug("TP: %d" % len(self.true_positive))
-        logging.debug("FP: %d" % len(self.false_positive))
-        logging.debug("FN: %d" % len(self.false_negative))
-        logging.debug("Repo_size: %d" % self.repository_size)
-        logging.debug("Relevant: %d" % len(self.real_relevant))
+        self.true_negatives_len = self.repository_size - len(self.real_relevant)
+        #logging.debug("TP: %d" % len(self.true_positive))
+        #logging.debug("FP: %d" % len(self.false_positive))
+        #logging.debug("FN: %d" % len(self.false_negative))
+        #logging.debug("Repo_size: %d" % self.repository_size)
+        #logging.debug("Relevant: %d" % len(self.real_relevant))
 
     def run(self,metric):
         """
