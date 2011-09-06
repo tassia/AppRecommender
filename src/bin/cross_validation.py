@@ -27,7 +27,7 @@ import logging
 import datetime
 
 from config import Config
-from evaluation import CrossValidation, Precision, Recall, F1, Accuracy, SimpleAccuracy
+from evaluation import CrossValidation, Precision, Recall, F_score, FPR, Accuracy
 from recommender import Recommender
 from user import RandomPopcon,LocalSystem,PopconSystem
 
@@ -45,10 +45,10 @@ if __name__ == '__main__':
     metrics = []
     metrics.append(Precision())
     metrics.append(Recall())
-    metrics.append(F1())
+    metrics.append(F_score(0.5))
     metrics.append(Accuracy())
-    metrics.append(SimpleAccuracy())
-    validation = CrossValidation(0.9,10,rec,metrics,0.005)
+    metrics.append(FPR())
+    validation = CrossValidation(0.9,10,rec,metrics,1)
     validation.run(user)
     print validation
 
