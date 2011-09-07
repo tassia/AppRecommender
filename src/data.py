@@ -68,7 +68,7 @@ def print_index(index):
         output += "\n---"
     return output
 
-def tfidf_weighting(index,docs,content_filter,plus=0):
+def tfidf_weighting(index,docs,content_filter,normalized_weigths=0):
     """
     Return a dictionary of terms and weights of all terms of a set of
     documents, based on the frequency of terms in the selected set (docids).
@@ -78,8 +78,8 @@ def tfidf_weighting(index,docs,content_filter,plus=0):
     for d in docs:
         for term in index.get_document(d.docid).termlist():
             if content_filter(term.term):
-                if plus:
-                    terms_doc.add_term(term.term,int(d.weight))
+                if normalized_weigths:
+                    terms_doc.add_term(term.term,int(math.ceil(normalized_weigths[d.docid])))
                 else:
                     terms_doc.add_term(term.term)
     # Compute sublinear tfidf for each term
@@ -104,7 +104,14 @@ def tfidf_plus(index,docs,content_filter):
     Return a dictionary of terms and weights of all terms of a set of
     documents, based on the frequency of terms in the selected set (docids).
     """
-    return tfidf_weighting(index,docs,content_filter,1)
+    normalized_weigths = {}
+    population = [d.weight for d in docs]
+    mean = sum(population)/len(population)
+    variance = sum([(p-mean)*(p-mean) for p in population])/len(population)
+    standard_deviation = math.sqrt(variance)
+    for d in docs:
+        normalized_weigths[d.docid] = d.weight/standard_deviation
+    return tfidf_weighting(index,docs,content_filter,normalized_weigths)
 
 class AppAptXapianIndex(xapian.WritableDatabase):
     """
