@@ -212,7 +212,7 @@ class KnnPlus(Collaborative):
     KNN based packages tf-idf weights.
     """
     def __init__(self,k):
-        self.description = "Knn"
+        self.description = "Knn plus"
         self.neighbours = k
 
     def run(self,rec,user,recommendation_size):
