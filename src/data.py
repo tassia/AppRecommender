@@ -36,6 +36,18 @@ from singleton import Singleton
 from dissimilarity import *
 from config import Config
 
+def axi_get_pkgs(axi):
+    pkgs_names = []
+    for docid in range(1,axi.get_lastdocid()+1):
+        try:
+            doc = axi.get_document(docid)
+        except:
+            pass
+        docterms_XP = [t.term for t in doc.termlist()
+                       if t.term.startswith("XP")]
+        pkgs_names.append(docterms_XP[0].lstrip('XP'))
+    return pkgs_names
+
 def axi_search_pkgs(axi,pkgs_list):
     terms = ["XP"+item for item in pkgs_list]
     query = xapian.Query(xapian.Query.OP_OR, terms)
@@ -106,27 +118,32 @@ def tfidf_plus(index,docs,content_filter):
     """
     return tfidf_weighting(index,docs,content_filter,1)
 
-class AppAptXapianIndex(xapian.WritableDatabase):
+class FilteredXapianIndex(xapian.WritableDatabase):
     """
-    Data source for application packages information
+    Filtered Xapian Index
     """
-    def __init__(self,axi_path,path):
+    def __init__(self,terms,index_path,path):
         xapian.WritableDatabase.__init__(self,path,
                                          xapian.DB_CREATE_OR_OVERWRITE)
-        axi = xapian.Database(axi_path)
-        logging.info("AptXapianIndex size: %d" % axi.get_doccount())
-        for docid in range(1,axi.get_lastdocid()+1):
+        index = xapian.Database(index_path)
+        for docid in range(1,index.get_lastdocid()+1):
             try:
-                doc = axi.get_document(docid)
-                allterms = [term.term for term in doc.termlist()]
-                if "XTrole::program" in allterms:
+                doc = index.get_document(docid)
+                docterms = [term.term for term in doc.termlist()]
+                tagged = False
+                for t in terms:
+                    if t in docterms:
+                        tagged = True
+                if tagged:
                     self.add_document(doc)
                     logging.info("Added doc %d." % docid)
                 else:
                     logging.info("Discarded doc %d." % docid)
             except:
                 logging.info("Doc %d not found in axi." % docid)
-        logging.info("AppAptXapianIndex size: %d (lastdocid: %d)." %
+        logging.info("Filter: %s" % terms)
+        logging.info("Index size: %d" % index.get_doccount())
+        logging.info("Filtered Index size: %d (lastdocid: %d)." %
                      (self.get_doccount(), self.get_lastdocid()))
 
     def __str__(self):
@@ -297,6 +314,80 @@ class PopconSubmission():
                             elif data[4] == '<RECENT-CTIME>':
                                 self.packages[pkg] = 8
 
+class FilteredPopconXapianIndex(xapian.WritableDatabase):
+    """
+    Data source for popcon submissions defined as a xapian database.
+    """
+    def __init__(self,path,popcon_dir,axi_path,tags_filter):
+        """
+        Set initial attributes.
+        """
+        self.axi = xapian.Database(axi_path)
+        self.path = os.path.expanduser(path)
+        self.popcon_dir = os.path.expanduser(popcon_dir)
+        self.valid_pkgs = axi_get_pkgs(self.axi)
+        logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
+        with open(tags_filter) as valid_tags:
+            self.valid_tags = [line.strip() for line in valid_tags
+                               if not line.startswith("#")]
+        logging.debug("Considering %d valid tags" % len(self.valid_tags))
+        if not os.path.exists(self.popcon_dir):
+            os.makedirs(self.popcon_dir)
+        if not os.listdir(self.popcon_dir):
+            logging.critical("Popcon dir seems to be empty.")
+            raise Error
+
+        # set up directory
+        shutil.rmtree(self.path,1)
+        os.makedirs(self.path)
+        try:
+            logging.info("Indexing popcon submissions from \'%s\'" %
+                         self.popcon_dir)
+            logging.info("Creating new xapian index at \'%s\'" %
+                         self.path)
+            xapian.WritableDatabase.__init__(self,self.path,
+                                             xapian.DB_CREATE_OR_OVERWRITE)
+        except xapian.DatabaseError as e:
+            logging.critical("Could not create popcon xapian index.")
+            logging.critical(str(e))
+            raise Error
+
+        # build new index
+        doc_count = 0
+        for root, dirs, files in os.walk(self.popcon_dir):
+            for popcon_file in files:
+                submission = PopconSubmission(os.path.join(root, popcon_file))
+                doc = xapian.Document()
+                submission_pkgs = submission.get_filtered(self.valid_pkgs)
+                if len(submission_pkgs) < 10:
+                    logging.debug("Low profile popcon submission \'%s\' (%d)" %
+                                  (submission.user_id,len(submission_pkgs)))
+                else:
+                    doc.set_data(submission.user_id)
+                    logging.debug("Parsing popcon submission \'%s\'" %
+                                  submission.user_id)
+                    for pkg,freq in submission_pkgs.items():
+                        tags = axi_search_pkg_tags(self.axi,pkg)
+                        # if the package was found in axi
+                        if tags:
+                            doc.add_term("XP"+pkg,freq)
+                            # if the package has tags associated with it
+                            if not tags == "notags":
+                                for tag in tags:
+                                    if tag.lstrip("XT") in self.valid_tags:
+                                        doc.add_term(tag,freq)
+                    doc_id = self.add_document(doc)
+                    doc_count += 1
+                    logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
+            # python garbage collector
+        	gc.collect()
+        # flush to disk database changes
+        try:
+            self.commit()
+        except:
+            self.flush() # deprecated function, used for compatibility with old lib version
+
+# Deprecated class, must be reviewed
 class PopconXapianIndex(xapian.WritableDatabase):
     """
     Data source for popcon submissions defined as a singleton xapian database.
