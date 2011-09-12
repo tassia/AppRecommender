@@ -209,12 +209,12 @@ class DebianPackage():
         if pkg_version.record.has_key('Conflicts'):
             self.conflicts = pkg_version.record['Conflicts']
         if pkg_version.record.has_key('Replaces'):
-            self.conflicts = pkg_version.record['Replaces']
+            self.replaces = pkg_version.record['Replaces']
         if pkg_version.record.has_key('Provides'):
             self.provides = pkg_version.record['Provides']
 
     def load_details_from_dde(self,dde_server,dde_port):
-        json_data = json.load(urllib.urlopen("http://%s:%d/q/udd/packages/all/%s?t=json"
+        json_data = json.load(urllib.urlopen("http://%s:%d/q/udd/packages/prio-debian-sid/%s?t=json"
                                              % (dde_server,dde_port,self.name)))
 
         self.maintainer = json_data['r']['maintainer']
@@ -223,23 +223,23 @@ class DebianPackage():
         self.description = self.format_description(json_data['r']['long_description'])
         self.section = json_data['r']['section']
         if json_data['r']['homepage']:
-            self.conflicts = json_data['r']['homepage']
+            self.homepage = json_data['r']['homepage']
         if json_data['r']['tag']:
             self.tags = self.debtags_list_to_dict(json_data['r']['tag'])
         if json_data['r']['depends']:
             self.depends = json_data['r']['depends']
         if json_data['r']['pre_depends']:
-            self.conflicts = json_data['r']['pre_depends']
+            self.predepends = json_data['r']['pre_depends']
         if json_data['r']['recommends']:
-            self.conflicts = json_data['r']['recommends']
+            self.recommends = json_data['r']['recommends']
         if json_data['r']['suggests']:
-            self.conflicts = json_data['r']['suggests']
+            self.suggests = json_data['r']['suggests']
         if json_data['r']['conflicts']:
             self.conflicts = json_data['r']['conflicts']
         if json_data['r']['replaces']:
-            self.conflicts = json_data['r']['replaces']
+            self.replaces = json_data['r']['replaces']
         if json_data['r']['provides']:
-            self.conflicts = json_data['r']['provides']
+            self.provides = json_data['r']['provides']
         self.popcon_insts = json_data['r']['popcon']['insts']
 
     def format_description(self,description):
