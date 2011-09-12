@@ -122,7 +122,11 @@ def tfidf_plus(index,docs,content_filter):
     variance = sum([(p-mean)*(p-mean) for p in population])/len(population)
     standard_deviation = math.sqrt(variance)
     for d in docs:
-        normalized_weigths[d.docid] = d.weight/standard_deviation
+        if standard_deviation>1:
+            # values between [0-1] would cause the opposite effect
+            normalized_weigths[d.docid] = d.weight/standard_deviation
+        else:
+            normalized_weigths[d.docid] = d.weight
     return tfidf_weighting(index,docs,content_filter,normalized_weigths)
 
 class FilteredXapianIndex(xapian.WritableDatabase):
@@ -298,6 +302,7 @@ class PopconSubmission():
     	    for line in submission:
                 if line.startswith("POPULARITY"):
                     self.user_id = line.split()[2].lstrip("ID:")
+                    self.arch = line.split()[3].lstrip("ARCH:")
                 elif not line.startswith("END-POPULARITY"):
                     data = line.rstrip('\n').split()
                     if len(data) > 2:
@@ -371,6 +376,8 @@ class FilteredPopconXapianIndex(xapian.WritableDatabase):
                                   (submission.user_id,len(submission_pkgs)))
                 else:
                     doc.set_data(submission.user_id)
+                    doc.add_term("ID"+submission.user_id)
+                    doc.add_term("ARCH"+submission.arch)
                     logging.debug("Parsing popcon submission \'%s\'" %
                                   submission.user_id)
                     for pkg,freq in submission_pkgs.items():
