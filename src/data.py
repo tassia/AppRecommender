@@ -30,6 +30,8 @@ import shutil
 import apt
 import re
 import operator
+import urllib
+import simplejson as json
 
 from error import Error
 from singleton import Singleton
@@ -208,8 +210,8 @@ class DebianPackage():
             self.provides = pkg_version.record['Provides']
 
     def load_details_from_dde(self,dde_server,dde_port):
-        json_data = json.load(urllib.urlopen("http://%s:%s/q/udd/packages/all/%s?t=json"
-                                             % dde_server,dde_port,self.name))
+        json_data = json.load(urllib.urlopen("http://%s:%d/q/udd/packages/all/%s?t=json"
+                                             % (dde_server,dde_port,self.name)))
 
         self.maintainer = json_data['r']['maintainer']
         self.version = json_data['r']['version']
@@ -237,7 +239,7 @@ class DebianPackage():
         self.popcon_insts = json_data['r']['popcon']['insts']
 
     def format_description(self,description):
-        return description.replace('.\n','').replace('\n','<br />')
+        return description.replace(' .\n','<br />').replace('\n','<br />')
 
     def debtags_str_to_dict(self, debtags_str):
         debtags_list = [tag.rstrip(",") for tag in debtags_str.split()]
