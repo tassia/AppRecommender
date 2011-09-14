@@ -111,7 +111,7 @@ class User:
     """
     Define a user of a recommender.
     """
-    def __init__(self,item_score,user_id=0,demo_profiles_set=0):
+    def __init__(self,item_score,user_id=0,arch=0,demo_profiles_set=0):
         """
         Set initial user attributes. pkg_profile gets the whole set of items,
         a random user_id is set if none was provided and the demographic
@@ -119,6 +119,7 @@ class User:
         """
         self.item_score = item_score
         self.pkg_profile = self.items()
+        self.arch = arch
 
         if user_id:
             self.user_id = user_id
@@ -272,21 +273,28 @@ class User:
         return self.pkg_profile
 
 class RandomPopcon(User):
-    def __init__(self,submissions_dir,pkgs_filter=0):
+    def __init__(self,submissions_dir,arch=0,pkgs_filter=0):
         """
         Set initial parameters.
         """
         len_profile = 0
-        while len_profile < 100:
+        match_arch = False
+        while len_profile < 100 or not match_arch:
             path = random.choice([os.path.join(root, submission) for
                                   root, dirs, files in os.walk(submissions_dir)
                                   for submission in files])
             user = PopconSystem(path)
+            print arch
+            print user.arch
+            if arch and user.arch==arch:
+                match_arch = True
+                print "match"
             if pkgs_filter:
                 user.filter_pkg_profile(pkgs_filter)
             len_profile = len(user.pkg_profile)
+            print "p",len_profile
         submission = data.PopconSubmission(path)
-        User.__init__(self,submission.packages,submission.user_id)
+        User.__init__(self,submission.packages,submission.user_id,submission.arch)
 
 class PopconSystem(User):
     def __init__(self,path,user_id=0):
@@ -296,7 +304,7 @@ class PopconSystem(User):
         submission = data.PopconSubmission(path)
         if not user_id:
             user_id = submission.user_id
-        User.__init__(self,submission.packages,user_id)
+        User.__init__(self,submission.packages,user_id,submission.arch)
 
 class PkgsListSystem(User):
     def __init__(self,pkgs_list_or_file,user_id=0):
