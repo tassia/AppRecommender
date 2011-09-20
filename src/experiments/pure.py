@@ -33,22 +33,21 @@ import numpy
 
 if __name__ == '__main__':
     if len(sys.argv)<2:
-        print "Usage: profile-suite strategy_category sample_file"
+        print "Usage: pure strategy_category sample_file"
         exit(1)
 
     iterations = 20
-    profile_size = [10,20,40,70,100,140,170,200,240]
-    neighbor_size = [3,5,10,50,100,150,200,300,400,500]
+    profile_size = [10,20,40,60,80,100,140,170,200,240]
+    neighbor_size = [3,5,10,20,30,50,70,100,150,200]
 
     content_strategies = ['cb','cbt','cbd','cbh','cb_eset','cbt_eset','cbd_eset','cbh_eset']
-    collaborative_strategies = ['knn_eset']#,'knn_eset','knn_plus']
-    #collaborative_strategies = ['knn','knn_eset','knn_plus']
+    collaborative_strategies = ['knn_eset','knn','knn_plus']
 
     #iterations = 1
     #profile_size = [10,20,30]
-    #neighbor_size = [10,20,30]
+    #neighbor_size = [3,5,10,20,30,50]
     #content_strategies = ['cb']
-    #collaborative_strategies = ['knn_eset']
+    #collaborative_strategies = ['knn']
 
     strategy_category = sys.argv[1]
     if strategy_category == "content":
@@ -78,39 +77,39 @@ if __name__ == '__main__':
 
     for strategy in strategies:
         cfg.strategy = strategy
-        p_20_summary = {}
+        p_10_summary = {}
         f05_100_summary = {}
-        c_20 = {}
+        c_10 = {}
         c_100 = {}
 
         log_file = os.path.join(sample_dir,sample_str+"-"+cfg.strategy)
-        graph_20 = log_file+"-20.png"
+        graph_10 = log_file+"-10.png"
         graph_100 = log_file+"-100.png"
-        graph_20_jpg = graph_20.strip(".png")+".jpg"
+        graph_10_jpg = graph_10.strip(".png")+".jpg"
         graph_100_jpg = graph_100.strip(".png")+".jpg"
-        comment_20 = graph_20_jpg+".comment"
+        comment_10 = graph_10_jpg+".comment"
         comment_100 = graph_100_jpg+".comment"
 
-        with open(comment_20,'w') as f:
+        with open(comment_10,'w') as f:
             f.write("# sample %s\n" % sample_str)
-            f.write("# strategy %s\n# threshold 20\n# iterations %d\n\n" %
+            f.write("# strategy %s\n# threshold 10\n# iterations %d\n\n" %
                     (cfg.strategy,iterations))
-            f.write("# %s\tp_20\tc_20\n\n"%option_str)
+            f.write("# %s\tmean_p_10\tdev_p_10\tc_10\n\n"%option_str)
         with open(comment_100,'w') as f:
             f.write("# sample %s\n" % sample_str)
             f.write("# strategy %s\n# threshold 100\n# iterations %d\n\n" %
                     (cfg.strategy,iterations))
-            f.write("# %s\t\tf05_100\t\tc_100\n\n"%option_str)
+            f.write("# %s\t\tmean_f05_100\t\tdev_f05_100\t\tc_100\n\n"%option_str)
 
         for size in sizes:
-            c_20[size] = set()
+            c_10[size] = set()
             c_100[size] = set()
-            p_20_summary[size] = []
+            p_10_summary[size] = []
             f05_100_summary[size] = []
             with open(log_file+"-%s%.3d"%(option_str,size),'w') as f:
                 f.write("# sample %s\n" % sample_str)
                 f.write("# strategy %s-%s%.3d\n\n" % (cfg.strategy,option_str,size))
-                f.write("# p_20\tf05_100\n\n")
+                f.write("# p_10\tf05_100\n\n")
 
         # main loop per user
         for submission_file in population_sample:
@@ -122,7 +121,7 @@ if __name__ == '__main__':
                 cfg.k_neighbors = size
                 rec = Recommender(cfg)
                 repo_size = rec.items_repository.get_doccount()
-                p_20 = []
+                p_10 = []
                 f05_100 = []
                 for n in range(iterations):
                     # Fill sample profile
@@ -140,60 +139,61 @@ if __name__ == '__main__':
                     if hasattr(recommendation,"ranking"):
                         ranking = recommendation.ranking
                         real = RecommendationResult(sample)
-                        predicted_20 = RecommendationResult(dict.fromkeys(ranking[:20],1))
-                        evaluation = Evaluation(predicted_20,real,repo_size)
-                        p_20.append(evaluation.run(Precision()))
+                        predicted_10 = RecommendationResult(dict.fromkeys(ranking[:10],1))
+                        evaluation = Evaluation(predicted_10,real,repo_size)
+                        p_10.append(evaluation.run(Precision()))
                         predicted_100 = RecommendationResult(dict.fromkeys(ranking[:100],1))
                         evaluation = Evaluation(predicted_100,real,repo_size)
                         f05_100.append(evaluation.run(F_score(0.5)))
-                        c_20[size] = c_20[size].union(recommendation.ranking[:20])
+                        c_10[size] = c_10[size].union(recommendation.ranking[:10])
                         c_100[size] = c_100[size].union(recommendation.ranking[:100])
                 # save summary
-                if p_20:
-                    p_20_summary[size].append(sum(p_20)/len(p_20))
+                if p_10:
+                    p_10_summary[size].append(numpy.mean(p_10))
                 if f05_100:
-                    f05_100_summary[size].append(sum(f05_100)/len(f05_100))
+                    f05_100_summary[size].append(numpy.mean(f05_100))
 
                 with open(log_file+"-%s%.3d"%(option_str,size),'a') as f:
-                    f.write("%.4f \t%.4f\n" %
-                            ((sum(p_20)/len(p_20),sum(f05_100)/len(f05_100))))
+                    f.write("%.4f \t%.4f\n" % (numpy.mean(p_10),numpy.mean(f05_100)))
 
         # back to main flow
-        coverage_20 = {}
+        coverage_10 = {}
         coverage_100 = {}
-        with open(comment_20,'a') as f:
+        with open(comment_10,'a') as f:
             for size in sizes:
-                coverage_20[size] = len(c_20[size])/float(repo_size)
-                f.write("%3d\t\t%.4f\t\t%.4f\n" %
-                        (size,float(sum(p_20_summary[size]))/len(p_20_summary[size]),coverage_20[size]))
+                coverage_10[size] = len(c_10[size])/float(repo_size)
+                f.write("%3d\t\t%.4f\t\t%.4f\t\t%.4f\n" %
+                        (size,numpy.mean(p_10_summary[size]),numpy.std(p_10_summary[size]),coverage_10[size]))
         with open(comment_100,'a') as f:
             for size in sizes:
                 coverage_100[size] = len(c_100[size])/float(repo_size)
-                f.write("%3d\t\t%.4f\t\t%.4f\n" %
-                        (size,float(sum(f05_100_summary[size]))/len(f05_100_summary[size]),coverage_100[size]))
+                f.write("%3d\t\t%.4f\t\t%.4f\t\t%.4f\n" %
+                        (size,numpy.mean(f05_100_summary[size]),numpy.std(f05_100_summary[size]),coverage_100[size]))
 
         # plot results summary
         g = Gnuplot.Gnuplot()
         g('set style data lines')
         g('set yrange [0:1.0]')
         g.xlabel('%s size'%option_str.capitalize())
-        g.title("Setup: %s (threshold 20)" % cfg.strategy)
-        g.plot(Gnuplot.Data(sorted([[k,sum(p_20_summary[k])/len(p_20_summary[k])]
-                                    for k in p_20_summary.keys()]),title="Precision"),
-               Gnuplot.Data(sorted([[k,coverage_20[k]]
-                                    for k in coverage_20.keys()]),title="Coverage"))
-        g.hardcopy(graph_20,terminal="png")
-        commands.getoutput("convert -quality 20 %s %s" %
-                           (graph_100,graph_20_jpg))
+        g.title("Setup: %s (threshold 10)" % cfg.strategy)
+        g.plot(Gnuplot.Data(sorted([[k,numpy.mean(p_10_summary[k]),numpy.std(p_10_summary[k])]
+                                    for k in p_10_summary.keys()]),title="Precision"),
+               Gnuplot.Data(sorted([[k,numpy.mean(p_10_summary[k]),numpy.std(p_10_summary[k])]
+                                    for k in p_10_summary.keys()]),title="Deviation",
+                                    with_="yerrorbar lt 2 pt 6"),
+               Gnuplot.Data(sorted([[k,coverage_10[k]]
+                                    for k in coverage_10.keys()]),title="Coverage"))
+        g.hardcopy(graph_10,terminal="png")
         g = Gnuplot.Gnuplot()
         g('set style data lines')
         g('set yrange [0:1.0]')
         g.xlabel('%s size'%option_str.capitalize())
         g.title("Setup: %s (threshold 100)" % cfg.strategy)
-        g.plot(Gnuplot.Data(sorted([[k,sum(f05_100_summary[k])/len(f05_100_summary[k])]
+        g.plot(Gnuplot.Data(sorted([[k,numpy.mean(f05_100_summary[k]),numpy.std(f05_100_summary[k])]
                                     for k in f05_100_summary.keys()]),title="F05"),
+               Gnuplot.Data(sorted([[k,numpy.mean(f05_100_summary[k]),numpy.std(f05_100_summary[k])]
+                                    for k in f05_100_summary.keys()]),title="Deviation",
+                                    with_="yerrorbar lt 2 pt 6"),
                Gnuplot.Data(sorted([[k,coverage_100[k]]
                                     for k in coverage_100.keys()]),title="Coverage"))
         g.hardcopy(graph_100,terminal="png")
-        commands.getoutput("convert -quality 100 %s %s" %
-                           (graph_100,graph_100_jpg))
