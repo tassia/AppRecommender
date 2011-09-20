@@ -37,7 +37,7 @@ if __name__ == '__main__':
     #user = LocalSystem()
     #user = RandomPopcon(cfg.popcon_dir)
     #user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,"desktopapps"))
-    user = PopconSystem("/home/tassia/.app-recommender/popcon-entries/4a/4a67a295ec14826db2aa1d90be2f1623")
+    user = PopconSystem(os.path.expanduser("~/.app-recommender/popcon-entries/00/0001166d0737c6dffb083071e5ee69f5"))
     user.filter_pkg_profile(os.path.join(cfg.filters_dir,"desktopapps"))
     user.maximal_pkg_profile()
     begin_time = datetime.datetime.now()
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     metrics.append(F_score(0.5))
     metrics.append(Accuracy())
     metrics.append(FPR())
-    validation = CrossValidation(0.9,10,rec,metrics,1)
+    validation = CrossValidation(0.9,20,rec,metrics,0.005)
     validation.run(user)
     print validation
 

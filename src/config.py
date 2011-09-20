@@ -40,7 +40,7 @@ class Config(Singleton):
             ## general options
             self.debug = 0
             self.verbose = 1
-            self.output = "log"
+            self.output = "apprec.log"
 
             ## data_source options
             self.base_dir = os.path.expanduser("/home/tiago/.app-recommender/")
@@ -103,13 +103,14 @@ class Config(Singleton):
         print "  -f, --filtersdir=PATH      Path to filters directory"
         print "  -b, --pkgsfilter=FILTER    File containing packages to be considered for recommendations"
         print "  -a, --axi=PATH             Path to apt-xapian-index"
-        print "  -e, --dde=URL              DDE url"
         print "  -p, --popconindex=PATH     Path to popcon index"
-        print "  -m, --popcondir=PATH       Path to popcon submissions dir"
-        print "  -u, --indexmode=MODE       'old'|'reindex'|'cluster'|'recluster'"
-        print "  -l, --clustersdir=PATH     Path to popcon clusters dir"
-        print "  -c, --medoids=k            Number of medoids for clustering"
-        print "  -x, --maxpopcon=k          Number of submissions to be considered"
+        print "  -e, --dde=URL              DDE url"
+        # deprecated options
+        #print "  -m, --popcondir=PATH       Path to popcon submissions dir"
+        #print "  -u, --indexmode=MODE       'old'|'reindex'|'cluster'|'recluster'"
+        #print "  -l, --clustersdir=PATH     Path to popcon clusters dir"
+        #print "  -c, --medoids=k            Number of medoids for clustering"
+        #print "  -x, --maxpopcon=k          Number of submissions to be considered"
         print ""
         print " [ recommender ]"
         print "  -w, --weight=OPTION        Search weighting scheme"
@@ -123,11 +124,19 @@ class Config(Singleton):
         print "  bm25 = bm25 weighting scheme"
         print ""
         print " [ strategy options ] "
-        print "  cb = content-based "
-        print "  cbt = content-based using only tags as content "
-        print "  cbd = content-based using only package descriptions as content "
-        print "  col = collaborative "
-        print "  colct = collaborative through tags content "
+        print "  cb = content-based, mixed profile"
+        print "  cbt = content-based, tags only profile"
+        print "  cbd = content-based, description terms only profile"
+        print "  cbh = content-based, half-half profile"
+        print "  cb_eset = cb with eset profiling"
+        print "  cbt_eset = cbt with eset profiling"
+        print "  cbd_eset = cbd_eset with eset profiling"
+        print "  cbh_eset = cbh with eset profiling"
+        print "  knn = collaborative, tf-idf knn"
+        print "  knn_plus = collaborative, tf-idf weighted knn"
+        print "  knn_eset = collaborative, eset knn"
+        print "  knnco = collaborative through content"
+        print "  knnco_eset = collaborative through content, eset recommendation"
 
     def read_option(self, section, option):
         """
