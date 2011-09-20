@@ -7,8 +7,8 @@ $var jsfiles: static/js/facebox.js
 <script type="application/x-javascript">
 $$(document).ready(function() {
         $$('a[rel*=facebox]').facebox({
-        loadingImage : '/static/images/loading.gif',
-        closeImage   : '/static/images/closelabel.png'
+        loadingImage : 'static/images/loading.gif',
+        closeImage   : 'static/images/closelabel.png'
         });
 
         $$('.like_button').mouseenter(function(e) {
@@ -62,7 +62,7 @@ $$(document).ready(function() {
 
 <h1>Recomendation</h1>
 
-<form action="/thanks" method="post" enctype="multipart/form-data">
+<form action="thanks" method="post" enctype="multipart/form-data">
 
 <div id="result-thumbnail">
 $for strategy, result in recommends.items():

@@ -14,8 +14,8 @@ window.onload = function() {
 <script type="application/x-javascript">
 $$(document).ready(function() {
  $$('a[rel*=facebox]').facebox({
- loadingImage : '/static/images/loading.gif',
- closeImage   : '/static/images/closelabel.png'
+ loadingImage : 'static/images/loading.gif',
+ closeImage   : 'static/images/closelabel.png'
  });
  $$("#tags-box").click(function () {
  $$("#tags-box").hide(1000);
@@ -669,14 +669,11 @@ function showtags(tagid) {
 <div class="textbox">
 <h1>You might also like...</h1>
 
-<p>Provide a list of packages or upload a popcon submission file and you'll get
-a list of suggested packages automatically computed by AppRecommender.<!-- You can
-customize the recommender setup or let it randomly choose one.--></p> 
+<p>Provide a popcon submission's file and you'll get
+a list of suggested packages automatically computed by AppRecommender.
+</p> 
 
-<p>Given the recommendation result, please evaluate each application and
-choose if you want to continue with another round of suggestions.
-<!--fill the form that follows the recommendation results.--> </p><p>Your
-feedback is very much appreciated!</p>
+<p>This is a tentative web interface for the recommender, if you have any suggestion about it, please get in touch.</p>
 
 </div>
 

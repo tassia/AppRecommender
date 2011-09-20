@@ -10,7 +10,7 @@ import apt
 import re
 import socket
 
-sys.path.insert(0,"../")
+sys.path.insert(0,"/var/www/AppRecommender/src/")
 
 import logging
 from config import Config
@@ -19,6 +19,9 @@ from user import *
 from data import DebianPackage
 
 import urllib
+
+# avoid "RuntimeError: maximum recursion depth exceeded"
+sys.setrecursionlimit(50000)
 
 class Index:
     def GET(self):
@@ -32,11 +35,16 @@ class Thanks:
     def POST(self):
         web_input = web.input()
         user_id = web_input['user_id'].encode('utf8')
-        with open("./submissions/%s/ident" % user_id,'w') as ident:
+        with open("/var/www/AppRecommender/src/web/submissions/%s/ident" % user_id,'w') as ident:
             for key in ["name","email","comments"]:
                 if web_input.has_key(key):
                     ident.write("%s: %s\n" % (key,web_input[key].encode("utf-8")))
         return render.thanks_id()
+
+class Fake:
+    def GET(self):
+        return render.index()
+        #return render_plain.fake()
 
 class Package:
     def GET(self, pkg):
@@ -49,8 +57,6 @@ class Package:
         # parse tags
         tags = self._debtags_list_to_dict(json_data['r']['tag'])
         json_data['r']['tag'] = tags
-        # format long description
-        json_data['r']['long_description'] = json_data['r']['long_description'].replace(' .\n','').replace('\n','<br />')
         return json_data['r']
 
     def _debtags_list_to_dict(self, debtags_list):
@@ -85,7 +91,7 @@ class Save:
         logging.info("Saving user evaluation...")
         logging.info(web_input)
         user_id = web_input['user_id'].encode('utf8')
-        with open("./submissions/%s/uploaded_file" % user_id) as packages_list:
+        with open("/var/www/AppRecommender/src/web/submissions/%s/uploaded_file" % user_id) as packages_list:
             pkgs_list = [line.strip() for line in packages_list.readlines()]
         strategy = web_input['strategy']
         logging.debug("Saving evaluation for user %s, strategy %s and packages..."
@@ -98,7 +104,7 @@ class Save:
         for key, value in web_input.items():
             if key.startswith("evaluation-"):
                 evaluations[value.encode('utf8')].append(key.lstrip("evaluation-"))
-        output_dir = ("./submissions/%s/%s/" % (user_id,strategy))
+        output_dir = ("/var/www/AppRecommender/src/web/submissions/%s/%s/" % (user_id,strategy))
         for key,value in evaluations.items():
             with open(os.path.join(output_dir,key),'w') as output:
                 for item in value:
@@ -157,14 +163,14 @@ class Survey:
         logging.info("Setting up survey...")
         self.cfg = Config()
         self.rec = Recommender(self.cfg)
-        self.submissions_dir = "./submissions/"
+        self.submissions_dir = "/var/www/AppRecommender/src/web/submissions/"
         if not os.path.exists(self.submissions_dir):
             os.makedirs(self.submissions_dir)
 
     def POST(self):
         web_input = web.input(pkgs_file={})
         logging.debug("Survey web_input %s" % str(web_input))
-        self.strategies = ["demo_cb","demo_cbd","demo_cbt","demo_col"]#,"demo_colco"]
+        self.strategies = ["knn","knn_eset","cbd_eset","knnco"]#,"demo_colco"]
         request = Request(web_input,self.submissions_dir)
         if not request.validates():
             return render.error_survey()
@@ -184,7 +190,7 @@ class Survey:
             logging.info("Selected \'%s\' from %s" % (request.strategy,strategies))
             # Get recommendation
             self.rec.set_strategy(request.strategy)
-            prediction = self.rec.get_recommendation(request.user,2).get_prediction()
+            prediction = self.rec.get_recommendation(request.user,10).get_prediction()
             logging.info("Prediction for user %s" % request.user_id)
             logging.info(str(prediction))
             strategy_dir = os.path.join(request.user_dir,request.strategy)
@@ -228,23 +234,32 @@ def add_global_hook():
         return handler()
     return _wrapper
 
-render = web.template.render('templates/', base='layout', globals={'hasattr':hasattr})
-render_plain = web.template.render('templates/')
+render = web.template.render('/var/www/AppRecommender/src/web/templates/', base='layout', globals={'hasattr':hasattr})
+render_plain = web.template.render('/var/www/AppRecommender/src/web/templates/')
 
-urls = ('/',   		        'Index',
-        '/survey',          'Survey',
-        '/apprec',          'Survey',
-        '/thanks',   		'Thanks',
-        '/save',   		    'Save',
-        '/thanks',   		'Thanks',
-        '/about',           'About',
-        '/package/(.*)',  	'Package'
+urls = ('/survey', 	           'Index',
+        '/survey/',                'Index',
+        '/survey/survey',          'Survey',
+        '/survey/apprec',          'Survey',
+        '/survey/thanks',   	   'Thanks',
+        '/survey/save',   	   'Save',
+        '/survey/thanks',   	   'Thanks',
+        '/survey/about',           'About',
+        '/survey/package/(.*)',    'Package',
+        '/',    		   'Index',
+        '/index',    		   'Index'
+        #'/',    		   'Fake',
+        #'/index',    		   'Fake'
        )
 
 web.webapi.internalerror = web.debugerror
 
-if __name__ == "__main__":
-    cfg = Config()
-    apprec = web.application(urls, globals())
-    apprec.add_processor(add_global_hook())
-    apprec.run()
+#if __name__ == "__main__":
+cfg = Config()
+#    apprec = web.application(urls, globals())
+#    application = web.application(urls, globals()).wsgifunc()
+app = web.application(urls, globals(), autoreload=False)
+application = app.wsgifunc()
+
+#    apprec.add_processor(add_global_hook())
+#    apprec.run()

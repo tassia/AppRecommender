@@ -2,7 +2,7 @@ $def with (pkgs_details, request)
 $var title: Survey
 $var mod = 'survey';
 $var cssfiles: static/coda-slider-2.0/stylesheets/coda-slider-2.0.css static/css/facebox.css static/css/survey.css
-$var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda-slider-2.0/javascripts/jquery.coda-slider-2.0.js static/coda-slider-2.0/javascripts/jquery.easing.1.3.js static/js/facebox.js
+$var jsfiles: /static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js /static/coda-slider-2.0/javascripts/jquery.coda-slider-2.0.js /static/coda-slider-2.0/javascripts/jquery.easing.1.3.js /static/js/facebox.js
 
 <script type="text/javascript">
     $$(document).ready(function() {
@@ -16,14 +16,13 @@ $var jsfiles: static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js static/coda
         });
         $$('#coda-slider-1').codaSlider({dynamicTabs: false, dynamicArrowLeftText: "L", dynamicArrowRightText:"Next" });
     });
-
 </script>
 
 
 <div id="maincontent">
 <div class="innertube">
 
-<h1>AppRecommender Survey</h1>
+<h1>AppRecommender survey</h1>
 
 <div class="show-end" style="display: none;">
 
@@ -34,7 +33,6 @@ button below.
 </p>
 
 </div>
-
 
 <form action="save" method="post" enctype="multipart/form-data" name="surveyform">
 
@@ -57,26 +55,14 @@ button below.
 
 <div class="coda-slider-wrapper hide-end">
 	<div class="coda-slider preload" id="coda-slider-1">
+            <h5 style="float: right;">How do you evaluate this recommendation?</h5> <br />
 $for pkg in pkgs_details:
             <div class="panel">
-            	<div class="panel-wrapper">
-		    <div class="screenshot">
-			<a class="link-thumb" rel="facebox" 
-			href="http://screenshots.debian.net/screenshot/$pkg.name?.jpg" 
-			title="Click to enlarge screenshot of package $pkg.name" alt="Click to enlarge screenshot">
-			<img height="70px" src="http://screenshots.debian.net/thumbnail/$pkg.name" 
-			alt="Screenshot $pkg.name" /></a>
-		    </div><!-- screenshot -->
-			<h1 style="float: right;">($(pkgs_details.index(pkg)+1)/10)</h1>
-			<h1 id="title_pkg"> $pkg.name <br />
-			<span>$pkg.summary</span></h1>
-			<br style="clear: both;" />
 		     	<div id="panel-controls" class="glass">
 		   <fieldset>
-		     <legend>How do you evaluate this<br> recommendation?</legend>
 			<label class="radioButton">
 			<input class="radio" type="radio" name="evaluation-$pkgs_details.index(pkg)" value="surprising" />
-			Pleasantly surprising 
+			Pleasantly surprising
 			</label><br />
        			<label class="radioButton">
 			<input class="radio yesb" type="radio" name="evaluation-$pkgs_details.index(pkg)" value="good" />
@@ -89,23 +75,25 @@ $for pkg in pkgs_details:
 		   </fieldset>
 			<br style="clear: both;" />
 		     	</div><!-- #panel-controls -->
+            	<div class="panel-wrapper">
+		    <div class="screenshot">
+			<a class="link-thumb" rel="facebox" 
+			href="http://screenshots.debian.net/screenshot/$pkg.name?.jpg" 
+			title="Click to enlarge screenshot of package $pkg.name" alt="Click to enlarge screenshot">
+			<img height="80" src="http://screenshots.debian.net/thumbnail/$pkg.name" 
+			alt="Screenshot $pkg.name" /></a>
+		    </div><!-- screenshot -->
+			<h1 id="title_pkg"> $pkg.name <span>($(pkgs_details.index(pkg)+1)/10)</span> <br />
+			<span>$pkg.summary</span></h1> <br />
             		<div class="content-pkg">
-			   <ul>
                 $if hasattr(pkg,'description'):
-    			    <li><b>Description</b>:	<br />$:pkg.description</li>
-			    $if hasattr(pkg,'homepage'):
-			        <li><b>Homepage</b>: $pkg.homepage</li>
-			    $if hasattr(pkg,'task'):
-			        <li><b>Tasks</b>: $pkg.task</li>
-                $if hasattr(pkg,'section'):
-	    		    <li><b>Section</b>: $pkg.section</li>
-			    $if hasattr(pkg,'recommends'):
-			        <li><b>Recommends</b>: $pkg.recommends</li>
-			    $if hasattr(pkg,'suggests'):
-			        <li><b>Suggests</b>: $pkg.suggests</li>
+    			    <pre>$:pkg.description</pre>
+                <ul>
                 $if hasattr(pkg,'maintainer'):
-    			    <li><b>Maintainer</b>: $pkg.maintainer.</li>
-			  </ul>
+    			    <li><pre> Maintained by $:pkg.maintainer</pre></li>
+                $if hasattr(pkg,'homepage'):
+    			    <li><pre> Homepage is $:pkg.homepage</pre></li>
+                </ul>
 			</div><!-- id="content-pkg" -->
             	</div><!-- .panel-wrapper -->
             </div><!-- .panel -->

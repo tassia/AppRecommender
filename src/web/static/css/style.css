@@ -226,9 +226,11 @@ color: #444;
 h5 {
 font-style: italic;
 font-size: 0.75em;
+color: #444;
 }
 pre {
 margin: 1.5em 0 1.5em 0;
+font-size: 1.3em;
 overflow: auto;
 font-family: monospace;
 white-space: pre;

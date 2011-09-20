@@ -43,7 +43,7 @@ class Config(Singleton):
             self.output = "log"
 
             ## data_source options
-            self.base_dir = os.path.expanduser("~/.app-recommender/")
+            self.base_dir = os.path.expanduser("/home/tiago/.app-recommender/")
             # filters for valid packages
             self.filters_dir = os.path.join(self.base_dir,"filters")
             self.pkgs_filter = os.path.join(self.filters_dir,"desktopapps")
@@ -64,9 +64,9 @@ class Config(Singleton):
             self.clusters_dir = os.path.join(self.base_dir,"clusters-dir")
             self.k_medoids = 100
             # self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
-            self.dde_url = "http://46.4.235.200:8000/q/udd/packages/all/%s?t=json"
+            self.dde_url = "http://46.4.235.200:8000/q/udd/packages/prio-debian-sid/%s?t=json"
             self.dde_server = "46.4.235.200"
-            self.dde_port = "8000"
+            self.dde_port = 8000
 
             ## recomender options
             self.strategy = "cb"
