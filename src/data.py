@@ -30,11 +30,25 @@ import shutil
 import apt
 import re
 import operator
+import urllib
+import simplejson as json
 
 from error import Error
 from singleton import Singleton
 from dissimilarity import *
 from config import Config
+
+def axi_get_pkgs(axi):
+    pkgs_names = []
+    for docid in range(1,axi.get_lastdocid()+1):
+        try:
+            doc = axi.get_document(docid)
+        except:
+            pass
+        docterms_XP = [t.term for t in doc.termlist()
+                       if t.term.startswith("XP")]
+        pkgs_names.append(docterms_XP[0].lstrip('XP'))
+    return pkgs_names
 
 def axi_search_pkgs(axi,pkgs_list):
     terms = ["XP"+item for item in pkgs_list]
@@ -110,30 +124,39 @@ def tfidf_plus(index,docs,content_filter):
     variance = sum([(p-mean)*(p-mean) for p in population])/len(population)
     standard_deviation = math.sqrt(variance)
     for d in docs:
-        normalized_weigths[d.docid] = d.weight/standard_deviation
+        if standard_deviation>1:
+            # values between [0-1] would cause the opposite effect
+            normalized_weigths[d.docid] = d.weight/standard_deviation
+        else:
+            normalized_weigths[d.docid] = d.weight
     return tfidf_weighting(index,docs,content_filter,normalized_weigths)
 
-class AppAptXapianIndex(xapian.WritableDatabase):
+class FilteredXapianIndex(xapian.WritableDatabase):
     """
-    Data source for application packages information
+    Filtered Xapian Index
     """
-    def __init__(self,axi_path,path):
+    def __init__(self,terms,index_path,path):
         xapian.WritableDatabase.__init__(self,path,
                                          xapian.DB_CREATE_OR_OVERWRITE)
-        axi = xapian.Database(axi_path)
-        logging.info("AptXapianIndex size: %d" % axi.get_doccount())
-        for docid in range(1,axi.get_lastdocid()+1):
+        index = xapian.Database(index_path)
+        for docid in range(1,index.get_lastdocid()+1):
             try:
-                doc = axi.get_document(docid)
-                allterms = [term.term for term in doc.termlist()]
-                if "XTrole::program" in allterms:
+                doc = index.get_document(docid)
+                docterms = [term.term for term in doc.termlist()]
+                tagged = False
+                for t in terms:
+                    if t in docterms:
+                        tagged = True
+                if tagged:
                     self.add_document(doc)
                     logging.info("Added doc %d." % docid)
                 else:
                     logging.info("Discarded doc %d." % docid)
             except:
                 logging.info("Doc %d not found in axi." % docid)
-        logging.info("AppAptXapianIndex size: %d (lastdocid: %d)." %
+        logging.info("Filter: %s" % terms)
+        logging.info("Index size: %d" % index.get_doccount())
+        logging.info("Filtered Index size: %d (lastdocid: %d)." %
                      (self.get_doccount(), self.get_lastdocid()))
 
     def __str__(self):
@@ -186,13 +209,13 @@ class DebianPackage():
         if pkg_version.record.has_key('Conflicts'):
             self.conflicts = pkg_version.record['Conflicts']
         if pkg_version.record.has_key('Replaces'):
-            self.conflicts = pkg_version.record['Replaces']
+            self.replaces = pkg_version.record['Replaces']
         if pkg_version.record.has_key('Provides'):
             self.provides = pkg_version.record['Provides']
 
     def load_details_from_dde(self,dde_server,dde_port):
-        json_data = json.load(urllib.urlopen("http://%s:%s/q/udd/packages/all/%s?t=json"
-                                             % dde_server,dde_port,self.name))
+        json_data = json.load(urllib.urlopen("http://%s:%d/q/udd/packages/prio-debian-sid/%s?t=json"
+                                             % (dde_server,dde_port,self.name)))
 
         self.maintainer = json_data['r']['maintainer']
         self.version = json_data['r']['version']
@@ -200,27 +223,27 @@ class DebianPackage():
         self.description = self.format_description(json_data['r']['long_description'])
         self.section = json_data['r']['section']
         if json_data['r']['homepage']:
-            self.conflicts = json_data['r']['homepage']
+            self.homepage = json_data['r']['homepage']
         if json_data['r']['tag']:
             self.tags = self.debtags_list_to_dict(json_data['r']['tag'])
         if json_data['r']['depends']:
             self.depends = json_data['r']['depends']
         if json_data['r']['pre_depends']:
-            self.conflicts = json_data['r']['pre_depends']
+            self.predepends = json_data['r']['pre_depends']
         if json_data['r']['recommends']:
-            self.conflicts = json_data['r']['recommends']
+            self.recommends = json_data['r']['recommends']
         if json_data['r']['suggests']:
-            self.conflicts = json_data['r']['suggests']
+            self.suggests = json_data['r']['suggests']
         if json_data['r']['conflicts']:
             self.conflicts = json_data['r']['conflicts']
         if json_data['r']['replaces']:
-            self.conflicts = json_data['r']['replaces']
+            self.replaces = json_data['r']['replaces']
         if json_data['r']['provides']:
-            self.conflicts = json_data['r']['provides']
+            self.provides = json_data['r']['provides']
         self.popcon_insts = json_data['r']['popcon']['insts']
 
     def format_description(self,description):
-        return description.replace('.\n','').replace('\n','<br />')
+        return description.replace(' .\n','<br />').replace('\n','<br />')
 
     def debtags_str_to_dict(self, debtags_str):
         debtags_list = [tag.rstrip(",") for tag in debtags_str.split()]
@@ -281,6 +304,7 @@ class PopconSubmission():
     	    for line in submission:
                 if line.startswith("POPULARITY"):
                     self.user_id = line.split()[2].lstrip("ID:")
+                    self.arch = line.split()[3].lstrip("ARCH:")
                 elif not line.startswith("END-POPULARITY"):
                     data = line.rstrip('\n').split()
                     if len(data) > 2:
@@ -304,6 +328,82 @@ class PopconSubmission():
                             elif data[4] == '<RECENT-CTIME>':
                                 self.packages[pkg] = 8
 
+class FilteredPopconXapianIndex(xapian.WritableDatabase):
+    """
+    Data source for popcon submissions defined as a xapian database.
+    """
+    def __init__(self,path,popcon_dir,axi_path,tags_filter):
+        """
+        Set initial attributes.
+        """
+        self.axi = xapian.Database(axi_path)
+        self.path = os.path.expanduser(path)
+        self.popcon_dir = os.path.expanduser(popcon_dir)
+        self.valid_pkgs = axi_get_pkgs(self.axi)
+        logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
+        with open(tags_filter) as valid_tags:
+            self.valid_tags = [line.strip() for line in valid_tags
+                               if not line.startswith("#")]
+        logging.debug("Considering %d valid tags" % len(self.valid_tags))
+        if not os.path.exists(self.popcon_dir):
+            os.makedirs(self.popcon_dir)
+        if not os.listdir(self.popcon_dir):
+            logging.critical("Popcon dir seems to be empty.")
+            raise Error
+
+        # set up directory
+        shutil.rmtree(self.path,1)
+        os.makedirs(self.path)
+        try:
+            logging.info("Indexing popcon submissions from \'%s\'" %
+                         self.popcon_dir)
+            logging.info("Creating new xapian index at \'%s\'" %
+                         self.path)
+            xapian.WritableDatabase.__init__(self,self.path,
+                                             xapian.DB_CREATE_OR_OVERWRITE)
+        except xapian.DatabaseError as e:
+            logging.critical("Could not create popcon xapian index.")
+            logging.critical(str(e))
+            raise Error
+
+        # build new index
+        doc_count = 0
+        for root, dirs, files in os.walk(self.popcon_dir):
+            for popcon_file in files:
+                submission = PopconSubmission(os.path.join(root, popcon_file))
+                doc = xapian.Document()
+                submission_pkgs = submission.get_filtered(self.valid_pkgs)
+                if len(submission_pkgs) < 10:
+                    logging.debug("Low profile popcon submission \'%s\' (%d)" %
+                                  (submission.user_id,len(submission_pkgs)))
+                else:
+                    doc.set_data(submission.user_id)
+                    doc.add_term("ID"+submission.user_id)
+                    doc.add_term("ARCH"+submission.arch)
+                    logging.debug("Parsing popcon submission \'%s\'" %
+                                  submission.user_id)
+                    for pkg,freq in submission_pkgs.items():
+                        tags = axi_search_pkg_tags(self.axi,pkg)
+                        # if the package was found in axi
+                        if tags:
+                            doc.add_term("XP"+pkg,freq)
+                            # if the package has tags associated with it
+                            if not tags == "notags":
+                                for tag in tags:
+                                    if tag.lstrip("XT") in self.valid_tags:
+                                        doc.add_term(tag,freq)
+                    doc_id = self.add_document(doc)
+                    doc_count += 1
+                    logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
+            # python garbage collector
+        	gc.collect()
+        # flush to disk database changes
+        try:
+            self.commit()
+        except:
+            self.flush() # deprecated function, used for compatibility with old lib version
+
+# Deprecated class, must be reviewed
 class PopconXapianIndex(xapian.WritableDatabase):
     """
     Data source for popcon submissions defined as a singleton xapian database.

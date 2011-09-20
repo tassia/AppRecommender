@@ -20,6 +20,7 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import xapian
 from singleton import Singleton
 import recommender

@@ -140,6 +140,29 @@ class FPR(Metric):
         return (float(len(evaluation.false_positive))/
                 evaluation.real_negative_len)
 
+class MCC(Metric):
+    """
+    Matthews correlation coefficient.
+    """
+    def __init__(self):
+        """
+        Set metric description.
+        """
+        self.desc = "    MCC    "
+
+    def run(self,evaluation):
+        """
+        Compute metric.
+        """
+        VP = len(evaluation.true_positive)
+        FP = len(evaluation.false_positive)
+        FN = len(evaluation.false_negative)
+        VN = evaluation.true_negative_len
+        if (VP+FP)==0 or (VP+FN)==0 or (VN+FP)==0 or (VN+FN)==0:
+            return 0
+        MCC = (((VP*VN)-(FP*FN))/math.sqrt((VP+FP)*(VP+FN)*(VN+FP)*(VN+FN)))
+        return MCC
+
 class F_score(Metric):
     """
     Classification accuracy metric which correlates precision and recall into an
