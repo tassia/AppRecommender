@@ -1,2 +1,9 @@
-Experiments handled by expsuite:
-https://github.com/rueckstiess/expsuite
+AppRecommender experiments and tests
+---------------------------------------
+
+Install dependencies:
+
+# apt-get install \
+python-unittest2 python-gnuplot gnuplot
+
+# cd ./src; git clone https://github.com/rueckstiess/expsuite (deprecated tests)

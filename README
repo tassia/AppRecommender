@@ -6,10 +6,7 @@ Install dependencies
 
 # apt-get install \
 python python-xapian python-apt python-cluster python-webpy python-simplejson \
-python-unittest2 python-numpy python-gnuplot \
-apt-xapian-index gnuplot
-
-# cd ./src; git clone https://github.com/rueckstiess/expsuite
+python-numpy apt-xapian-index app-install-data python-xdg
 
 
 Run AppRecommender web UI
@@ -19,5 +16,6 @@ Run AppRecommender web UI
 # ./server.py
 
 Open a browser and access http://localhost:8080
+
 
 More info at https://github.com/tassia/AppRecommender/wiki
