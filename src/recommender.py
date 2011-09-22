@@ -104,10 +104,18 @@ class Recommender:
             self.weight = xapian.TradWeight()
         self.set_strategy(cfg.strategy)
 
-    def set_strategy(self,strategy_str):
+    def set_strategy(self,strategy_str,k=0,n=0):
         """
         Set the recommendation strategy.
         """
+        if k:
+            k_neighbors = k
+        else:
+            k_neighbors = self.cfg.k_neighbors
+        if n:
+            profile_size = n
+        else:
+            profile_size = self.cfg.profile_size
         logging.info("Setting recommender strategy to \'%s\'" % strategy_str)
         # Check if collaborative strategies can be instanciated
         if "knn" in strategy_str:
@@ -126,33 +134,31 @@ class Recommender:
         #        self.users_repository = self.popcon_programs
         # Set strategy based on strategy_str
         if strategy_str == "cb":
-            self.strategy = strategy.ContentBased("mix",self.cfg.profile_size)
+            self.strategy = strategy.ContentBased("mix",profile_size)
         elif strategy_str == "cbt":
-            self.strategy = strategy.ContentBased("tag",self.cfg.profile_size)
+            self.strategy = strategy.ContentBased("tag",profile_size)
         elif strategy_str == "cbd":
-            self.strategy = strategy.ContentBased("desc",self.cfg.profile_size)
+            self.strategy = strategy.ContentBased("desc",profile_size)
         elif strategy_str == "cbh":
-            self.strategy = strategy.ContentBased("half",self.cfg.profile_size)
+            self.strategy = strategy.ContentBased("half",profile_size)
         if strategy_str == "cb_eset":
-            self.strategy = strategy.ContentBased("mix_eset",self.cfg.profile_size)
+            self.strategy = strategy.ContentBased("mix_eset",profile_size)
         elif strategy_str == "cbt_eset":
-            self.strategy = strategy.ContentBased("tag_eset",self.cfg.profile_size)
+            self.strategy = strategy.ContentBased("tag_eset",profile_size)
         elif strategy_str == "cbd_eset":
-            self.strategy = strategy.ContentBased("desc_eset",self.cfg.profile_size)
+            self.strategy = strategy.ContentBased("desc_eset",profile_size)
         elif strategy_str == "cbh_eset":
-            self.strategy = strategy.ContentBased("half_eset",self.cfg.profile_size)
-        #elif strategy_str == "col":
-        #    self.strategy = strategy.CollaborativeEset()
+            self.strategy = strategy.ContentBased("half_eset",profile_size)
         elif strategy_str == "knn":
-            self.strategy = strategy.Knn(self.cfg.k_neighbors)
+            self.strategy = strategy.Knn(k_neighbors)
         elif strategy_str == "knn_plus":
-            self.strategy = strategy.KnnPlus(self.cfg.k_neighbors)
+            self.strategy = strategy.KnnPlus(k_neighbors)
         elif strategy_str == "knn_eset":
-            self.strategy = strategy.KnnEset(self.cfg.k_neighbors)
+            self.strategy = strategy.KnnEset(k_neighbors)
         elif strategy_str == "knnco":
-            self.strategy = strategy.KnnContent(self.cfg.k_neighbors)
+            self.strategy = strategy.KnnContent(k_neighbors)
         elif strategy_str == "knnco_eset":
-            self.strategy = strategy.KnnContentEset(self.cfg.k_neighbors)
+            self.strategy = strategy.KnnContentEset(k_neighbors)
         # [FIXME: fix repository instanciation]
         #elif strategy_str.startswith("demo"):
         #    self.strategy = strategy.Demographic(strategy_str)
