@@ -32,6 +32,7 @@ import re
 import operator
 import urllib
 import simplejson as json
+import socket
 
 from error import Error
 from singleton import Singleton
@@ -184,6 +185,30 @@ class DebianPackage():
     def __init__(self,pkg_name):
         self.name = pkg_name
 
+    def connect_to_dde(self,dde_server,dde_port):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # just one parameter (a tuple)
+            s.connect((dde_server,dde_port))
+            s.close()
+            return True
+        except:
+            logging.debug("Could not connect to DDE")
+            return False
+
+    def load_summary(self):
+        cfg = Config()
+        if self.connect_to_dde(cfg.dde_server,cfg.dde_port):
+            json_data = json.load(urllib.urlopen(cfg.dde_url % self.name))
+            self.summary = json_data['r']['description']
+
+    def load_details(self):
+        cfg = Config()
+        if self.connect_to_dde(cfg.dde_server,cfg.dde_port):
+            self.load_details_from_dde(cfg.dde_url)
+        else:
+            self.load_details_from_apt()
+
     def load_details_from_apt(self):
         pkg_version = apt.Cache()[self.name].candidate
 
@@ -213,9 +238,8 @@ class DebianPackage():
         if pkg_version.record.has_key('Provides'):
             self.provides = pkg_version.record['Provides']
 
-    def load_details_from_dde(self,dde_server,dde_port):
-        json_data = json.load(urllib.urlopen("http://%s:%d/q/udd/packages/prio-debian-sid/%s?t=json"
-                                             % (dde_server,dde_port,self.name)))
+    def load_details_from_dde(self,dde_url):
+        json_data = json.load(urllib.urlopen(dde_url % self.name))
 
         self.maintainer = json_data['r']['maintainer']
         self.version = json_data['r']['version']
@@ -240,7 +264,8 @@ class DebianPackage():
             self.replaces = json_data['r']['replaces']
         if json_data['r']['provides']:
             self.provides = json_data['r']['provides']
-        self.popcon_insts = json_data['r']['popcon']['insts']
+        if json_data['r']['popcon']['insts']:
+            self.popcon_insts = json_data['r']['popcon']['insts']
 
     def format_description(self,description):
         return description.replace(' .\n','<br />').replace('\n','<br />')
