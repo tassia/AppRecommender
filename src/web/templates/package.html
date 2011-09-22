@@ -1,4 +1,5 @@
 $def with (pkg)
+$var url_base: /
 
 <div class="align-left" id="voting_box">
  <button type="button" class="like_button" onclick=";return false;" id="like" >
@@ -16,12 +17,12 @@ $def with (pkg)
  </div>
 </div><!-- id="voting_box" -->
 
-<h1 id="title_pkg">$pkg['package'] <br /><span>$pkg['description']</span></h1>
+<h2 id="title_pkg">$pkg.name <br /><span>$pkg.summary</span></h2>
 
 <div id="debtags_box" class="graybox horiz-grad">
 <h2>Debtags</h2>
 <ul id="debtags_pkg">
-$for facet, tags in pkg['tag'].items():
+$for facet, tags in pkg.tags.items():
     <li> $facet
      <ul>
      $for tag in tags:
@@ -35,32 +36,33 @@ $for facet, tags in pkg['tag'].items():
 <h2>Details</h2>
 
   <ul>
-    <li><b>Description</b>: <br />$:pkg['long_description']</li>
-    $if pkg['homepage']:
-        <li><b>Homepage</b>:<a href="$pkg['homepage']">$pkg['homepage']</a></li>
-    $if pkg['task']:
-        <li><b>Tasks</b>: $pkg['task']</li>
-    <li><b>Section</b>: $pkg['section']</li>
-    $if pkg['recommends']:
-        <li><b>Recommends</b>: $pkg['recommends']</li>
-    $if pkg['suggests']:
-        <li><b>Suggests</b>: $pkg['suggests']</li>
-    $if pkg['origin']:
-        <li><b>Origin</b>: $pkg['origin']</li>
-    <li><b>Maintainer</b>: $pkg['maintainer']</li>
+    $if hasattr(pkg, 'description'):
+        <li><b>Description:</b> <br />$:pkg.description</li>
+    $if hasattr(pkg, 'maintainer'):
+        <li><b>Maintainer:</b>  $pkg.maintainer</li>
+    $if hasattr(pkg, 'homepage'):
+        <li><b>Homepage:</b>  <a href="$pkg.homepage">$pkg.homepage</a></li>
+    $if hasattr(pkg,'section'):
+        <li><b>Section:</b>  $pkg.section</li>
+    $if hasattr(pkg,'recommends'):
+        <li><b>Recommends:</b>  $pkg.recommends</li>
+    $if hasattr(pkg,'suggests'):
+        <li><b>Suggests:</b>  $pkg.suggests</li>
+    $if hasattr(pkg,'origin'):
+        <li><b>Origin:</b>  $pkg.origin</li>
   </ul>
 
 </p>
 
 <div id="debresources_box" class="graybox vert-grad">
-<h2>Debian resources:</h2>
+<h2>Debian resources</h2>
     <ul>
-        <li><a href="http://packages.debian.org/$pkg['package']">Package page on debian.org</a></li>
-        <li><a href="http://bugs.debian.org/$pkg['package']">Debian bug tracking system (BTS)</a></li>
-        <li><a href="http://packages.qa.debian.org/$pkg['package']">Debian package tracking system (PTS)</a></li>
-        <li><a href="http://qa.debian.org/popcon.php?package=$pkg['package']">Popularity contest statistics (Popcon)</a></li>
-        <li><a href="http://patch-tracker.debian.org/package/$pkg['package']">Debian patch tracking system</a></li>
-        <li><a href="http://screenshots.debian.net/package/$pkg['package']">Screenshots</a></li>
+        <li><a href="http://packages.debian.org/$pkg.name">Package page on debian.org</a></li>
+        <li><a href="http://bugs.debian.org/$pkg.name">Debian bug tracking system (BTS)</a></li>
+        <li><a href="http://packages.qa.debian.org/$pkg.name">Debian package tracking system (PTS)</a></li>
+        <li><a href="http://qa.debian.org/popcon.php?package=$pkg.name">Popularity contest statistics (Popcon)</a></li>
+        <li><a href="http://patch-tracker.debian.org/package/$pkg.name">Debian patch tracking system</a></li>
+        <li><a href="http://screenshots.debian.net/package/$pkg.name">Screenshots</a></li>
     </ul>
 </div><!-- id="debresources_box -->
 

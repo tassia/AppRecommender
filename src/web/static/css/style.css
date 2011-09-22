@@ -151,7 +151,7 @@ float: right;
 }
 
 .innertube {
-margin: 15px;
+margin: 30px;
 }
 
 #footer {
@@ -294,7 +294,8 @@ background-image: url('../images/admon-note.png');
 
 /* Recommender BOX */
 
-#recommender-box { 
+#recommender-box {
+height: 43px; 
 position: relative;
 margin:0;
 vertical-align: top;
@@ -325,8 +326,9 @@ z-index: 1;
 }
 
 #pkgs_list, #input-box {
+padding:10px;
 position: relative;
-width: 400px;
+width: auto;
 }
 
 #pkgs_list {

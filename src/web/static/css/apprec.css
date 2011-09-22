@@ -1,7 +1,39 @@
+#upload-slide {
+display: block;
+position: absolute;
+top: 0px;
+left: 0px;
+padding: 0px;
+}
 
-/*
- * Result Recommendation
- */
+#header,
+#recommender-box {
+height: 40px;
+}
+
+#submit-button {
+height: 42px;
+}
+
+#tip-upload {
+top: 40px;
+width: 420px;
+}
+
+#wrap {
+max-width: 780px;
+}
+
+body.apprec #wrap {
+padding-top: 20px;
+}
+
+
+#recommender-box #upfile,
+#advanced-button,
+#pkgs_list {
+display: none;
+}
  
 #result-thumbnail .item { 
 display: block;
@@ -11,6 +43,7 @@ overflow: hidden;
 float: left;
 text-align: center;
 border-radius: 5px;
+margin-left: 30px;
 }
 
 #result-thumbnail .item:hover { 
@@ -25,7 +58,6 @@ color: gray;
 
 
 a.link-thumb img {
-height: 100px;
 margin: 5px;
 border-radius: 4px;
 box-shadow: 0 1px 2px gray;
@@ -83,6 +115,7 @@ cursor: pointer;
 #debresources_box { 
 float: left;
 margin-top: 20px;
+padding: 10px;
 }
 
 #debresources_box li {

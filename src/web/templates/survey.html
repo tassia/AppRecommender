@@ -1,5 +1,7 @@
 $def with (pkgs_details, request)
 $var title: Survey
+$var url_base: /survey/
+$var action: START
 $var mod = 'survey';
 $var cssfiles: static/coda-slider-2.0/stylesheets/coda-slider-2.0.css static/css/facebox.css static/css/survey.css
 $var jsfiles: /static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js /static/coda-slider-2.0/javascripts/jquery.coda-slider-2.0.js /static/coda-slider-2.0/javascripts/jquery.easing.1.3.js /static/js/facebox.js
@@ -27,9 +29,7 @@ $var jsfiles: /static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js /static/co
 <div class="show-end" style="display: none;">
 
 <p>
-You have completed this round of evaluations. If you have time to do some more,
-please do so. Otherwise, please conclude your participation clicking in the
-button below.
+If you have any comment regarding this set of suggestions, please write in the form below. Choose <i>Continue</i> if you can perform another round of evaluations, or <i>Finish</i> to conclude your participation.
 </p>
 
 </div>
@@ -38,24 +38,25 @@ button below.
 
 <input type="hidden" name="user_id" value=$request.user.user_id>
 <input type="hidden" name="strategy" value=$request.strategy>
-<div id="controls-form" style="display: none;" class="show-end"><!-- display show in the end form -->
-<label for="finish_button" id="tip-finish">
-   <!--<div class="tip important">
-   <p>Conclude your participation in this survey</p>
-   </div>-->
+
+<div style="display: none; width: 400px; margin-left: 150px; margin-top: 10px;" class="show-end"><!-- display show in the end form -->
+<p align="center">
+<label for="comments">
+    <b>Comments</b><br />
+    <textarea name="comments" value="" rows="4" cols="48"></textarea> <br />
+</label>
+</p>
+<label for="finish_button">
    <input id="finish-button" name="finish_button" type="submit" value="Finish" class="glass" />
 </label>
-<label for="continue_button" id="tip-continue">
-   <!--<div class="tip tip">
-   <p>Evaluate more suggestions </p>
-   </div>-->
+<label for="continue_button">
    <input id="continue-button" name="continue_button" type="submit" value="Continue" class="glass" />
 </label>
 </div><!-- id="controls-form" -->
 
 <div class="coda-slider-wrapper hide-end">
 	<div class="coda-slider preload" id="coda-slider-1">
-            <h5 style="float: right;">How do you evaluate this recommendation?</h5> <br />
+            <h5 style="float: right;"><b>How do you evaluate this recommendation?</b></h5> <br />
 $for pkg in pkgs_details:
             <div class="panel">
 		     	<div id="panel-controls" class="glass">
@@ -92,7 +93,7 @@ $for pkg in pkgs_details:
                 $if hasattr(pkg,'maintainer'):
     			    <li><pre> Maintained by $:pkg.maintainer</pre></li>
                 $if hasattr(pkg,'homepage'):
-    			    <li><pre> Homepage is $:pkg.homepage</pre></li>
+    			    <li><pre> Homepage: $:pkg.homepage</pre></li>
                 </ul>
 			</div><!-- id="content-pkg" -->
             	</div><!-- .panel-wrapper -->

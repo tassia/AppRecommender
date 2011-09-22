@@ -1,4 +1,6 @@
 $var title: Survey
+$var url_base: /survey/
+$var action: START
 $var mod = 'index';
 $var cssfiles: static/css/survey.css
 $var jsfiles: 
@@ -20,11 +22,10 @@ window.onload = function() {
 <p>Participate in this survey and contribute for the development of
 <a href="http://github.com/tassia/AppRecommender">AppRecommender</a>,
 a recommender system for GNU/Linux applications.</p><br />
-  <p align="justify"> Provide a list of packages installed in a real
-  running system and a set of applications will be suggested for it. You can
-  upload a popularity-contest submission file (usually located at
-  '/var/log/popularity-contest') or any other file with packages name as first
-  field of each line. For instance, you can run the following command and
+  <p align="justify"> Given a list of packages installed in a real
+  running system and a set of applications will be suggested for it. 
+  Upload a popularity-contest submission file (usually located at
+  '/var/log/popularity-contest') or run the following command and
   upload the generated 'packages.list' file.</p><br />
   <p><code> # dpkg-query --show > packages.list </code></p>
 </div>

@@ -1,7 +1,9 @@
-$def with (recommends, pkg_summaries, request)
-$var title: Feedback
-$var mod = 'feedback';
-$var cssfiles: static/css/apprec.css static/css/facebox.css static/css/voting.css
+$def with (pkgs_details)
+$var title: AppRecommender
+$var url_base: /
+$var action: RECOMMENDATION
+$var mod = 'apprec';
+$var cssfiles:  static/css/apprec.css static/css/facebox.css static/css/voting.css static/css/survey.css
 $var jsfiles: static/js/facebox.js
 
 <script type="application/x-javascript">
@@ -41,44 +43,26 @@ $$(document).ready(function() {
 });
 </script>
 
-<div id="sidebar">
-<div class="innertube">
-
-<div id="details_box" class="graybox align-left vert-grad">
-<h2>Recommendation strategy details</h2>
-        <ul class="toc">
-	$for key, value in request.get_details().items():
-
-        <li><b>$key:</b> $value</li>
-
-</div>
-
-</div><!-- class="innertube" -->
-<br style="clear: both">
-</div><!-- id="sidebar" -->
-
 <div id="maincontent">
 <div class="innertube">
 
-<h1>Recomendation</h1>
+<center>
+<h1>Recommended applications</h1>
+</center>
 
 <form action="thanks" method="post" enctype="multipart/form-data">
 
 <div id="result-thumbnail">
-$for strategy, result in recommends.items():
-    <!--<h2><a name="$strategy" id="$strategy">$strategy</a></h2>-->
-    $ count = 0
-    $for pkg in result:
-        $ count = count + 1
+$for pkg in pkgs_details:
         <div class="item">
-          <h3><a href="package/$pkg" rel="facebox" title="General information for package $pkg">$pkg</a></h3>
-           <a class="link-thumb" rel="facebox" href="http://screenshots.debian.net/screenshot/$pkg?.jpg" title="Screenshot of package $pkg">
-            <img src="http://screenshots.debian.net/thumbnail/$pkg" alt="Screenshot $pkg" />
+          <h3><a href="package/$pkg.name" rel="facebox" class="thickbox" title="General information for package $pkg.name">$pkg.name</a></h3>
+          <a class="link-thumb" rel="facebox"
+           href="http://screenshots.debian.net/screenshot/$pkg.name?.jpg" title="Screenshot of package $pkg.name"
+             alt="Click to enlarge screenshot">
+            <img src="http://screenshots.debian.net/thumbnail/$pkg.name" alt="Screenshot $pkg.name" />
            </a>
-         <p class="thumb-caption"><a href="package/$pkg" rel="facebox" title="General information for package $pkg"> $pkg_summaries[pkg] </a></p>
+         <p class="thumb-caption">$pkg.summary</p>
         </div>
-        $if count == 5:
-            $ count = 0
 
 </div><!-- id="result-thumbnail" -->
 </form>

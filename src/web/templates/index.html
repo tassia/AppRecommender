@@ -1,6 +1,8 @@
 $var title: Home
+$var url_base: /
+$var action: RECOMMENDATION
 $var mod = 'index';
-$var cssfiles: static/css/tabs.css static/css/debtags.css static/css/facebox.css 
+$var cssfiles: static/css/tabs.css static/css/debtags.css static/css/facebox.css static/css/apprec.css 
 $var jsfiles: static/js/facebox.js
 
 
@@ -604,9 +606,40 @@ function showtags(tagid) {
 
  </div><!-- id="box-three" -->
 
+  <div id="tab-one" class="tabs">
+
+<h2>Most popular (<a href="#">all</a>)</h2>
+    <ul>
+      <li><a href="#">app...1</a></li>
+      <li><a href="#">app...2</a></li>
+      <li><a href="#">app...3</a></li>
+      <li><a href="#">app...4</a></li>
+      <li><a href="#">app...5</a></li>
+    </ul>
+   
+<h2>Most voted (<a href="#">all</a>)</h2>
+    <ul>
+      <li><a href="#">app...1</a></li>
+      <li><a href="#">app...2</a></li>
+      <li><a href="#">app...3</a></li>
+      <li><a href="#">app...4</a></li>
+      <li><a href="#">app...5</a></li>
+    </ul>
+   
+<h2>Most searched (<a href="#">all</a>)</h2>
+    <ul>
+      <li><a href="#">app...1</a></li>
+      <li><a href="#">app...2</a></li>
+      <li><a href="#">app...3</a></li>
+      <li><a href="#">app...4</a></li>
+      <li><a href="#">app...5</a></li>
+    </ul>
+   
+ </div> <!-- id="tab-one" -->
+
  <div id="tab-two" class="tabs">
 
-<h2>Atualizados recentemente</h2>
+<h2>Recently updated</h2>
    <ul>
       <li><a href="#">Recents...1</a></li>
       <li><a href="#">Recents...2</a></li>
@@ -622,40 +655,6 @@ function showtags(tagid) {
 
  </div><!-- id="box-two" -->
 
-  <div id="tab-one" class="tabs">
-
-<h2>Os mais usados</h2>
-    <ul>
-      <li><a href="#">Lista...1</a></li>
-      <li><a href="#">Lista...2</a></li>
-      <li><a href="#">Lista...3</a></li>
-      <li><a href="#">Lista...4</a></li>
-      <li><a href="#">Lista...5</a></li>
-    </ul>
-   <a href="#">Listar todos nessa ordem</a>
-   
-<h2>Os mais votados</h2>
-    <ul>
-      <li><a href="#">Lista...</a></li>
-      <li><a href="#">Lista...</a></li>
-      <li><a href="#">Lista...</a></li>
-      <li><a href="#">Lista...</a></li>
-      <li><a href="#">Lista...</a></li>
-    </ul>
-   <a href="#">Listar todos nessa ordem</a>
-   
-<h2>Os mais pesquisados</h2>
-    <ul>
-      <li><a href="#">Lista...</a></li>
-      <li><a href="#">Lista...</a></li>
-      <li><a href="#">Lista...</a></li>
-      <li><a href="#">Lista...</a></li>
-      <li><a href="#">Lista...</a></li>
-    </ul>
-   <a href="#">Listar todos nessa ordem</a>
-   
- </div> <!-- id="tab-one" -->
-
  </div><!-- id="tab-wrap" -->
 </div><!-- id="tab-area" -->
 
@@ -667,13 +666,19 @@ function showtags(tagid) {
 <div class="innertube">
 
 <div class="textbox">
-<h1>You might also like...</h1>
+<h1>AppRecommender</h1>
+<h2>You might also like...</h2>
 
-<p>Provide a popcon submission's file and you'll get
-a list of suggested packages automatically computed by AppRecommender.
-</p> 
-
-<p>This is a tentative web interface for the recommender, if you have any suggestion about it, please get in touch.</p>
+<p align="justify"> Provide the list of packages installed in your
+system and a set of applications will be suggested for you.
+</p><br />
+<p align="justify">Upload a popularity-contest submission file
+(usually located at '/var/log/popularity-contest') or run the
+following command and upload the generated 'packages.list' file.<br />
+<code> # dpkg-query --show > packages.list </code>
+</p><br />
+<p>This is a tentative web interface for AppRecommender, if you have any
+suggestion about it, please get in touch!</p>
 
 </div>
 

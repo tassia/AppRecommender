@@ -1,5 +1,7 @@
-$def with (error_msgs)
+$def with (error_msgs,url_base,action)
 $var title: Error
+$var url_base: $url_base
+$var action: $action
 $var mod = 'error';
 $var cssfiles: static/css/facebox.css static/css/facebox.css static/css/survey.css 
 $var jsfiles: static/js/facebox.js
@@ -10,21 +12,20 @@ $var jsfiles: static/js/facebox.js
 
 
 <div class="index_include">
-<center>
-    <h1>Welcome to AppRecommender</h1>
-</center>
+
+<h1>AppRecommender</h1>
+<h2>Unexpected error</h2>
 
 Your request could not be proccessed due to the following error(s):
 
-<div class="warning">
 <p><ul>
 $for e in error_msgs:
     <b><li>$e</li></b>
 </ul></p>
-</div>
 
-<p><a href="/">Go back</a> and try again. If you believe it is a bug, please report to <a
-href="mailto:tassia@gamil.com">tassia@gmail.com</a>.</p>
+<br />
+<p>If you believe it is a bug, please report this error along with the uploaded file to <a
+href="mailto:tassia@ime.usp.br">tassia@ime.usp.br</a>.</p>
 
 </div>
 

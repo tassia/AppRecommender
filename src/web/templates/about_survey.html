@@ -1,7 +1,7 @@
 $var title: About
-$var url_base: /
+$var url_base: /survey/
+$var action: START
 $var mod = 'about';
-$var action: RECOMMENDATION
 $var cssfiles: static/css/facebox.css
 $var jsfiles: static/js/facebox.js
 
@@ -17,15 +17,20 @@ $var jsfiles: static/js/facebox.js
 <div id="maincontent">
 <div class="innertube">
 
-<h1>AppRecommender</h1>
+<h1>AppRecommender Survey</h1>
 <h2>About</h2>
 
-<p align="justify"><a href="http://github.com/tassia/AppRecommender">AppRecommender</a>
-is a free recommender system for GNU/Linux applications developed as part of a
-Master's project. It was initially developed using the Debian Project
-infrasctructure, but the solution is essentially distro-independent and can
-be adapted to other environments given that there is available data sources for
-computing recommendations.</p>
+<p align="justify">This experiment aims to compare and validate automated application
+recommendations produced by different strategies and algorithms tuning. We
+believe that real users evaluation regarding the relevance of recommendations is
+the most accurate data source for computing recommender system effectiveness.</p>
+<br/>
+
+<p align="justify">The engine that is being tested is a free software called <a
+href="http://github.com/tassia/AppRecommender">AppRecommender</a>. It was
+initially developed using the Debian Project infrasctructure, but the solution
+is essentially distro-independent and can even be adapted to non GNU/Linux
+systems given that there is available data for that.</p>
 
 <a rel="facebox" href="static/images/apprec.png" title="AppRecommender Diagram">
 <img style="float: right; margin: 10px;" alt="AppRecommender dataflow"
@@ -33,8 +38,8 @@ src="static/images/apprec.png" width="230px" /></a>
 <br />
 
 <p align="justify">The picture on the right gives an idea of the data workflow
-for AppRecommender. The user provides a set of applications installed in her/his
-system and the recommender suggests a set of programs that she/he might also
+for AppRecommender. The user provides a set of applications installed in his
+system and the recommender suggests a set of programs that he might also
 be interested in, based on the profile deduced from the his previous choices
 and other similar users choices. The recommendations are composed using
 classification and information retrieval techniques using
