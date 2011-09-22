@@ -316,13 +316,13 @@ class PkgsListSystem(User):
         elif type(pkgs_list_or_file).__name__ == "str":
             try:
                 with open(pkgs_list_or_file) as pkgs_list_file:
-                    pkgs_list = [line.split()[0] for line in pkgs_list_file]
+                    pkgs_list = [line.split()[0] for line in pkgs_list_file if line.split()]
             except IOError:
                 logging.critical("Could not open packages list file.")
                 raise Error
         else:
             logging.debug("No packages provided for user profiling.")
-            return self.pkg_profile
+            pkgs_list = []
 
         User.__init__(self,dict.fromkeys(pkgs_list,1),user_id)
 
