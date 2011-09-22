@@ -25,65 +25,25 @@ sys.setrecursionlimit(50000)
 
 class Index:
     def GET(self):
-        return render.survey_index()
+        return render.index_survey()
 
 class About:
     def GET(self):
-        return render.about()
+        return render.about_survey()
 
 class Thanks:
     def POST(self):
         web_input = web.input()
         user_id = web_input['user_id'].encode('utf8')
-        with open("/var/www/AppRecommender/src/web/submissions/%s/ident" % user_id,'w') as ident:
+        with open("/var/www/AppRecommender/src/web/submissions/%s/personal" % user_id,'w') as ident:
             for key in ["name","email","comments"]:
                 if web_input.has_key(key):
-                    ident.write("%s: %s\n" % (key,web_input[key].encode("utf-8")))
+                    ident.write("# %s\n%s\n" % (key.capitalize(),web_input[key].encode("utf-8")))
         return render.thanks_id()
 
 class Fake:
     def GET(self):
-        return render.index()
-        #return render_plain.fake()
-
-class Package:
-    def GET(self, pkg):
-        result = self.get_details_from_dde(pkg)
-        return render_plain.package(result)
-
-    def get_details_from_dde(self, pkg):
-        json_source = Config().dde_url % pkg
-        json_data = json.load(urllib.urlopen(json_source))
-        # parse tags
-        tags = self._debtags_list_to_dict(json_data['r']['tag'])
-        json_data['r']['tag'] = tags
-        return json_data['r']
-
-    def _debtags_list_to_dict(self, debtags_list):
-        """ in:
-        	['use::editing',
-                'works-with-format::gif',
-                'works-with-format::jpg',
-                'works-with-format::pdf']
-            out:
-                {'use': [editing],
-                'works-with-format': ['gif', 'jpg', 'pdf']'
-                }
-        """
-        debtags = {}
-        subtags = []
-        for tag in debtags_list:
-            match = re.search(r'^(.*)::(.*)$', tag)
-            if not match:
-                log.error("Could not parse debtags format from tag: %s", tag)
-            facet, subtag = match.groups()
-            subtags.append(subtag)
-            if facet not in debtags:
-               debtags[facet] = subtags
-            else:
-               debtags[facet].append(subtag)
-            subtags = []
-        return debtags
+        return render_plain.fake()
 
 class Save:
     def POST(self):
@@ -110,16 +70,18 @@ class Save:
                 for item in value:
                     output.write(item+"\n")
         with open(os.path.join(output_dir,"report"),'w') as report:
-            report.write("# User: %s\n# Strategy: %s\n# TP FP\n%d %d\n" %
+            report.write("# User: %s\n# Strategy: %s\n# TP FP S\n%d %d %d\n" %
                          (user_id,strategy,
                           len(evaluations["good"])+len(evaluations["surprising"]),
-                          len(evaluations["poor"])))
+                          len(evaluations["poor"]),len(evaluations["surprising"])))
+            if web_input.has_key("comments"):
+                report.write("# Comments\n%s\n" % web_input['comments'].encode("utf-8"))
         if web_input.has_key('continue_button'):
             return Survey().POST()
         elif web_input.has_key('finish_button'):
             return render.thanks(user_id)
         else:
-            return render.survey_index()
+            return render.index_survey()
 
 class Request:
     def __init__(self,web_input,submissions_dir):
@@ -170,26 +132,30 @@ class Survey:
     def POST(self):
         web_input = web.input(pkgs_file={})
         logging.debug("Survey web_input %s" % str(web_input))
-        self.strategies = ["knn","knn_eset","cbd_eset","knnco"]#,"demo_colco"]
+        self.strategies = ["cb","cbh","cb_eset","cbh_eset",
+                           "knn","knn_eset","knn_plus",
+                           "knnco","knnco_eset"]
         request = Request(web_input,self.submissions_dir)
-        if not request.validates():
-            return render.error_survey()
+        if len(request.user.pkg_profile)<10:
+            return render.error(["Could not extract profile from uploaded file. It must have at least 10 applications."],
+                                 "/survey/","START")
         else:
-            # Check the remaining strategies and select a new one
-            old_strategies = [dirs for root, dirs, files in
-                              os.walk(os.path.join(self.submissions_dir,
-                                                   request.user_id))]
-            if old_strategies:
-                strategies = [s for s in self.strategies if s not in old_strategies[0]]
-                logging.info("Already used strategies %s" % old_strategies[0])
-            else:
-                strategies = self.strategies
-            if not strategies:
-                return render.thanks(request.user_id)
-            request.strategy = random.choice(strategies)
-            logging.info("Selected \'%s\' from %s" % (request.strategy,strategies))
-            # Get recommendation
-            self.rec.set_strategy(request.strategy)
+            ## Check the remaining strategies and select a new one
+            #old_strategies = [dirs for root, dirs, files in
+            #                  os.walk(os.path.join(self.submissions_dir,
+            #                                       request.user_id))]
+            #if old_strategies:
+            #    strategies = [s for s in self.strategies if s not in old_strategies[0]]
+            #    logging.info("Already used strategies %s" % old_strategies[0])
+            #else:
+            #    strategies = self.strategies
+            #if not strategies:
+            #    return render.thanks(request.user_id)
+            #request.strategy = random.choice(strategies)
+            #logging.info("Selected \'%s\' from %s" % (request.strategy,strategies))
+            ## Get recommendation
+            #self.rec.set_strategy(request.strategy)
+            request.strategy = self.set_rec_strategy(request.user_id)
             prediction = self.rec.get_recommendation(request.user,10).get_prediction()
             logging.info("Prediction for user %s" % request.user_id)
             logging.info(str(prediction))
@@ -202,64 +168,77 @@ class Survey:
                           (request.user_id,request.strategy))
             recommendation = [result[0] for result in prediction]
 
-            # Check connection to DDE
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect((self.cfg.dde_server,self.cfg.dde_port))
-                dde = 1
-                s.close()
-            except:
-                dde =0
-                logging.debug("Could not connect to dde")
             # Load packages details
             pkgs_details = []
             for pkg_name in recommendation:
                 logging.info("Getting details of package %s" % pkg_name)
                 pkg = DebianPackage(pkg_name)
-                if dde:
-                    pkg.load_details_from_dde(self.cfg.dde_server,self.cfg.dde_port)
-                else:
-                    pkg.load_details_from_apt()
+                pkg.load_details()
                 pkgs_details.append(pkg)
+
             if pkgs_details:
                 logging.info("Rendering survey slide...")
                 return render.survey(pkgs_details, request)
             else:
-                return render.error_survey()
+                return render.error(["No recommendation produced for the uploaded file."],"/survey/","START")
 
-def add_global_hook():
-    g = web.storage({"counter": "1"})
-    def _wrapper(handler):
-        web.ctx.globals = g
-        return handler()
-    return _wrapper
+    def set_rec_strategy(self,user_id):
+        # Check the remaining strategies and select a new one
+        old_strategies = [dirs for root, dirs, files in
+                          os.walk(os.path.join(self.submissions_dir,
+                                               user_id))]
+        if old_strategies:
+            strategies = [s for s in self.strategies if s not in old_strategies[0]]
+            logging.info("Already used strategies %s" % old_strategies[0])
+        else:
+            strategies = self.strategies
+        if not strategies:
+            return render.thanks(request.user_id)
+        selected_strategy = random.choice(strategies)
+        logging.info("Selected \'%s\' from %s" % (selected_strategy,strategies))
+        k=50
+        n=50
+        if selected_strategy == "cb":
+            pass
+        if selected_strategy == "cbh":
+            pass
+        if selected_strategy == "cb_eset":
+            pass
+        if selected_strategy == "cbh_eset":
+            pass
+        if selected_strategy == "knn":
+            pass
+        if selected_strategy == "knn_eset":
+            pass
+        if selected_strategy == "knn_plus":
+            pass
+        if selected_strategy == "knnco":
+            pass
+        if selected_strategy == "knnco_eset":
+            pass
+        self.rec.set_strategy(selected_strategy,k,n)
+        return selected_strategy
+
+#def add_global_hook():
+#    g = web.storage({"counter": "1"})
+#    def _wrapper(handler):
+#        web.ctx.globals = g
+#        return handler()
+#    return _wrapper
 
 render = web.template.render('/var/www/AppRecommender/src/web/templates/', base='layout', globals={'hasattr':hasattr})
-render_plain = web.template.render('/var/www/AppRecommender/src/web/templates/')
 
-urls = ('/survey', 	           'Index',
-        '/survey/',                'Index',
-        '/survey/survey',          'Survey',
-        '/survey/apprec',          'Survey',
-        '/survey/thanks',   	   'Thanks',
-        '/survey/save',   	   'Save',
-        '/survey/thanks',   	   'Thanks',
-        '/survey/about',           'About',
-        '/survey/package/(.*)',    'Package',
-        '/',    		   'Index',
-        '/index',    		   'Index'
-        #'/',    		   'Fake',
-        #'/index',    		   'Fake'
+urls = ('',                'Index',
+        '/', 	           'Index',
+        '/survey',         'Survey',
+        '/apprec',         'Survey',
+        '/thanks',   	   'Thanks',
+        '/save',   	   'Save',
+        '/about',          'About',
        )
 
 web.webapi.internalerror = web.debugerror
 
-#if __name__ == "__main__":
 cfg = Config()
-#    apprec = web.application(urls, globals())
-#    application = web.application(urls, globals()).wsgifunc()
 app = web.application(urls, globals(), autoreload=False)
 application = app.wsgifunc()
-
-#    apprec.add_processor(add_global_hook())
-#    apprec.run()
