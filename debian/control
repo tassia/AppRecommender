@@ -1,0 +1,27 @@
+Source: apprecommender
+Section: utils
+Priority: extra
+Maintainer: Tiago Bortoletto Vaz <tiago@debian.org>
+Uploaders: Tássia Camões Araújo <tassia@gmail.com>
+Dm-Upload-Allowed: yes
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.9.2
+Homepage: http://recommender.debian.net
+Vcs-Browser: https://github.com/tassia/AppRecommender
+Vcs-Git: git://github.com/tassia/AppRecommender.git
+
+Package: apprecommender
+Architecture: all
+Depends: python, python-xapian, python-apt, python-cluster, python-simplejson,
+ python-numpy, apt-xapian-index, app-install-data, python-xdg
+Recommends: python-webpy
+Description: Application recommender for GNU/Linux systems
+ The user provides a set of applications installed in her/his system and the
+ recommender suggests a set of programs that she/he might also be interested in,
+ based on the profile deduced from the his previous choices and other similar
+ users choices. The recommendations are composed using classification and
+ information retrieval techniques using debtags, apt-xapian-index, Popcon and
+ UDD as data sources.
+ .
+ AppRecommender can be called from command line or be delivered as a web
+ service.
