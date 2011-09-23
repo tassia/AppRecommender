@@ -84,7 +84,7 @@ $for pkg in pkgs_details:
 			<img height="80" src="http://screenshots.debian.net/thumbnail/$pkg.name" 
 			alt="Screenshot $pkg.name" /></a>
 		    </div><!-- screenshot -->
-			<h1 id="title_pkg"> $pkg.name <span>($(pkgs_details.index(pkg)+1)/10)</span> <br />
+			<h1 id="title_pkg"> $pkg.name <span>($(pkgs_details.index(pkg)+1)/$len(pkgs_details))</span> <br />
 			<span>$pkg.summary</span></h1> <br />
             		<div class="content-pkg">
                 $if hasattr(pkg,'description'):
