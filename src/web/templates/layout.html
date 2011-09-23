@@ -33,8 +33,8 @@ function validateForm()
   var t = $$("#pkgs_list");
   var i = $$("input[name=pkgs_file]");
   if (!i.val() && ( !t.val() || t.val() == "Write your list App here or send a file list this icon:")) {
-    alert("Choose your list app or create a list!");
-    return true;
+    alert("Please select a local file containing the list of installed packages.");
+    return false;
   } else {
     if (i.val()) t.val("");
   	return true;
