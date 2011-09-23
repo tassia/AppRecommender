@@ -8,7 +8,10 @@ import sys
 import simplejson as json
 import apt
 import re
+import urllib
 import socket
+import csv
+import datetime
 
 sys.path.insert(0,"/var/www/AppRecommender/src/")
 
@@ -17,8 +20,6 @@ from config import Config
 from recommender import *
 from user import *
 from data import DebianPackage
-
-import urllib
 
 # avoid "RuntimeError: maximum recursion depth exceeded"
 sys.setrecursionlimit(50000)
@@ -35,10 +36,23 @@ class Thanks:
     def POST(self):
         web_input = web.input()
         user_id = web_input['user_id'].encode('utf8')
-        with open("/var/www/AppRecommender/src/web/submissions/%s/personal" % user_id,'w') as ident:
-            for key in ["name","email","comments"]:
-                if web_input.has_key(key):
-                    ident.write("# %s\n%s\n" % (key.capitalize(),web_input[key].encode("utf-8")))
+        personal_file = open("/var/www/AppRecommender/src/web/submissions/%s/personal" % user_id,'w')
+        personal = {}
+        for key in ["name","email","comments"]:
+            if web_input.has_key(key):
+                personal[key] = web_input[key].encode("utf-8")
+            else:
+                personal[key] = ""
+        try:
+            writer = csv.writer(personal_file)
+            writer.writerow(("user","name","email","comments"))
+            writer.writerow((user_id,personal["name"],personal["email"],personal["comments"]))
+        except:
+            error_msg = "Could not save optional information."
+            logging.critical("Could not save optional information.")
+            return render.error([error_msg],"/survey/","START")
+        finally:
+            personal_file.close()
         return render.thanks_id()
 
 class Fake:
@@ -51,31 +65,74 @@ class Save:
         logging.info("Saving user evaluation...")
         logging.info(web_input)
         user_id = web_input['user_id'].encode('utf8')
-        with open("/var/www/AppRecommender/src/web/submissions/%s/uploaded_file" % user_id) as packages_list:
-            pkgs_list = [line.strip() for line in packages_list.readlines()]
+        user_dir = "/var/www/AppRecommender/src/web/submissions/%s" % user_id
         strategy = web_input['strategy']
-        logging.debug("Saving evaluation for user %s, strategy %s and packages..."
+        strategy_dir = os.path.join(user_dir,strategy)
+        logging.debug("Saving evaluation for user %s strategy %s."
                       % (user_id,strategy))
-        logging.debug(pkgs_list)
-        evaluations = {}
-        evaluations["poor"] = []
-        evaluations["good"] = []
-        evaluations["surprising"] = []
-        for key, value in web_input.items():
-            if key.startswith("evaluation-"):
-                evaluations[value.encode('utf8')].append(key.lstrip("evaluation-"))
-        output_dir = ("/var/www/AppRecommender/src/web/submissions/%s/%s/" % (user_id,strategy))
-        for key,value in evaluations.items():
-            with open(os.path.join(output_dir,key),'w') as output:
-                for item in value:
-                    output.write(item+"\n")
-        with open(os.path.join(output_dir,"report"),'w') as report:
-            report.write("# User: %s\n# Strategy: %s\n# TP FP S\n%d %d %d\n" %
-                         (user_id,strategy,
-                          len(evaluations["good"])+len(evaluations["surprising"]),
-                          len(evaluations["poor"]),len(evaluations["surprising"])))
+        summary = {}
+        summary["poor"] = 0
+        summary["good"] = 0
+        summary["surprising"] = 0
+
+        # Save evaluation
+        try:
+            prediction_file = open(os.path.join(strategy_dir,"prediction"),'r')
+            evaluation_file = open(os.path.join(strategy_dir,"evaluation"),'w')
+            reader = csv.DictReader(prediction_file)
+            writer = csv.DictWriter(evaluation_file,fieldnames=reader.fieldnames)
+            headers = dict( (n,n) for n in reader.fieldnames )
+            writer.writerow(headers)
+            for key, value in web_input.items():
+                if key.startswith("evaluation-"):
+                    ranking = key.lstrip("evaluation-")
+                    for row in reader:
+                        if row['ranking'] == ranking:
+                            evaluation = value.encode('utf8')
+                            row['evaluation'] = evaluation
+                            writer.writerow(row)
+                            summary[evaluation] += 1
+                            break
+                    prediction_file.seek(0)
+        except:
+            error_msg = "Could not write evaluation to file."
+            logging.critical(error_msg)
+            return render.error([error_msg], "/survey/","START")
+        finally:
+            prediction_file.close()
+            evaluation_file.close()
+            os.remove(os.path.join(strategy_dir,"prediction"))
+            with open(os.path.join(strategy_dir,"end"),'w') as end:
+                end_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                end.write(end_time)
+
+        # Save report
+        try:
+            report = os.path.join(user_dir,"report")
+            report_file = open(os.path.join(user_dir,"report"),'a')
+            writer = csv.writer(report_file)
+            if os.path.getsize(report) == 0:
+                fieldnames = ('user','strategy',"start","end",'truepositive',
+                              'falsepositive','surprise','comments')
+                writer.writerow(fieldnames)
+            with open(os.path.join(strategy_dir,"start"),'r') as start:
+                start_time = start.readline().strip()
             if web_input.has_key("comments"):
-                report.write("# Comments\n%s\n" % web_input['comments'].encode("utf-8"))
+                comments =  web_input['comments'].encode("utf-8")
+            else:
+                comments = ""
+            writer.writerow((user_id,strategy,start_time,end_time,
+                             summary["good"]+summary["surprising"],
+                             summary["poor"],summary["surprising"],comments))
+        except:
+            if comments:
+                error_msg = "Could not save comments."
+                logging.critical(error_msg)
+                return render.error([error_msg], "/survey/","START")
+            logging.critical("Could not save evaluation report.")
+        finally:
+            report_file.close()
+
         if web_input.has_key('continue_button'):
             return Survey().POST()
         elif web_input.has_key('finish_button'):
@@ -137,38 +194,18 @@ class Survey:
                            "knnco","knnco_eset"]
         request = Request(web_input,self.submissions_dir)
         if len(request.user.pkg_profile)<10:
-            return render.error(["Could not extract profile from uploaded file. It must have at least 10 applications."],
-                                 "/survey/","START")
+            error_msg = "Could not extract profile from uploaded file. It must have at least 10 applications."
+            logging.critical(error_msg)
+            return render.error([error_msg], "/survey/","START")
         else:
-            ## Check the remaining strategies and select a new one
-            #old_strategies = [dirs for root, dirs, files in
-            #                  os.walk(os.path.join(self.submissions_dir,
-            #                                       request.user_id))]
-            #if old_strategies:
-            #    strategies = [s for s in self.strategies if s not in old_strategies[0]]
-            #    logging.info("Already used strategies %s" % old_strategies[0])
-            #else:
-            #    strategies = self.strategies
-            #if not strategies:
-            #    return render.thanks(request.user_id)
-            #request.strategy = random.choice(strategies)
-            #logging.info("Selected \'%s\' from %s" % (request.strategy,strategies))
-            ## Get recommendation
-            #self.rec.set_strategy(request.strategy)
             request.strategy = self.set_rec_strategy(request.user_id)
             prediction = self.rec.get_recommendation(request.user,10).get_prediction()
             logging.info("Prediction for user %s" % request.user_id)
             logging.info(str(prediction))
-            strategy_dir = os.path.join(request.user_dir,request.strategy)
-            os.makedirs(strategy_dir)
-            with open(os.path.join(strategy_dir,"prediction"),"w") as prediction_file:
-                for pkg,rating in prediction:
-                    prediction_file.write("%s %f.2\n" % (pkg,rating))
-            logging.debug("Saved %s/%s prediction to file" %
-                          (request.user_id,request.strategy))
-            recommendation = [result[0] for result in prediction]
+            self.save_prediction(request,prediction)
 
             # Load packages details
+            recommendation = [result[0] for result in prediction]
             pkgs_details = []
             for pkg_name in recommendation:
                 logging.info("Getting details of package %s" % pkg_name)
@@ -219,6 +256,30 @@ class Survey:
         self.rec.set_strategy(selected_strategy,k,n)
         return selected_strategy
 
+    def save_prediction(self,request,prediction):
+        strategy_dir = os.path.join(request.user_dir,request.strategy)
+        if not os.path.exists(strategy_dir):
+            os.makedirs(strategy_dir)
+        ranking = 0
+        prediction_file = open(os.path.join(strategy_dir,"prediction"),"w")
+        try:
+            writer = csv.writer(prediction_file)
+            fieldnames = ('ranking','rating','package','evaluation')
+            writer.writerow(fieldnames)
+            for pkg,rating in prediction:
+                writer.writerow((ranking,"%.4f"%rating,pkg,""))
+                ranking += 1
+        except:
+            error_msg = "Error to write prediction to file."
+            logging.critical(error_msg)
+            return render.error([error_msg], "/survey/","START")
+        finally:
+            prediction_file.close()
+        with open(os.path.join(strategy_dir,"start"),'w') as start:
+            now = datetime.datetime.now()
+            start.write(now.strftime("%Y%m%d%H%M%S"))
+        logging.debug("Saved prediction to file at %s/%s" %
+                      (request.user_id,request.strategy))
 #def add_global_hook():
 #    g = web.storage({"counter": "1"})
 #    def _wrapper(handler):
@@ -227,14 +288,15 @@ class Survey:
 #    return _wrapper
 
 render = web.template.render('/var/www/AppRecommender/src/web/templates/', base='layout', globals={'hasattr':hasattr})
+render_plain = web.template.render('/var/www/AppRecommender/src/web/templates/', globals={'hasattr':hasattr})
 
-urls = ('',                'Index',
-        '/', 	           'Index',
-        '/survey',         'Survey',
-        '/apprec',         'Survey',
+urls = ('/apprec',         'Survey',
         '/thanks',   	   'Thanks',
         '/save',   	   'Save',
         '/about',          'About',
+        '/index',          'Index',
+        '/', 	           'Index',
+#        '/', 	           'Fake',
        )
 
 web.webapi.internalerror = web.debugerror
