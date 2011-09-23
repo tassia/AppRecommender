@@ -201,6 +201,9 @@ class DebianPackage():
         if self.connect_to_dde(cfg.dde_server,cfg.dde_port):
             json_data = json.load(urllib.urlopen(cfg.dde_url % self.name))
             self.summary = json_data['r']['description']
+        else:
+            pkg_version = apt.Cache()[self.name].candidate
+            self.summary = pkg_version.summary
 
     def load_details(self):
         cfg = Config()
@@ -216,7 +219,7 @@ class DebianPackage():
         self.version = pkg_version.version
         self.summary = pkg_version.summary
         self.description = self.format_description(pkg_version.description)
-        self.summary = pkg_version.section
+        self.section = pkg_version.section
         if pkg_version.record.has_key('Homepage'):
             self.homepage = pkg_version.record['Homepage']
         if pkg_version.record.has_key('Tag'):
