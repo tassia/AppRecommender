@@ -99,12 +99,13 @@ class Save:
                     prediction_file.seek(0)
             prediction_file.close()
             evaluation_file.close()
+            os.remove(os.path.join(strategy_dir,"prediction"))
         except:
             error_msg = "Could not write evaluation to file."
             logging.critical(error_msg)
-            return render.error([error_msg], "/survey/","START")
+            if not os.path.exists(os.path.join(strategy_dir,"evaluation")):
+                return render.error([error_msg], "/survey/","START")
         finally:
-            os.remove(os.path.join(strategy_dir,"prediction"))
             with open(os.path.join(strategy_dir,"end"),'w') as end:
                 end_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
                 end.write(end_time)
