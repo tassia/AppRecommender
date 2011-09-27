@@ -111,29 +111,29 @@ class Save:
                 end.write(end_time)
 
         # Save report
-        #try:
-        report = os.path.join(user_dir,"report")
-        report_file = open(os.path.join(user_dir,"report"),'a')
-        writer = csv.writer(report_file)
-        if os.path.getsize(report) == 0:
-            fieldnames = ('user','strategy','start','end','poor',
-                          'redundant','useful','surprising','comments')
-            writer.writerow(fieldnames)
-        with open(os.path.join(strategy_dir,"start"),'r') as start:
-            start_time = start.readline().strip()
-        if web_input.has_key("comments"):
-            comments =  web_input['comments'].encode("utf-8")
-        else:
-            comments = ""
-        writer.writerow((user_id,strategy,start_time,end_time,summary["poor"],
-                         summary["redundant"],summary["useful"],
-                         summary["surprising"],comments))
-        #except:
-        #    error_msg = "Could not save evaluation report."
-        #    logging.critical(error_msg)
-        #    return render.error([error_msg], "/survey/","START")
-        #finally:
-        #    report_file.close()
+        try:
+            report = os.path.join(user_dir,"report")
+            report_file = open(os.path.join(user_dir,"report"),'a')
+            writer = csv.writer(report_file)
+            if os.path.getsize(report) == 0:
+                fieldnames = ('user','strategy','start','end','poor',
+                              'redundant','useful','surprising','comments')
+                writer.writerow(fieldnames)
+            with open(os.path.join(strategy_dir,"start"),'r') as start:
+                start_time = start.readline().strip()
+            if web_input.has_key("comments"):
+                comments =  web_input['comments'].encode("utf-8")
+            else:
+                comments = ""
+            writer.writerow((user_id,strategy,start_time,end_time,summary["poor"],
+                             summary["redundant"],summary["useful"],
+                             summary["surprising"],comments))
+            report_file.close()
+        except:
+            error_msg = "Could not save evaluation report."
+            logging.critical(error_msg)
+            if not os.path.exists(os.path.join(user_dir,"report")):
+                return render.error([error_msg], "/survey/","START")
 
         if web_input.has_key('continue_button'):
             return Survey().POST()
