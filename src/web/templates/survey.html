@@ -1,4 +1,4 @@
-$def with (pkgs_details, request)
+$def with (pkgs_details, user_id, strategy, remaining)
 $var title: Survey
 $var url_base: /survey/
 $var action: START
@@ -28,16 +28,20 @@ $var jsfiles: /static/coda-slider-2.0/javascripts/jquery-1.3.2.min.js /static/co
 
 <div class="show-end" style="display: none;">
 
-<p>
-If you have any comment regarding this set of suggestions, please write in the form below. Choose <i>Continue</i> if you can perform another round of evaluations, or <i>Finish</i> to conclude your participation.
+<p align="justify">
+If you have any comments regarding this set of suggestions, please write in the
+form below. There are <b>$(remaining-1) remaining</b> recommendation strategies to be evaluated.
+Choose <i>Continue</i> if you can perform one more round of evaluations, or
+<i>Finish</i> to conclude your participation.
 </p>
 
 </div>
 
 <form action="save" method="post" enctype="multipart/form-data" name="surveyform">
 
-<input type="hidden" name="user_id" value=$request.user.user_id>
-<input type="hidden" name="strategy" value=$request.strategy>
+<input type="hidden" name="user_id" value=$user_id>
+<input type="hidden" name="strategy" value=$strategy>
+<input type="hidden" name="remaining" value=$remaining>
 
 <div style="display: none; width: 400px; margin-left: 150px; margin-top: 10px;" class="show-end"><!-- display show in the end form -->
 <p align="center">
@@ -62,16 +66,20 @@ $for pkg in pkgs_details:
 		     	<div id="panel-controls" class="glass">
 		   <fieldset>
 			<label class="radioButton">
-			<input class="radio" type="radio" name="evaluation-$pkgs_details.index(pkg)" value="surprising" />
-			Pleasantly surprising
+			<input class="radio" type="radio" name="evaluation-$(pkgs_details.index(pkg))" value="poor" />
+			Poor
+			</label><br />
+			<label class="radioButton">
+			<input class="radio" type="radio" name="evaluation-$(pkgs_details.index(pkg))" value="redundant" />
+			Redundant
 			</label><br />
        			<label class="radioButton">
-			<input class="radio yesb" type="radio" name="evaluation-$pkgs_details.index(pkg)" value="good" />
+			<input class="radio" type="radio" name="evaluation-$pkgs_details.index(pkg)" value="useful" />
 			Useful
 			</label><br />
 			<label class="radioButton">
-			<input class="radio" type="radio" name="evaluation-$(pkgs_details.index(pkg))" value="poor" />
-			Poor
+			<input class="radio" type="radio" name="evaluation-$pkgs_details.index(pkg)" value="surprising" />
+			Pleasantly surprising
 			</label>
 		   </fieldset>
 			<br style="clear: both;" />

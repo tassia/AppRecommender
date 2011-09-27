@@ -12,6 +12,7 @@ import urllib
 import socket
 import csv
 import datetime
+import stat
 
 sys.path.insert(0,"/var/www/AppRecommender/src/")
 
@@ -38,15 +39,16 @@ class Thanks:
         user_id = web_input['user_id'].encode('utf8')
         personal_file = open("/var/www/AppRecommender/src/web/submissions/%s/personal" % user_id,'w')
         personal = {}
-        for key in ["name","email","comments"]:
+        for key in ["name","email","user_habits","comments"]:
             if web_input.has_key(key):
                 personal[key] = web_input[key].encode("utf-8")
             else:
                 personal[key] = ""
         try:
             writer = csv.writer(personal_file)
-            writer.writerow(("user","name","email","comments"))
-            writer.writerow((user_id,personal["name"],personal["email"],personal["comments"]))
+            writer.writerow(("user","name","email","habits_id","comments"))
+            writer.writerow((user_id,personal["name"],personal["email"],
+                             personal["user_habits"],personal["comments"]))
         except:
             error_msg = "Could not save optional information."
             logging.critical("Could not save optional information.")
@@ -72,7 +74,8 @@ class Save:
                       % (user_id,strategy))
         summary = {}
         summary["poor"] = 0
-        summary["good"] = 0
+        summary["redundant"] = 0
+        summary["useful"] = 0
         summary["surprising"] = 0
 
         # Save evaluation
@@ -94,44 +97,42 @@ class Save:
                             summary[evaluation] += 1
                             break
                     prediction_file.seek(0)
+            prediction_file.close()
+            evaluation_file.close()
         except:
             error_msg = "Could not write evaluation to file."
             logging.critical(error_msg)
             return render.error([error_msg], "/survey/","START")
         finally:
-            prediction_file.close()
-            evaluation_file.close()
             os.remove(os.path.join(strategy_dir,"prediction"))
             with open(os.path.join(strategy_dir,"end"),'w') as end:
                 end_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
                 end.write(end_time)
 
         # Save report
-        try:
-            report = os.path.join(user_dir,"report")
-            report_file = open(os.path.join(user_dir,"report"),'a')
-            writer = csv.writer(report_file)
-            if os.path.getsize(report) == 0:
-                fieldnames = ('user','strategy',"start","end",'truepositive',
-                              'falsepositive','surprise','comments')
-                writer.writerow(fieldnames)
-            with open(os.path.join(strategy_dir,"start"),'r') as start:
-                start_time = start.readline().strip()
-            if web_input.has_key("comments"):
-                comments =  web_input['comments'].encode("utf-8")
-            else:
-                comments = ""
-            writer.writerow((user_id,strategy,start_time,end_time,
-                             summary["good"]+summary["surprising"],
-                             summary["poor"],summary["surprising"],comments))
-        except:
-            if comments:
-                error_msg = "Could not save comments."
-                logging.critical(error_msg)
-                return render.error([error_msg], "/survey/","START")
-            logging.critical("Could not save evaluation report.")
-        finally:
-            report_file.close()
+        #try:
+        report = os.path.join(user_dir,"report")
+        report_file = open(os.path.join(user_dir,"report"),'a')
+        writer = csv.writer(report_file)
+        if os.path.getsize(report) == 0:
+            fieldnames = ('user','strategy','start','end','poor',
+                          'redundant','useful','surprising','comments')
+            writer.writerow(fieldnames)
+        with open(os.path.join(strategy_dir,"start"),'r') as start:
+            start_time = start.readline().strip()
+        if web_input.has_key("comments"):
+            comments =  web_input['comments'].encode("utf-8")
+        else:
+            comments = ""
+        writer.writerow((user_id,strategy,start_time,end_time,summary["poor"],
+                         summary["redundant"],summary["useful"],
+                         summary["surprising"],comments))
+        #except:
+        #    error_msg = "Could not save evaluation report."
+        #    logging.critical(error_msg)
+        #    return render.error([error_msg], "/survey/","START")
+        #finally:
+        #    report_file.close()
 
         if web_input.has_key('continue_button'):
             return Survey().POST()
@@ -140,42 +141,26 @@ class Save:
         else:
             return render.index_survey()
 
-class Request:
-    def __init__(self,web_input,submissions_dir):
-        self.strategy = ""
-        # Check if it is first round
-        if web_input.has_key('user_id'):
-            self.user_id = web_input['user_id'].encode('utf8')
-            self.user_dir = os.path.join(submissions_dir, self.user_id)
-            logging.info("New round for user %s" % self.user_id)
-        else:
-            self.user_dir = tempfile.mkdtemp(prefix='',dir=submissions_dir)
-            self.user_id = self.user_dir.split("/")[-1]
-            logging.info("Request from user %s" % self.user_id)
-            logging.debug("Created dir %s" % self.user_dir)
-        uploaded_file = os.path.join(self.user_dir,"uploaded_file")
+class Instruction:
+    def POST(self):
+        web_input = web.input(pkgs_file={})
+        submissions_dir = "/var/www/AppRecommender/src/web/submissions/"
+        user_dir = tempfile.mkdtemp(prefix='',dir=submissions_dir)
+        os.chmod(user_dir,stat.S_IRWXU|stat.S_IXOTH|stat.S_IROTH)
+        user_id = user_dir.split("/")[-1]
+        logging.info("Request from user %s" % user_id)
+        logging.debug("Created dir %s" % user_dir)
+        uploaded_file = os.path.join(user_dir,"uploaded_file")
         if not os.path.exists(uploaded_file):
             if web_input['pkgs_file'].value:
                 lines = web_input['pkgs_file'].file.readlines()
                 with open(uploaded_file, "w") as uploaded:
                     uploaded.writelines(lines)
-        with open(uploaded_file) as uploaded:
-            if uploaded.readline().startswith('POPULARITY-CONTEST'):
-                self.user = PopconSystem(uploaded_file,self.user_id)
             else:
-                self.user = PkgsListSystem(uploaded_file,self.user_id)
-
-    def __str__(self):
-        return "Request %s:\n %s" % (self.user.user_id,
-                                     str(self.user.pkg_profile))
-
-    def validates(self):
-        self.errors = []
-        if not self.user.pkg_profile:
-            self.errors.append("No packages list provided.")
-        if self.errors:
-            return False
-        return True
+                # saving empty files
+                with open(uploaded_file, "w") as uploaded:
+                    pass
+        return render.intro(user_id)
 
 class Survey:
     def __init__(self):
@@ -185,24 +170,46 @@ class Survey:
         self.submissions_dir = "/var/www/AppRecommender/src/web/submissions/"
         if not os.path.exists(self.submissions_dir):
             os.makedirs(self.submissions_dir)
-
+        self.strategies = ["cbh","cbh_eset",
+                           "knn","knn_eset","knn_plus",
+                           "knnco"]
     def POST(self):
         web_input = web.input(pkgs_file={})
-        logging.debug("Survey web_input %s" % str(web_input))
-        self.strategies = ["cb","cbh","cb_eset","cbh_eset",
-                           "knn","knn_eset","knn_plus",
-                           "knnco","knnco_eset"]
-        request = Request(web_input,self.submissions_dir)
-        if len(request.user.pkg_profile)<10:
+        if web_input.has_key('user_id'):
+            user_id = web_input['user_id'].encode('utf8')
+            user_dir = os.path.join(self.submissions_dir, user_id)
+            logging.info("New recommendation for user %s" % user_id)
+        
+        uploaded_file = os.path.join(user_dir,"uploaded_file")
+        with open(uploaded_file) as uploaded:
+            if uploaded.readline().startswith('POPULARITY-CONTEST'):
+                user = PopconSystem(uploaded_file,user_id)
+            else:
+                user = PkgsListSystem(uploaded_file,user_id)
+        user.maximal_pkg_profile()
+        if len(user.pkg_profile)<10:
             error_msg = "Could not extract profile from uploaded file. It must have at least 10 applications."
             logging.critical(error_msg)
             return render.error([error_msg], "/survey/","START")
         else:
-            request.strategy = self.set_rec_strategy(request.user_id)
-            prediction = self.rec.get_recommendation(request.user,10).get_prediction()
-            logging.info("Prediction for user %s" % request.user_id)
+            # Check the remaining strategies and select a new one
+            old_strategies = [dirs for root, dirs, files in
+                              os.walk(os.path.join(self.submissions_dir,
+                                                   user_id))]
+            if old_strategies:
+                strategies = [s for s in self.strategies if s not in old_strategies[0]]
+                logging.info("Already used strategies %s" % old_strategies[0])
+            else:
+                strategies = self.strategies
+            if not strategies:
+                return render.thanks(user_id)
+            selected_strategy = random.choice(strategies)
+            logging.info("Selected \'%s\' from %s" % (selected_strategy,strategies))
+            self.set_rec_strategy(selected_strategy)
+            prediction = self.rec.get_recommendation(user,10).get_prediction()
+            logging.info("Prediction for user %s" % user_id)
             logging.info(str(prediction))
-            self.save_prediction(request,prediction)
+            self.save_prediction(user_id,selected_strategy,prediction)
 
             # Load packages details
             recommendation = [result[0] for result in prediction]
@@ -215,31 +222,14 @@ class Survey:
 
             if pkgs_details:
                 logging.info("Rendering survey slide...")
-                return render.survey(pkgs_details, request)
+                return render.survey(pkgs_details, user_id, selected_strategy, len(strategies))
             else:
                 return render.error(["No recommendation produced for the uploaded file."],"/survey/","START")
 
-    def set_rec_strategy(self,user_id):
-        # Check the remaining strategies and select a new one
-        old_strategies = [dirs for root, dirs, files in
-                          os.walk(os.path.join(self.submissions_dir,
-                                               user_id))]
-        if old_strategies:
-            strategies = [s for s in self.strategies if s not in old_strategies[0]]
-            logging.info("Already used strategies %s" % old_strategies[0])
-        else:
-            strategies = self.strategies
-        if not strategies:
-            return render.thanks(request.user_id)
-        selected_strategy = random.choice(strategies)
-        logging.info("Selected \'%s\' from %s" % (selected_strategy,strategies))
-        k=50
-        n=50
-        if selected_strategy == "cb":
-            pass
+    def set_rec_strategy(self,selected_strategy):
+        k=10
+        n=20
         if selected_strategy == "cbh":
-            pass
-        if selected_strategy == "cb_eset":
             pass
         if selected_strategy == "cbh_eset":
             pass
@@ -251,13 +241,11 @@ class Survey:
             pass
         if selected_strategy == "knnco":
             pass
-        if selected_strategy == "knnco_eset":
-            pass
         self.rec.set_strategy(selected_strategy,k,n)
         return selected_strategy
 
-    def save_prediction(self,request,prediction):
-        strategy_dir = os.path.join(request.user_dir,request.strategy)
+    def save_prediction(self,user_id,strategy,prediction):
+        strategy_dir = os.path.join(self.submissions_dir,user_id,strategy)
         if not os.path.exists(strategy_dir):
             os.makedirs(strategy_dir)
         ranking = 0
@@ -279,7 +267,7 @@ class Survey:
             now = datetime.datetime.now()
             start.write(now.strftime("%Y%m%d%H%M%S"))
         logging.debug("Saved prediction to file at %s/%s" %
-                      (request.user_id,request.strategy))
+                      (user_id,strategy))
 #def add_global_hook():
 #    g = web.storage({"counter": "1"})
 #    def _wrapper(handler):
@@ -290,7 +278,8 @@ class Survey:
 render = web.template.render('/var/www/AppRecommender/src/web/templates/', base='layout', globals={'hasattr':hasattr})
 render_plain = web.template.render('/var/www/AppRecommender/src/web/templates/', globals={'hasattr':hasattr})
 
-urls = ('/apprec',         'Survey',
+urls = ('/apprec',         'Instruction',
+        '/evaluation',     'Survey',
         '/thanks',   	   'Thanks',
         '/save',   	   'Save',
         '/about',          'About',

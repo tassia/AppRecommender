@@ -14,14 +14,25 @@ $var cssfiles: static/css/survey.css
 <div class="innertube">
 
 <h1>AppRecommender Survey</h1>
-<p>Thank you very much for participating in this survey, you help is very much
-appreciated! Identify yourself if you want to be mentioned in our thanks page
-and final report.
-</p><br />
+<p>Thank you very much for participating in this survey!</p>
+<p>Last but not least, we'd like to have your personal identification to mention
+your name in our thanks page. The awareness of your installation habits would
+make our report more informative and, finally, we appreciate general comments
+regarding this survey and/or the recommendations you got.</p>
 
 <div style="margin-left:150px;" id="optionalform">
 <center>
 <form action="thanks" method="post" enctype="multipart/form-data" name="identification_form">
+<div style="text-align: left;">
+  <p><label style="margin-left: 7px">Admin's habit</label>
+  <fieldset style="margin-left: 20px">
+    <input type=radio class=radio name="user_habits" value="1">I rarely install new applications.<br />
+    <input type=radio class=radio name="user_habits" value="2">I only install when I get a trusted recommendation.<br />
+    <input type=radio class=radio name="user_habits" value="3">I actively seek for new applications.<br />
+    <input type=radio class=radio name="user_habits" value="0">I would rather not comment on that.<br />
+  </fieldset>
+  </p>
+</div>
   <p>
   <label>
   <input type="hidden" name="user_id" value=$user_id>
