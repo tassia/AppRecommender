@@ -8,3 +8,5 @@ psql-out
 udd-import.log
 udd.sql.gz
 src/web/submissions/
+*.log
+.vagrant/
