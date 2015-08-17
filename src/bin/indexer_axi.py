@@ -33,7 +33,7 @@ import xapian
 if __name__ == '__main__':
     axi_path = "/var/lib/apt-xapian-index/index"
     axi = xapian.Database(axi_path)
-    base_dir = os.path.expanduser("~/.app-recommender/")
+    base_dir = os.path.expanduser("/vagrant/.app-recommender/")
 
     begin_time = datetime.datetime.now()
 
@@ -48,6 +48,7 @@ if __name__ == '__main__':
         with open(pkgs_filter) as valid:
             pkgs_list = [line.strip() for line in valid]
         filter_str = pkgs_filter.split("/")[-1]
+
         index = data.SampleAptXapianIndex(pkgs_list,axi,
                                           os.path.join(base_dir,"axi_"+filter_str))
         print ("Axi size: %d" % axi.get_doccount())
