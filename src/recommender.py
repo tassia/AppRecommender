@@ -133,6 +133,7 @@ class Recommender:
         #    if "knn" in strategy_str:
         #        self.users_repository = self.popcon_programs
         # Set strategy based on strategy_str
+
         if strategy_str == "cb":
             self.strategy = strategy.ContentBased("mix",profile_size)
         elif strategy_str == "cbt":
@@ -141,7 +142,7 @@ class Recommender:
             self.strategy = strategy.ContentBased("desc",profile_size)
         elif strategy_str == "cbh":
             self.strategy = strategy.ContentBased("half",profile_size)
-        if strategy_str == "cb_eset":
+        elif strategy_str == "cb_eset":
             self.strategy = strategy.ContentBased("mix_eset",profile_size)
         elif strategy_str == "cbt_eset":
             self.strategy = strategy.ContentBased("tag_eset",profile_size)
