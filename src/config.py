@@ -43,7 +43,7 @@ class Config(Singleton):
             self.output = "apprec.log"
 
             ## data_source options
-            self.base_dir = os.path.expanduser("/home/tiago/.app-recommender/")
+            self.base_dir = os.path.expanduser("/vagrant/.app-recommender")
             # filters for valid packages
             self.filters_dir = os.path.join(self.base_dir,"filters")
             self.pkgs_filter = os.path.join(self.filters_dir,"desktopapps")
@@ -71,7 +71,7 @@ class Config(Singleton):
             ## recomender options
             self.strategy = "cb"
             self.weight = "bm25"
-            self.bm25_k1 = 1.2 
+            self.bm25_k1 = 1.2
             self.bm25_k2 = 0
             self.bm25_k3 = 7
             self.bm25_b = 0.75
