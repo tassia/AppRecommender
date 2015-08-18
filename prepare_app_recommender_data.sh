@@ -1,5 +1,9 @@
-echo "Creating folder: /vagrant/.app-recommender"
 cd /vagrant
+
+echo "Deleting folder: /vagrant/.app-recommender"
+rm -rf .app-recommender
+
+echo "Creating folder: /vagrant/.app-recommender"
 mkdir .app-recommender
 
 echo "Creating folder: /vagrant/.app-recommender/filters"
