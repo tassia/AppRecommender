@@ -10,3 +10,4 @@ udd.sql.gz
 src/web/submissions/
 *.log
 .vagrant/
+*.swp
