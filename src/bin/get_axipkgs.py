@@ -25,12 +25,19 @@ sys.path.insert(0,'../')
 import xapian
 
 if __name__ == '__main__':
-    if len(sys.argv)<2:
-        print "Usage: get_axipkgs index_path"
-        exit(1)
 
-    axi_path = sys.argv[1]
+    axi_path = ""
+    if len(sys.argv)<2:
+        axi_path = "/var/lib/apt-xapian-index/index"
+    elif sys.argv[1] == '-h':
+        print "Usage: get_axipkgs index_path"
+        print "If without index_path, the default is: /var/lib/apt-xapian-index/index"
+        exit(1)
+    else:
+        axi_path = sys.argv[1]
+
     axi = xapian.Database(axi_path)
+
     for n in range(1,axi.get_lastdocid()):
         doc = 0
         try:
