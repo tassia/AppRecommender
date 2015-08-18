@@ -19,3 +19,19 @@ Open a browser and access http://localhost:8080
 
 
 More info at https://github.com/tassia/AppRecommender/wiki
+
+
+Run AppRecommender in Terminal
+------------------------------
+
+- Into folder /vagrant/ create the folder .app-recommender/ if this folder not exists
+
+- Into folder .app-recommender/ create the folder filters/ if this folder not exists
+
+- Into folder /vagrant/src/bin/ run the following command:
+
+- - $ ./get_tags.sh > ../../.app-recommender/filters/debtags
+
+- - $ ./get_axipkgs.py > ../../.app-recommender/filters/desktopapps
+
+- - $ ./indexer_axi.py sample ../../.app-recommender/filters/desktopapps
