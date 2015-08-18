@@ -12,11 +12,10 @@ python-numpy apt-xapian-index app-install-data python-xdg
 Run AppRecommender web UI
 --------------------------
 
-# cd ./src/web
-# ./server.py
+$ cd ./src/web
+$ ./server.py
 
 Open a browser and access http://localhost:8080
-
 
 More info at https://github.com/tassia/AppRecommender/wiki
 
@@ -24,14 +23,15 @@ More info at https://github.com/tassia/AppRecommender/wiki
 Run AppRecommender in Terminal
 ------------------------------
 
-- Into folder /vagrant/ create the folder .app-recommender/ if this folder not exists
+$ cd ./src/bin
+$ ./apprec.py -s cb
 
-- Into folder .app-recommender/ create the folder filters/ if this folder not exists
+Run "$ ./apprec.py -h" to view the recommender strategies
 
-- Into folder /vagrant/src/bin/ run the following command:
 
-- - $ ./get_tags.sh > ../../.app-recommender/filters/debtags
+Prepare AppRecommender data
+---------------------------
 
-- - $ ./get_axipkgs.py > ../../.app-recommender/filters/desktopapps
+Run the following command:
 
-- - $ ./indexer_axi.py sample ../../.app-recommender/filters/desktopapps
+$ ./prepare_app_recommender_data.sh
