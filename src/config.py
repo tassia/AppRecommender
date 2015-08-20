@@ -164,6 +164,7 @@ class Config(Singleton):
 
         self.debug = int(self.read_option('general', 'debug'))
         self.debug = int(self.read_option('general', 'verbose'))
+        self.base_dir = self.read_option('data_sources', 'base_dir')
         self.output = os.path.join(self.base_dir,
                                    self.read_option('general','output'))
         self.filters_dir = os.path.join(self.base_dir,
