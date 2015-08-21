@@ -32,6 +32,6 @@ Run "$ ./apprec.py -h" to view the recommender strategies
 Prepare AppRecommender data
 ---------------------------
 
-Run the following command:
-
-$ ./prepare_app_recommender_data.sh
+Run the following commands:
+$ ./install_dependencies.sh
+$ ./prepare_data.sh
