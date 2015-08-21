@@ -32,8 +32,9 @@ import xapian
 
 if __name__ == '__main__':
     axi_path = "/var/lib/apt-xapian-index/index"
+    cfg = Config()
     axi = xapian.Database(axi_path)
-    base_dir = os.path.expanduser("/vagrant/.app-recommender/")
+    base_dir = cfg.base_dir
 
     begin_time = datetime.datetime.now()
 

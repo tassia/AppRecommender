@@ -1,19 +1,6 @@
 SRC_DIR=`pwd`
 #PATH_DIR=${1-/vagrant}
-PATH_DIR=$1
-
-if [ "$1" == "" ]; then
-  printf "Default folder is '/vagrant', you want use this folder? (Y/n): "
-  read -n 1 input
-  echo ""
-
-  if [ "$input" == "y" ] || [ "$input" == "Y" ] || [ "$input" == "" ]; then
-    PATH_DIR=/vagrant
-  else
-    echo "Use: prepare_app_recommender_data.sh [folder_path]"
-    exit
-  fi
-fi
+PATH_DIR=~
 
 echo "Deleting folder: $PATH_DIR/.app-recommender"
 rm -rf $PATH_DIR/.app-recommender

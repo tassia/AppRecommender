@@ -43,7 +43,7 @@ class Config(Singleton):
             self.output = "apprec.log"
 
             ## data_source options
-            self.base_dir = os.path.expanduser("/vagrant/.app-recommender")
+            self.base_dir = os.path.expanduser("~/.app-recommender")
             # filters for valid packages
             self.filters_dir = os.path.join(self.base_dir,"filters")
             self.pkgs_filter = os.path.join(self.filters_dir,"desktopapps")
@@ -164,7 +164,8 @@ class Config(Singleton):
 
         self.debug = int(self.read_option('general', 'debug'))
         self.debug = int(self.read_option('general', 'verbose'))
-        self.base_dir = self.read_option('data_sources', 'base_dir')
+        self.base_dir = os.path.expanduser(self.read_option('data_sources',
+                                           'base_dir'))
         self.output = os.path.join(self.base_dir,
                                    self.read_option('general','output'))
         self.filters_dir = os.path.join(self.base_dir,
