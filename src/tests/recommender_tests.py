@@ -21,24 +21,27 @@ __license__ = """
 
 import unittest2
 import sys
-sys.path.insert(0,'../')
+sys.path.insert(0, '../')
 from recommender import RecommendationResult, Recommender
 from user import User
 from config import Config
-from strategy import ContentBasedStrategy, CollaborativeStrategy
+from strategy import ContentBased
+
 
 class RecommendationResultTests(unittest2.TestCase):
     @classmethod
     def setUpClass(self):
-        self.result = RecommendationResult({"gimp":1.5,"inkscape":3.0,"eog":1})
+        self.result = RecommendationResult({"gimp": 1.5, "inkscape": 3.0,
+                                            "eog": 1})
 
     def test_str(self):
         string = "\n 0: inkscape\n 1: gimp\n 2: eog\n"
-        self.assertEqual(self.result.__str__(),string)
+        self.assertEqual(self.result.__str__(), string)
 
     def test_get_prediction(self):
-        prediction = [("inkscape",3.0),("gimp",1.5),("eog",1)]
-        self.assertEqual(self.result.get_prediction(),prediction)
+        prediction = [("inkscape", 3.0), ("gimp", 1.5), ("eog", 1)]
+        self.assertEqual(self.result.get_prediction(), prediction)
+
 
 class RecommenderTests(unittest2.TestCase):
     @classmethod
@@ -47,26 +50,27 @@ class RecommenderTests(unittest2.TestCase):
         cfg.popcon_index = "test_data/.sample_pxi"
         cfg.popcon_dir = "test_data/popcon_dir"
         cfg.clusters_dir = "test_data/clusters_dir"
+        cfg.popcon = 0
         self.rec = Recommender(cfg)
 
     def test_set_strategy(self):
         self.rec.set_strategy("cb")
-        self.assertIsInstance(self.rec.strategy,ContentBasedStrategy)
-        self.assertEqual(self.rec.strategy.content,"full")
+        self.assertIsInstance(self.rec.strategy, ContentBased)
+        self.assertEqual(self.rec.strategy.content, "mix")
         self.rec.set_strategy("cbt")
-        self.assertIsInstance(self.rec.strategy,ContentBasedStrategy)
-        self.assertEqual(self.rec.strategy.content,"tag")
+        self.assertIsInstance(self.rec.strategy, ContentBased)
+        self.assertEqual(self.rec.strategy.content, "tag")
         self.rec.set_strategy("cbd")
-        self.assertIsInstance(self.rec.strategy,ContentBasedStrategy)
-        self.assertEqual(self.rec.strategy.content,"desc")
-        self.rec.set_strategy("col")
-        self.assertIsInstance(self.rec.strategy,CollaborativeStrategy)
+        self.assertIsInstance(self.rec.strategy, ContentBased)
+        self.assertEqual(self.rec.strategy.content, "desc")
+        # self.rec.set_strategy("knn")
+        # self.assertIsInstance(self.rec.strategy,Collaborative)
 
     def test_get_recommendation(self):
-        user = User({"inkscape": 1, "gimp": 1, "eog":1})
+        user = User({"inkscape": 1, "gimp": 1, "eog": 1})
         result = self.rec.get_recommendation(user)
         self.assertIsInstance(result, RecommendationResult)
-        self.assertGreater(len(result.item_score),0)
+        self.assertGreater(len(result.item_score), 0)
 
 if __name__ == '__main__':
         unittest2.main()
