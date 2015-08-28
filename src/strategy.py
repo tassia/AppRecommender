@@ -66,7 +66,7 @@ class PkgExpandDecider(xapian.ExpandDecider):
         """
         True if the term is a package.
         """
-        pkg = term.lstrip("XP") 
+        pkg = term.lstrip("XP")
         is_new_pkg = pkg not in self.pkgs_list and term.startswith("XP")
         if "kde" in pkg:
             return is_new_pkg and "kde" in self.pkgs_list
@@ -88,7 +88,8 @@ class RecommendationStrategy:
     """
     Base class for recommendation strategies.
     """
-    pass
+    def run(self,rec,user,recommendation_size):
+        raise NotImplementedError
 
 class ContentBased(RecommendationStrategy):
     """
