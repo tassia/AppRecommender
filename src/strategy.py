@@ -22,11 +22,11 @@ __license__ = """
 
 import os
 import xapian
-from singleton import Singleton
 import recommender
 import data
 import logging
 from error import Error
+
 
 class PkgMatchDecider(xapian.MatchDecider):
     """
@@ -51,6 +51,7 @@ class PkgMatchDecider(xapian.MatchDecider):
             return is_new and "gnome" in self.pkgs_list
         return is_new
 
+
 class PkgExpandDecider(xapian.ExpandDecider):
     """
     Extend xapian.ExpandDecider to consider packages only.
@@ -74,6 +75,7 @@ class PkgExpandDecider(xapian.ExpandDecider):
             return is_new_pkg and "gnome" in self.pkgs_list
         return is_new_pkg
 
+
 class TagExpandDecider(xapian.ExpandDecider):
     """
     Extend xapian.ExpandDecider to consider tags only.
@@ -84,25 +86,27 @@ class TagExpandDecider(xapian.ExpandDecider):
         """
         return term.startswith("XT")
 
+
 class RecommendationStrategy:
     """
     Base class for recommendation strategies.
     """
-    def run(self,rec,user,recommendation_size):
+    def run(self, rec, user, recommendation_size):
         raise NotImplementedError
+
 
 class ContentBased(RecommendationStrategy):
     """
     Content-based recommendation strategy based on Apt-xapian-index.
     """
-    def __init__(self,content,profile_size):
+    def __init__(self, content, profile_size):
         self.description = "Content-based"
         self.content = content
         self.profile_size = profile_size
 
-    def get_sugestion_from_profile(self,rec,user,profile,recommendation_size):
-        query = xapian.Query(xapian.Query.OP_OR,profile)
-        print query
+    def get_sugestion_from_profile(self, rec, user, profile,
+                                   recommendation_size):
+        query = xapian.Query(xapian.Query.OP_OR, profile)
         enquire = xapian.Enquire(rec.items_repository)
         enquire.set_weighting_scheme(rec.weight)
         enquire.set_query(query)
@@ -120,62 +124,64 @@ class ContentBased(RecommendationStrategy):
             item_score[m.document.get_data()] = m.weight
             ranking.append(m.document.get_data())
 
-        result = recommender.RecommendationResult(item_score,ranking)
+        result = recommender.RecommendationResult(item_score, ranking)
         return result
 
-    def run(self,rec,user,recommendation_size):
+    def run(self, rec, user, rec_size):
         """
         Perform recommendation strategy.
         """
         logging.debug("Composing user profile...")
-        profile = user.content_profile(rec.items_repository,self.content,
-                                       self.profile_size,rec.valid_tags)
+        profile = user.content_profile(rec.items_repository, self.content,
+                                       self.profile_size, rec.valid_tags)
         logging.debug(profile)
-        result = self.get_sugestion_from_profile(rec,user,profile,recommendation_size)
+        result = self.get_sugestion_from_profile(rec, user, profile, rec_size)
         return result
+
 
 class Collaborative(RecommendationStrategy):
     """
     Colaborative recommendation strategy.
     """
-    def get_user_profile(self,user,rec):
+    def get_user_profile(self, user, rec):
         logging.debug("Composing user profile...")
         profile = ["XP"+package for package in
                    user.filter_pkg_profile(rec.valid_pkgs)]
         logging.debug(profile)
         return profile
 
-    def get_enquire(self,rec):
+    def get_enquire(self, rec):
         enquire = xapian.Enquire(rec.users_repository)
         enquire.set_weighting_scheme(rec.weight)
         return enquire
 
-    def get_rset_from_profile(self,profile):
-        # Create document to represent user profile and mark it as relevant
-        return rset
+    # def get_rset_from_profile(self, profile):
+    #    # Create document to represent user profile and mark it as relevant
+    #    return rset
 
-    def get_neighborhood(self,user,rec):
-        profile = self.get_user_profile(user,rec)
-        #query = xapian.Query(xapian.Query.OP_OR,profile)
-        query = xapian.Query(xapian.Query.OP_ELITE_SET,profile)
+    def get_neighborhood(self, user, rec):
+        profile = self.get_user_profile(user, rec)
+        # query = xapian.Query(xapian.Query.OP_OR,profile)
+        query = xapian.Query(xapian.Query.OP_ELITE_SET, profile)
         enquire = self.get_enquire(rec)
         enquire.set_query(query)
         # Retrieve matching users
         try:
             mset = enquire.get_mset(0, self.neighbours)
         except xapian.DatabaseError as error:
-            logging.critical("Could not compose user neighborhood.\n "+error.get_msg())
+            error_msg = "Could not compose user neighborhood.\n "
+            logging.critical(error_msg+error.get_msg())
             raise Error
         return mset
 
-    def get_neighborhood_rset(self,user,rec):
-        mset = self.get_neighborhood(user,rec)
+    def get_neighborhood_rset(self, user, rec):
+        mset = self.get_neighborhood(user, rec)
         rset = xapian.RSet()
         for m in mset:
             rset.add_document(m.document.get_docid())
         return rset
 
-    def get_result_from_eset(self,eset):
+    def get_result_from_eset(self, eset):
         # compose result dictionary
         item_score = {}
         ranking = []
@@ -185,20 +191,21 @@ class Collaborative(RecommendationStrategy):
             ranking.append(package)
         return recommender.RecommendationResult(item_score, ranking)
 
+
 class Knn(Collaborative):
     """
     KNN based packages tf-idf weights.
     """
-    def __init__(self,k):
+    def __init__(self, k):
         self.description = "Knn"
         self.neighbours = k
 
-    def run(self,rec,user,recommendation_size):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
-        neighborhood = self.get_neighborhood(user,rec)
-        weights = data.tfidf_weighting(rec.users_repository,neighborhood,
+        neighborhood = self.get_neighborhood(user, rec)
+        weights = data.tfidf_weighting(rec.users_repository, neighborhood,
                                        PkgExpandDecider(user.items()))
         item_score = {}
         ranking = []
@@ -209,20 +216,21 @@ class Knn(Collaborative):
         result = recommender.RecommendationResult(item_score, ranking)
         return result
 
+
 class KnnPlus(Collaborative):
     """
     KNN based packages tf-idf weights.
     """
-    def __init__(self,k):
+    def __init__(self, k):
         self.description = "Knn plus"
         self.neighbours = k
 
-    def run(self,rec,user,recommendation_size):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
-        neighborhood = self.get_neighborhood(user,rec)
-        weights = data.tfidf_plus(rec.users_repository,neighborhood,
+        neighborhood = self.get_neighborhood(user, rec)
+        weights = data.tfidf_plus(rec.users_repository, neighborhood,
                                   PkgExpandDecider(user.items()))
         item_score = {}
         ranking = []
@@ -233,25 +241,27 @@ class KnnPlus(Collaborative):
         result = recommender.RecommendationResult(item_score, ranking)
         return result
 
+
 class KnnEset(Collaborative):
     """
     KNN based on query expansion.
     """
-    def __init__(self,k):
+    def __init__(self, k):
         self.description = "KnnEset"
         self.neighbours = k
 
-    def run(self,rec,user,recommendation_size):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
-        neighbors_rset = self.get_neighborhood_rset(user,rec)
+        neighbors_rset = self.get_neighborhood_rset(user, rec)
         enquire = self.get_enquire(rec)
         # Retrieve new packages based on neighborhood profile expansion
-        eset = enquire.get_eset(recommendation_size,neighbors_rset,
+        eset = enquire.get_eset(recommendation_size, neighbors_rset,
                                 PkgExpandDecider(user.items()))
         result = self.get_result_from_eset(eset)
         return result
+
 
 class CollaborativeEset(Collaborative):
     """
@@ -260,12 +270,13 @@ class CollaborativeEset(Collaborative):
     def __init__(self):
         self.description = "Collaborative-Eset"
 
-    def run(self,rec,user,recommendation_size):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
-        temp_index = xapian.WritableDatabase("/tmp/Database",xapian.DB_CREATE_OR_OVERWRITE)
-        profile = self.get_user_profile(user,rec)
+        temp_index = xapian.WritableDatabase("/tmp/Database",
+                                             xapian.DB_CREATE_OR_OVERWRITE)
+        profile = self.get_user_profile(user, rec)
         doc = xapian.Document()
         for pkg in profile:
             doc.add_term(pkg)
@@ -277,71 +288,83 @@ class CollaborativeEset(Collaborative):
         # rset = self.get_rset_from_profile(profile)
         enquire = xapian.Enquire(temp_index)
         enquire.set_weighting_scheme(rec.weight)
-        eset = enquire.get_eset(recommendation_size,rset,
+        eset = enquire.get_eset(recommendation_size, rset,
                                 PkgExpandDecider(user.items()))
         result = self.get_result_from_eset(eset)
         return result
+
 
 class KnnContent(Collaborative):
     """
     Hybrid "Colaborative through content" recommendation strategy.
     """
-    def __init__(self,k):
+    def __init__(self, k):
         self.description = "Knn-Content"
         self.neighbours = k
 
-    def run(self,rec,user,recommendation_size):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
-        neighborhood = self.get_neighborhood(user,rec)
-        weights = data.tfidf_weighting(rec.users_repository,neighborhood,
+        neighborhood = self.get_neighborhood(user, rec)
+        weights = data.tfidf_weighting(rec.users_repository, neighborhood,
                                        PkgExpandDecider(user.items()))
         profile = [w[0] for w in weights][:rec.cfg.profile_size]
-        result = ContentBased("tag",rec.cfg.profile_size).get_sugestion_from_profile(rec,user,profile,recommendation_size)
+
+        result = ContentBased("tag", rec.cfg.profile_size)
+        result = result.get_sugestion_from_profile(rec, user, profile,
+                                                   recommendation_size)
         return result
+
 
 class KnnContentEset(Collaborative):
     """
     Hybrid "Colaborative through content" recommendation strategy.
     """
-    def __init__(self,k):
+    def __init__(self, k):
         self.description = "Knn-Content-Eset"
         self.neighbours = k
 
-    def run(self,rec,user,recommendation_size):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
-        neighbors_rset = self.get_neighborhood_rset(user,rec)
+        neighbors_rset = self.get_neighborhood_rset(user, rec)
         enquire = self.get_enquire(rec)
         # Retrieve relevant tags based on neighborhood profile expansion
-        eset = enquire.get_eset(rec.cfg.profile_size,neighbors_rset,
+        eset = enquire.get_eset(rec.cfg.profile_size, neighbors_rset,
                                 TagExpandDecider())
         profile = [e.term for e in eset]
-        result = ContentBased("tag",rec.cfg.profile_size).get_sugestion_from_profile(rec,user,profile,recommendation_size)
+        result = ContentBased("tag", rec.cfg.profile_size)
+        result = result.get_sugestion_from_profile(rec, user, profile,
+                                                   recommendation_size)
         return result
+
 
 class Demographic(RecommendationStrategy):
     """
     Hybrid rotation strategy based on demographic data.
     """
-    def __init__(self,strategy_str):
+    def __init__(self, strategy_str):
         self.description = "Demographic"
         self.strategy_str = strategy_str.lstrip("demo_")
 
-    def run(self,rec,user,recommendation_size):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
-        program_profile = user.filter_pkg_profile(os.path.join(rec.cfg.filters_dir,"programs"))
-        desktop_profile = user.filter_pkg_profile(os.path.join(rec.cfg.filters_dir,"desktopapps"))
-        if (len(desktop_profile)>10 or
-            len(desktop_profile)>len(program_profile)/2):
+        filters_dir = rec.cfg.filters_dir
+        program_dir = os.path.join(filters_dir, "programs")
+        desktop_dir = os.path.join(filters_dir, "desktopapps")
+
+        program_profile = user.filter_pkg_profile(program_dir)
+        desktop_profile = user.filter_pkg_profile(desktop_dir)
+        if len(desktop_profile) > 10 or (len(desktop_profile) >
+                                         len(program_profile)/2):
             rec.set_strategy(self.strategy_str)
             # Redefine repositories after configuring strategy
             rec.items_repository = rec.axi_desktopapps
             rec.valid_pkgs = rec.valid_desktopapps
             if "col" in self.strategy_str:
                 rec.users_repository = rec.popcon_desktopapps
-        return rec.get_recommendation(user,recommendation_size)
+        return rec.get_recommendation(user, recommendation_size)
