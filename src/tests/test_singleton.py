@@ -20,15 +20,11 @@ __license__ = """
 """
 
 import unittest2
-import sys
-sys.path.insert(0,'../')
-from singleton import Singleton
+from ..singleton import Singleton
+
 
 class SingletonTests(unittest2.TestCase):
     def test_creation(self):
         object_1 = Singleton()
         object_2 = Singleton()
-        self.assertEqual(id(object_1),id(object_2))
-
-if __name__ == '__main__':
-        unittest2.main()
+        self.assertEqual(id(object_1), id(object_2))
