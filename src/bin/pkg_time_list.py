@@ -66,6 +66,18 @@ def print_package_time(pkgs_time):
         print "{0} : Modify {1}, Access {2}".format(key, value[0], value[1])
 
 
+def save_package(pkg_time):
+
+    with open('pkg_data.txt', 'w') as pkg_data:
+
+        pkg_str = "{pkg}: {modify} {access}\n"
+        for pkg, times in pkg_time.iteritems():
+
+            pkg_line = pkg_str.format(pkg=pkg, modify=times[0],
+                                      access=times[1])
+            pkg_data.write(pkg_line)
+
+
 def get_packages_from_apt_mark():
 
     dpkg_output = commands.getoutput('apt-mark showmanual')
@@ -88,6 +100,7 @@ def main():
     print_package_time(pkgs_time)
 
     print "\nSize of dictionary:", len(pkgs_time)
+    save_package(pkgs_time)
 
 
 if __name__ == "__main__":
