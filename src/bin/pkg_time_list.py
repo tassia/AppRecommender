@@ -66,7 +66,7 @@ def print_package_time(pkgs_time):
         print "{0} : Modify {1}, Access {2}".format(key, value[0], value[1])
 
 
-def get_packages_from_mark():
+def get_packages_from_apt_mark():
 
     dpkg_output = commands.getoutput('apt-mark showmanual')
     pkgs = []
@@ -81,13 +81,13 @@ def get_packages_from_mark():
 
 def main():
 
-    manual_pkgs = get_packages_from_mark()
-    print "Size of user package apt-mark: {0}".format(len(manual_pkgs))
+    manual_pkgs = get_packages_from_apt_mark()
+    print "Size of manual installed packages apt-mark:", len(manual_pkgs)
 
     pkgs_time = get_packages_time(manual_pkgs)
     print_package_time(pkgs_time)
 
-    print "\nSize of dictionary: {0}".format(len(pkgs_time))
+    print "\nSize of dictionary:", len(pkgs_time)
 
 
 if __name__ == "__main__":
