@@ -1,37 +1,7 @@
 #!/usr/bin/python
 
-import apt
 import commands
 import re
-
-
-def get_user_packages():
-
-    dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
-    pkgs = []
-
-    for lines in dpkg_output.splitlines():
-
-        lines = re.sub('[\\t]+', ' ', lines).strip()
-        pkg, option = lines.split(' ')
-
-        if option == "install" and not re.match(r'^lib', pkg):
-            pkgs.append(pkg)
-
-    return pkgs
-
-
-def filter_auto_installed_packages(pkgs):
-
-    apt_cache = apt.Cache()
-
-    for pkg in pkgs[:]:
-
-        if pkg in apt_cache:
-            cache_pkg = apt_cache[pkg]
-
-            if cache_pkg.is_auto_installed:
-                pkgs.remove(pkg)
 
 
 def get_time(option, pkg):
@@ -111,12 +81,6 @@ def get_packages_from_mark():
 
 def main():
 
-    user_pkgs = get_user_packages()
-    print "Size of user package: {0}".format(len(user_pkgs))
-
-    filter_auto_installed_packages(user_pkgs)
-    print "Size of user package after filtering: {0}".format(len(user_pkgs))
-
     manual_pkgs = get_packages_from_mark()
     print "Size of user package apt-mark: {0}".format(len(manual_pkgs))
 
@@ -124,11 +88,6 @@ def main():
     print_package_time(pkgs_time)
 
     print "\nSize of dictionary: {0}".format(len(pkgs_time))
-
-    with open('pkgs.txt', 'w') as pkgs:
-
-        for pkg in user_pkgs:
-            pkgs.write(str(pkg) + "\n")
 
 
 if __name__ == "__main__":
