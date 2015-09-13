@@ -70,7 +70,7 @@ def save_package(pkg_time):
 
     with open('pkg_data.txt', 'w') as pkg_data:
 
-        pkg_str = "{pkg}: {modify} {access}\n"
+        pkg_str = "{pkg} {modify} {access}\n"
         for pkg, times in pkg_time.iteritems():
 
             pkg_line = pkg_str.format(pkg=pkg, modify=times[0],
