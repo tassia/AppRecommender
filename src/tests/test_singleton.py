@@ -19,11 +19,11 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import unittest2
+import unittest
 from ..singleton import Singleton
 
 
-class SingletonTests(unittest2.TestCase):
+class SingletonTests(unittest.TestCase):
     def test_creation(self):
         object_1 = Singleton()
         object_2 = Singleton()
