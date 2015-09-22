@@ -83,20 +83,23 @@ def print_index(index):
         output += "\n---"
     return output
 
-def tfidf_weighting(index,docs,content_filter,normalized_weigths=0):
-    """
-    Return a dictionary of terms and weights of all terms of a set of
-    documents, based on the frequency of terms in the selected set (docids).
-    """
+def get_all_terms(index, docs, content_filter, normalized_weights):
     # Store all terms in one single document
     terms_doc = xapian.Document()
     for d in docs:
         for term in index.get_document(d.docid).termlist():
+
             if content_filter(term.term):
-                if normalized_weigths:
-                    terms_doc.add_term(term.term,int(math.ceil(normalized_weigths[d.docid])))
+                if normalized_weights:
+                    terms_doc.add_term(term.term,int(math.ceil(normalized_weights[d.docid])))
                 else:
                     terms_doc.add_term(term.term)
+
+    return terms_doc
+
+
+def get_tfidf_terms_weights(terms_doc, index):
+
     # Compute sublinear tfidf for each term
     weights = {}
     for term in terms_doc.termlist():
@@ -109,9 +112,20 @@ def tfidf_weighting(index,docs,content_filter,normalized_weigths=0):
             weights[term.term] = tf*idf
         except:
             pass
+
+    return weights
+
+def tfidf_weighting(index, docs, content_filter, normalized_weights=0):
+    """
+    Return a dictionary of terms and weights of all terms of a set of
+    documents, based on the frequency of terms in the selected set (docids).
+    """
+
+    terms_doc = get_all_terms(index, docs, content_filter, normalized_weights)
+    weights = get_tfidf_terms_weights(terms_doc, index)
+
     sorted_weights = list(reversed(sorted(weights.items(),
                                           key=operator.itemgetter(1))))
-    #print sorted_weights
     return sorted_weights
 
 def tfidf_plus(index,docs,content_filter):
