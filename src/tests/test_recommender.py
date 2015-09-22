@@ -19,16 +19,15 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import unittest2
-import sys
-sys.path.insert(0, '../')
-from recommender import RecommendationResult, Recommender
-from user import User
-from config import Config
-from strategy import ContentBased
+import unittest
+
+from ..recommender import RecommendationResult, Recommender
+from ..user import User
+from ..config import Config
+from ..strategy import ContentBased
 
 
-class RecommendationResultTests(unittest2.TestCase):
+class RecommendationResultTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.result = RecommendationResult({"gimp": 1.5, "inkscape": 3.0,
@@ -43,7 +42,7 @@ class RecommendationResultTests(unittest2.TestCase):
         self.assertEqual(self.result.get_prediction(), prediction)
 
 
-class RecommenderTests(unittest2.TestCase):
+class RecommenderTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         cfg = Config()
@@ -71,6 +70,3 @@ class RecommenderTests(unittest2.TestCase):
         result = self.rec.get_recommendation(user)
         self.assertIsInstance(result, RecommendationResult)
         self.assertGreater(len(result.item_score), 0)
-
-if __name__ == '__main__':
-        unittest2.main()
