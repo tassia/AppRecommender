@@ -33,15 +33,16 @@ import operator
 import urllib
 import simplejson as json
 import socket
+import math
 
 from error import Error
-from singleton import Singleton
-from dissimilarity import *
 from config import Config
+from dissimilarity import JaccardDistance
+
 
 def axi_get_pkgs(axi):
     pkgs_names = []
-    for docid in range(1,axi.get_lastdocid()+1):
+    for docid in range(1, axi.get_lastdocid()+1):
         try:
             doc = axi.get_document(docid)
         except:
@@ -51,18 +52,20 @@ def axi_get_pkgs(axi):
         pkgs_names.append(docterms_XP[0].lstrip('XP'))
     return pkgs_names
 
-def axi_search_pkgs(axi,pkgs_list):
+
+def axi_search_pkgs(axi, pkgs_list):
     terms = ["XP"+item for item in pkgs_list]
     query = xapian.Query(xapian.Query.OP_OR, terms)
     enquire = xapian.Enquire(axi)
     enquire.set_query(query)
-    mset = enquire.get_mset(0,axi.get_doccount())
+    mset = enquire.get_mset(0, axi.get_doccount())
     return mset
 
-def axi_search_pkg_tags(axi,pkg):
+
+def axi_search_pkg_tags(axi, pkg):
     enquire = xapian.Enquire(axi)
     enquire.set_query(xapian.Query("XP"+pkg))
-    matches = enquire.get_mset(0,1)
+    matches = enquire.get_mset(0, 1)
     if not matches:
         logging.debug("Package %s not found in items repository" % pkg)
         return False
@@ -74,6 +77,7 @@ def axi_search_pkg_tags(axi,pkg):
         else:
             return tags
 
+
 def print_index(index):
     output = "\n---\n" + xapian.Database.__repr__(index) + "\n---\n"
     for term in index.allterms():
@@ -83,6 +87,7 @@ def print_index(index):
         output += "\n---"
     return output
 
+
 def get_all_terms(index, docs, content_filter, normalized_weights):
     # Store all terms in one single document
     terms_doc = xapian.Document()
@@ -91,7 +96,9 @@ def get_all_terms(index, docs, content_filter, normalized_weights):
 
             if content_filter(term.term):
                 if normalized_weights:
-                    terms_doc.add_term(term.term,int(math.ceil(normalized_weights[d.docid])))
+                    terms_doc.add_term(term.term,
+                                       int(math.ceil(
+                                           normalized_weights[d.docid])))
                 else:
                     terms_doc.add_term(term.term)
 
@@ -107,13 +114,14 @@ def get_tfidf_terms_weights(terms_doc, index):
             # Even if it shouldn't raise error...
             # math.log: ValueError: math domain error
             tf = 1+math.log(term.wdf)
-            idf = math.log(index.get_doccount()/
+            idf = math.log(index.get_doccount() /
                            float(index.get_termfreq(term.term)))
             weights[term.term] = tf*idf
         except:
             pass
 
     return weights
+
 
 def tfidf_weighting(index, docs, content_filter, normalized_weights=0):
     """
@@ -128,7 +136,8 @@ def tfidf_weighting(index, docs, content_filter, normalized_weights=0):
                                           key=operator.itemgetter(1))))
     return sorted_weights
 
-def tfidf_plus(index,docs,content_filter):
+
+def tfidf_plus(index, docs, content_filter):
     """
     Return a dictionary of terms and weights of all terms of a set of
     documents, based on the frequency of terms in the selected set (docids).
@@ -139,22 +148,23 @@ def tfidf_plus(index,docs,content_filter):
     variance = sum([(p-mean)*(p-mean) for p in population])/len(population)
     standard_deviation = math.sqrt(variance)
     for d in docs:
-        if standard_deviation>1:
+        if standard_deviation > 1:
             # values between [0-1] would cause the opposite effect
             normalized_weigths[d.docid] = d.weight/standard_deviation
         else:
             normalized_weigths[d.docid] = d.weight
-    return tfidf_weighting(index,docs,content_filter,normalized_weigths)
+    return tfidf_weighting(index, docs, content_filter, normalized_weigths)
+
 
 class FilteredXapianIndex(xapian.WritableDatabase):
     """
     Filtered Xapian Index
     """
-    def __init__(self,terms,index_path,path):
-        xapian.WritableDatabase.__init__(self,path,
+    def __init__(self, terms, index_path, path):
+        xapian.WritableDatabase.__init__(self, path,
                                          xapian.DB_CREATE_OR_OVERWRITE)
         index = xapian.Database(index_path)
-        for docid in range(1,index.get_lastdocid()+1):
+        for docid in range(1, index.get_lastdocid()+1):
             try:
                 doc = index.get_document(docid)
                 docterms = [term.term for term in doc.termlist()]
@@ -177,33 +187,35 @@ class FilteredXapianIndex(xapian.WritableDatabase):
     def __str__(self):
         return print_index(self)
 
+
 class SampleAptXapianIndex(xapian.WritableDatabase):
     """
     Sample data source for packages information, generated from a list of
     packages.
     """
-    def __init__(self,pkgs_list,axi,path):
-        xapian.WritableDatabase.__init__(self,path,
+    def __init__(self, pkgs_list, axi, path):
+        xapian.WritableDatabase.__init__(self, path,
                                          xapian.DB_CREATE_OR_OVERWRITE)
-        sample = axi_search_pkgs(axi,pkgs_list)
-        for package in sample:
-            doc_id = self.add_document(axi.get_document(package.docid))
+        self.sample = axi_search_pkgs(axi, pkgs_list)
+        for package in self.sample:
+            self.doc_id = self.add_document(axi.get_document(package.docid))
 
     def __str__(self):
         return print_index(self)
+
 
 class DebianPackage():
     """
     Class to load package information.
     """
-    def __init__(self,pkg_name):
+    def __init__(self, pkg_name):
         self.name = pkg_name
 
-    def connect_to_dde(self,dde_server,dde_port):
+    def connect_to_dde(self, dde_server, dde_port):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             # just one parameter (a tuple)
-            s.connect((dde_server,dde_port))
+            s.connect((dde_server, dde_port))
             s.close()
             return True
         except:
@@ -212,7 +224,7 @@ class DebianPackage():
 
     def load_summary(self):
         cfg = Config()
-        if self.connect_to_dde(cfg.dde_server,cfg.dde_port):
+        if self.connect_to_dde(cfg.dde_server, cfg.dde_port):
             json_data = json.load(urllib.urlopen(cfg.dde_url % self.name))
             self.summary = json_data['r']['description']
         else:
@@ -221,7 +233,7 @@ class DebianPackage():
 
     def load_details(self):
         cfg = Config()
-        if self.connect_to_dde(cfg.dde_server,cfg.dde_port):
+        if self.connect_to_dde(cfg.dde_server, cfg.dde_port):
             self.load_details_from_dde(cfg.dde_url)
         else:
             self.load_details_from_apt()
@@ -234,34 +246,37 @@ class DebianPackage():
         self.summary = pkg_version.summary
         self.description = self.format_description(pkg_version.description)
         self.section = pkg_version.section
-        if pkg_version.record.has_key('Homepage'):
+        if 'Homepage' in pkg_version.record:
             self.homepage = pkg_version.record['Homepage']
-        if pkg_version.record.has_key('Tag'):
+        if 'Tag' in pkg_version.record:
             self.tags = self.debtags_str_to_dict(pkg_version.record['Tag'])
-        if pkg_version.record.has_key('Depends'):
+        if 'Depends' in pkg_version.record:
             self.depends = pkg_version.record['Depends']
-        if pkg_version.record.has_key('Pre-Depends'):
+        if 'Pre-Depends' in pkg_version.record:
             self.predepends = pkg_version.record['Pre-Depends']
-        if pkg_version.record.has_key('Recommends'):
+        if 'Recommends' in pkg_version.record:
             self.recommends = pkg_version.record['Recommends']
-        if pkg_version.record.has_key('Suggests'):
+        if 'Suggests' in pkg_version.record:
             self.suggests = pkg_version.record['Suggests']
-        if pkg_version.record.has_key('Breaks'):
+        if 'Breaks' in pkg_version.record:
             self.breaks = pkg_version.record['Breaks']
-        if pkg_version.record.has_key('Conflicts'):
+        if 'Conflicts' in pkg_version.record:
             self.conflicts = pkg_version.record['Conflicts']
-        if pkg_version.record.has_key('Replaces'):
+        if 'Replaces' in pkg_version.record:
             self.replaces = pkg_version.record['Replaces']
-        if pkg_version.record.has_key('Provides'):
+        if 'Provides' in pkg_version.record:
             self.provides = pkg_version.record['Provides']
 
-    def load_details_from_dde(self,dde_url):
+    def load_details_from_dde(self, dde_url):
         json_data = json.load(urllib.urlopen(dde_url % self.name))
 
         self.maintainer = json_data['r']['maintainer']
         self.version = json_data['r']['version']
         self.summary = json_data['r']['description']
-        self.description = self.format_description(json_data['r']['long_description'])
+
+        json_description = json_data['r']['long_description']
+        self.description = self.format_description(json_description)
+
         self.section = json_data['r']['section']
         if json_data['r']['homepage']:
             self.homepage = json_data['r']['homepage']
@@ -284,8 +299,8 @@ class DebianPackage():
         if json_data['r']['popcon']['insts']:
             self.popcon_insts = json_data['r']['popcon']['insts']
 
-    def format_description(self,description):
-        return description.replace(' .\n','<br />').replace('\n','<br />')
+    def format_description(self, description):
+        return description.replace(' .\n', '<br />').replace('\n', '<br />')
 
     def debtags_str_to_dict(self, debtags_str):
         debtags_list = [tag.rstrip(",") for tag in debtags_str.split()]
@@ -293,7 +308,7 @@ class DebianPackage():
 
     def debtags_list_to_dict(self, debtags_list):
         """ input:  ['use::editing',
-        	         'works-with-format::gif',
+                     'works-with-format::gif',
                      'works-with-format::jpg',
                      'works-with-format::pdf']
             output: {'use': [editing],
@@ -304,19 +319,21 @@ class DebianPackage():
         for tag in debtags_list:
             match = re.search(r'^(.*)::(.*)$', tag)
             if not match:
-                logging.info("Could not parse debtags format from tag: %s", tag)
+                logging.info("Could not parse debtags format from tag: %s",
+                             tag)
             facet, subtag = match.groups()
             subtags.append(subtag)
             if facet not in debtags:
-               debtags[facet] = subtags
+                debtags[facet] = subtags
             else:
-               debtags[facet].append(subtag)
+                debtags[facet].append(subtag)
             subtags = []
-        print "debtags_list",debtags
+        print "debtags_list", debtags
         return debtags
 
+
 class PopconSubmission():
-    def __init__(self,path,user_id=0,binary=1):
+    def __init__(self, path, user_id=0, binary=1):
         self.packages = dict()
         self.path = path
         self.binary = binary
@@ -330,20 +347,20 @@ class PopconSubmission():
             output += "\n "+pkg+": "+str(weight)
         return output
 
-    def get_filtered(self,filter_list):
+    def get_filtered(self, filter_list):
         filtered = {}
         for pkg in self.packages.keys():
             if pkg in filter_list:
                 filtered[pkg] = self.packages[pkg]
         return filtered
 
-    def load(self,binary=1):
-    	"""
-    	Parse a popcon submission, generating the names of the valid packages
+    def load(self, binary=1):
+        """
+        Parse a popcon submission, generating the names of the valid packages
         in the vote.
-    	"""
+        """
         with open(self.path) as submission:
-    	    for line in submission:
+            for line in submission:
                 if line.startswith("POPULARITY"):
                     self.user_id = line.split()[2].lstrip("ID:")
                     self.arch = line.split()[3].lstrip("ARCH:")
@@ -370,11 +387,12 @@ class PopconSubmission():
                             elif data[4] == '<RECENT-CTIME>':
                                 self.packages[pkg] = 8
 
+
 class FilteredPopconXapianIndex(xapian.WritableDatabase):
     """
     Data source for popcon submissions defined as a xapian database.
     """
-    def __init__(self,path,popcon_dir,axi_path,tags_filter):
+    def __init__(self, path, popcon_dir, axi_path, tags_filter):
         """
         Set initial attributes.
         """
@@ -394,14 +412,14 @@ class FilteredPopconXapianIndex(xapian.WritableDatabase):
             raise Error
 
         # set up directory
-        shutil.rmtree(self.path,1)
+        shutil.rmtree(self.path, 1)
         os.makedirs(self.path)
         try:
             logging.info("Indexing popcon submissions from \'%s\'" %
                          self.popcon_dir)
             logging.info("Creating new xapian index at \'%s\'" %
                          self.path)
-            xapian.WritableDatabase.__init__(self,self.path,
+            xapian.WritableDatabase.__init__(self, self.path,
                                              xapian.DB_CREATE_OR_OVERWRITE)
         except xapian.DatabaseError as e:
             logging.critical("Could not create popcon xapian index.")
@@ -417,40 +435,42 @@ class FilteredPopconXapianIndex(xapian.WritableDatabase):
                 submission_pkgs = submission.get_filtered(self.valid_pkgs)
                 if len(submission_pkgs) < 10:
                     logging.debug("Low profile popcon submission \'%s\' (%d)" %
-                                  (submission.user_id,len(submission_pkgs)))
+                                  (submission.user_id, len(submission_pkgs)))
                 else:
                     doc.set_data(submission.user_id)
                     doc.add_term("ID"+submission.user_id)
                     doc.add_term("ARCH"+submission.arch)
                     logging.debug("Parsing popcon submission \'%s\'" %
                                   submission.user_id)
-                    for pkg,freq in submission_pkgs.items():
-                        tags = axi_search_pkg_tags(self.axi,pkg)
+                    for pkg, freq in submission_pkgs.items():
+                        tags = axi_search_pkg_tags(self.axi, pkg)
                         # if the package was found in axi
                         if tags:
-                            doc.add_term("XP"+pkg,freq)
+                            doc.add_term("XP"+pkg, freq)
                             # if the package has tags associated with it
                             if not tags == "notags":
                                 for tag in tags:
                                     if tag.lstrip("XT") in self.valid_tags:
-                                        doc.add_term(tag,freq)
+                                        doc.add_term(tag, freq)
                     doc_id = self.add_document(doc)
                     doc_count += 1
                     logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
             # python garbage collector
-        	gc.collect()
+                gc.collect()
         # flush to disk database changes
         try:
             self.commit()
         except:
-            self.flush() # deprecated function, used for compatibility with old lib version
+            # deprecated function, used for compatibility with old lib version
+            self.flush()
+
 
 # Deprecated class, must be reviewed
 class PopconXapianIndex(xapian.WritableDatabase):
     """
     Data source for popcon submissions defined as a singleton xapian database.
     """
-    def __init__(self,cfg):
+    def __init__(self, cfg):
         """
         Set initial attributes.
         """
@@ -464,7 +484,7 @@ class PopconXapianIndex(xapian.WritableDatabase):
             self.valid_pkgs = [line.strip() for line in valid_pkgs
                                if not line.startswith("#")]
         logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
-        with open(os.path.join(cfg.filters_dir,"debtags")) as valid_tags:
+        with open(os.path.join(cfg.filters_dir, "debtags")) as valid_tags:
             self.valid_tags = [line.strip() for line in valid_tags
                                if not line.startswith("#")]
         logging.debug("Considering %d valid tags" % len(self.valid_tags))
@@ -482,8 +502,8 @@ class PopconXapianIndex(xapian.WritableDatabase):
                 if not os.path.exists(cfg.clusters_dir):
                     os.makedirs(cfg.clusters_dir)
                 if not os.listdir(cfg.clusters_dir) or \
-                    cfg.index_mode == "recluster":
-                    shutil.rmtree(cfg.clusters_dir,1)
+                   cfg.index_mode == "recluster":
+                    shutil.rmtree(cfg.clusters_dir, 1)
                     os.makedirs(cfg.clusters_dir)
                     logging.info("Clustering popcon submissions from \'%s\'"
                                  % cfg.popcon_dir)
@@ -512,8 +532,8 @@ class PopconXapianIndex(xapian.WritableDatabase):
         """
         try:
             logging.info("Opening existing popcon xapian index at \'%s\'"
-                          % self.path)
-            xapian.Database.__init__(self,self.path)
+                         % self.path)
+            xapian.Database.__init__(self, self.path)
             return 1
         except xapian.DatabaseError:
             logging.info("Could not open popcon index.")
@@ -524,7 +544,7 @@ class PopconXapianIndex(xapian.WritableDatabase):
         Create a xapian index for popcon submissions at 'source_dir' and
         place it at 'self.path'.
         """
-        shutil.rmtree(self.path,1)
+        shutil.rmtree(self.path, 1)
         os.makedirs(self.path)
 
         try:
@@ -532,7 +552,7 @@ class PopconXapianIndex(xapian.WritableDatabase):
                          self.source_dir)
             logging.info("Creating new xapian index at \'%s\'" %
                          self.path)
-            xapian.WritableDatabase.__init__(self,self.path,
+            xapian.WritableDatabase.__init__(self, self.path,
                                              xapian.DB_CREATE_OR_OVERWRITE)
         except xapian.DatabaseError as e:
             logging.critical("Could not create popcon xapian index.")
@@ -551,33 +571,34 @@ class PopconXapianIndex(xapian.WritableDatabase):
                 submission_pkgs = submission.get_filtered(self.valid_pkgs)
                 if len(submission_pkgs) < 10:
                     logging.debug("Low profile popcon submission \'%s\' (%d)" %
-                                  (submission.user_id,len(submission_pkgs)))
+                                  (submission.user_id, len(submission_pkgs)))
                 else:
                     doc.set_data(submission.user_id)
                     logging.debug("Parsing popcon submission \'%s\'" %
                                   submission.user_id)
-                    for pkg,freq in submission_pkgs.items():
-                        tags = axi_search_pkg_tags(self.axi,pkg)
+                    for pkg, freq in submission_pkgs.items():
+                        tags = axi_search_pkg_tags(self.axi, pkg)
                         # if the package was foung in axi
                         if tags:
-                            doc.add_term("XP"+pkg,freq)
+                            doc.add_term("XP"+pkg, freq)
                             # if the package has tags associated with it
                             if not tags == "notags":
                                 for tag in tags:
                                     if tag.lstrip("XT") in self.valid_tags:
-                                        doc.add_term(tag,freq)
+                                        doc.add_term(tag, freq)
                     doc_id = self.add_document(doc)
                     doc_count += 1
                     logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
             # python garbage collector
-        	gc.collect()
+                gc.collect()
         # flush to disk database changes
         try:
             self.commit()
         except:
-            self.flush() # deprecated function, used for compatibility with old lib version
+            # deprecated function, used for compatibility with old lib version
+            self.flush()
 
-    def get_submissions(self,submissions_dir):
+    def get_submissions(self, submissions_dir):
         """
         Get popcon submissions from popcon_dir
         """
@@ -589,42 +610,46 @@ class PopconXapianIndex(xapian.WritableDatabase):
                 submissions.append(submission)
         return submissions
 
-    def kmedoids_clustering(self,data,clusters_dir,distance,k_medoids,max_popcon):
-        clusters = KMedoidsClustering(data,lambda x,y:
-                                           distance(x.packages.keys(),
-                                                    y.packages.keys()),max_popcon)
-        medoids,dispersion = clusters.getMedoids(k_medoids)
+    def kmedoids_clustering(self, data, clusters_dir, distance,
+                            k_medoids, max_popcon):
+        clusters = KMedoidsClustering(data, lambda x, y:
+                                      distance(x.packages.keys(),
+                                               y.packages.keys()), max_popcon)
+        medoids, dispersion = clusters.getMedoids(k_medoids)
         for submission in medoids:
             logging.debug("Copying submission %s" % submission.user_id)
-            shutil.copyfile(submission.path,os.path.join(clusters_dir,
-                                                         submission.user_id))
+            shutil.copyfile(submission.path, os.path.join(clusters_dir,
+                                                          submission.user_id))
         return dispersion
+
 
 class KMedoidsClustering(cluster.KMeansClustering):
 
-    def __init__(self,data,distance,max_data):
-        if len(data)<max_data:
+    def __init__(self, data, distance, max_data):
+        if len(data) < max_data:
             data_sample = data
         else:
-            data_sample = random.sample(data,max_data)
+            data_sample = random.sample(data, max_data)
         cluster.KMeansClustering.__init__(self, data_sample, distance)
         self.distanceMatrix = {}
         for submission in self._KMeansClustering__data:
             self.distanceMatrix[submission.user_id] = {}
 
-    def loadDistanceMatrix(self,cluster):
+    def loadDistanceMatrix(self, cluster):
         for i in range(len(cluster)-1):
-            for j in range(i+1,len(cluster)):
+            for j in range(i+1, len(cluster)):
                 try:
-                    d = self.distanceMatrix[cluster[i].user_id][cluster[j].user_id]
-                    logging.debug("Using d[%d,%d]" % (i,j))
+                    user_id_i = cluster[i].user_id
+                    user_id_j = cluster[j].user_id
+                    d = self.distanceMatrix[user_id_i][user_id_j]
+                    logging.debug("Using d[%d,%d]" % (i, j))
                 except:
-                    d = self.distance(cluster[i],cluster[j])
-                    self.distanceMatrix[cluster[i].user_id][cluster[j].user_id] = d
-                    self.distanceMatrix[cluster[j].user_id][cluster[i].user_id] = d
-                    logging.debug("d[%d,%d] = %.2f" % (i,j,d))
+                    d = self.distance(cluster[i], cluster[j])
+                    self.distanceMatrix[user_id_i][user_id_j] = d
+                    self.distanceMatrix[user_id_i][user_id_j] = d
+                    logging.debug("d[%d,%d] = %.2f" % (i, j, d))
 
-    def getMedoid(self,cluster):
+    def getMedoid(self, cluster):
         """
         Return the medoid popcon submission of a given a cluster, based on
         the distance function.
@@ -633,25 +658,26 @@ class KMedoidsClustering(cluster.KMeansClustering):
         self.loadDistanceMatrix(cluster)
         medoidDistance = sys.maxint
         for i in range(len(cluster)):
-            totalDistance = sum(self.distanceMatrix[cluster[i].user_id].values())
-            logging.debug("totalDistance[%d]=%f" % (i,totalDistance))
+            user_id = cluster[i].user_id
+            totalDistance = sum(self.distanceMatrix[user_id].values())
+            logging.debug("totalDistance[%d]=%f" % (i, totalDistance))
             if totalDistance < medoidDistance:
                 medoidDistance = totalDistance
                 medoid = i
             logging.debug("medoidDistance: %f" % medoidDistance)
         logging.debug("Cluster medoid: [%d] %s" % (medoid,
                                                    cluster[medoid].user_id))
-        return (cluster[medoid],medoidDistance)
+        return (cluster[medoid], medoidDistance)
 
     def assign_item(self, item, origin):
         """
         Assigns an item from a given cluster to the closest located cluster
         """
         closest_cluster = origin
-        for cluster in self._KMeansClustering__clusters:
-            if self.distance(item,self.getMedoid(cluster)[0]) < \
-                self.distance(item,self.getMedoid(closest_cluster)[0]):
-                closest_cluster = cluster
+        for clusters in self._KMeansClustering__clusters:
+            if self.distance(item, self.getMedoid(clusters)[0]) < \
+                    self.distance(item, self.getMedoid(closest_cluster)[0]):
+                closest_cluster = clusters
 
         if closest_cluster != origin:
             self.move_item(item, origin, closest_cluster)
@@ -660,20 +686,22 @@ class KMedoidsClustering(cluster.KMeansClustering):
         else:
             return False
 
-    def getMedoids(self,n):
+    def getMedoids(self, n):
         """
         Generate n clusters and return their medoids.
         """
-        #medoids_distances = [self.getMedoid(cluster) for cluster in self.getclusters(n)]
         medoids_distances = []
-        logging.debug("initial length %s" % self._KMeansClustering__initial_length)
+        logging.debug("initial length %s"
+                      % self._KMeansClustering__initial_length)
         logging.debug("n %d" % n)
-        for cluster in self.getclusters(n):
-            type(cluster)
-            print cluster
-            medoids_distances.append(self.getMedoid(cluster))
+        for clusters in self.getclusters(n):
+            type(clusters)
+            print clusters
+            medoids_distances.append(self.getMedoid(clusters))
             print medoids_distances
         medoids = [m[0] for m in medoids_distances]
         dispersion = sum([m[1] for m in medoids_distances])
-        logging.info("Clustering completed and the following medoids were found: %s" % [c.user_id for c in medoids])
-        return medoids,dispersion
+
+        logging.info("Clustering completed and the following"
+                     "medoids were found: %s" % [c.user_id for c in medoids])
+        return medoids, dispersion
