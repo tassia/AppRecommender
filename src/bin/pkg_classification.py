@@ -2,6 +2,10 @@
 
 import time
 import calendar
+import xapian
+import pickle
+
+XAPIAN_DATABASE_PATH = '/var/lib/apt-xapian-index/index'
 
 
 def linear_percent_function(modify, access, time_now):
@@ -32,7 +36,7 @@ def get_pkgs_classification(percent_function, classification_function):
     pkgs = {}
     time_now = calendar.timegm(time.gmtime())
 
-    with open('pkg_data.txt') as pkg_data:
+    with open('pkg_data.txt', 'r') as pkg_data:
         for pkg_line in pkg_data:
             name, modify, access = pkg_line.split(' ')
 
@@ -43,9 +47,58 @@ def get_pkgs_classification(percent_function, classification_function):
     return pkgs
 
 
-if __name__ == "__main__":
+def get_pkg_debtags(axi, pkg_name):
+    pkg_name = 'XP'+pkg_name
+
+    query = xapian.Query(xapian.Query.OP_OR, [pkg_name])
+    enquire = xapian.Enquire(axi)
+    enquire.set_query(query)
+
+    mset = enquire.get_mset(0, 10)
+
+    pkg_info = []
+    for pkg in mset:
+        for term in axi.get_document(pkg.docid).termlist():
+            if term.term.startswith('XT'):
+                pkg_info.append(term.term[2:])
+
+    return pkg_info
+
+
+def get_debtags_name(file_path):
+    with open(file_path, 'r') as text:
+        debtags_name = [debtag.strip() for debtag in text]
+
+    return debtags_name
+
+
+def create_debtag_list(debtags_name, pkg_debtag):
+    debtag_list = []
+
+    for debtag in debtags_name:
+        debtag_list.append(1 if debtag in pkg_debtag else 0)
+
+    return debtag_list
+
+
+def main():
+    axi = xapian.Database(XAPIAN_DATABASE_PATH)
     pkgs = get_pkgs_classification(linear_percent_function,
                                    sample_classification)
 
-    for pkg, label in pkgs.iteritems():
-        print "{pkg} {label}".format(pkg=pkg, label=label)
+    debtags_name = get_debtags_name('tags.txt')
+
+    debtag_classifications = []
+
+    for key, value in pkgs.iteritems():
+        debtags = get_pkg_debtags(axi, key)
+        debtags = create_debtag_list(debtags_name, debtags)
+        debtags.append(value)
+        debtag_classifications.append(debtags)
+
+    with open('pkg_classification.txt', 'wb') as text:
+        pickle.dump(debtag_classifications, text)
+
+
+if __name__ == "__main__":
+    main()
