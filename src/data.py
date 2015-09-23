@@ -137,6 +137,31 @@ def get_tfidf_terms_weights(terms_doc, index):
     return weights
 
 
+def get_time_from_package(pkg):
+
+    modify = get_time('Y', pkg)
+    access = get_time('X', pkg)
+
+    return [modify, access]
+
+
+def get_alternative_pkg(pkg):
+
+    dpkg_command = "dpkg -L {0}| grep /usr/bin/"
+    dpkg_command += " || dpkg -L {0}| grep /usr/sbin/"
+    bin_path = '/usr/bin'
+    pkg_bin = commands.getoutput(dpkg_command.format(pkg))
+
+    for pkg_path in pkg_bin.splitlines():
+
+        if bin_path in pkg_path:
+            return pkg_path
+        elif pkg in pkg_path:
+            return pkg_path
+
+    return None
+
+
 def get_time(option, pkg):
 
     stat_base = "stat -c '%{option}' `which {package}`"

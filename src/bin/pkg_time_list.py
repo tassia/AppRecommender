@@ -6,32 +6,7 @@ import re
 import sys
 sys.path.insert(0, '../')
 
-from data import get_time
-
-
-def get_time_from_package(pkg):
-
-    modify = get_time('Y', pkg)
-    access = get_time('X', pkg)
-
-    return [modify, access]
-
-
-def get_alternative_pkg(pkg):
-
-    dpkg_command = "dpkg -L {0}| grep /usr/bin/"
-    dpkg_command += " || dpkg -L {0}| grep /usr/sbin/"
-    bin_path = '/usr/bin'
-    pkg_bin = commands.getoutput(dpkg_command.format(pkg))
-
-    for pkg_path in pkg_bin.splitlines():
-
-        if bin_path in pkg_path:
-            return pkg_path
-        elif pkg in pkg_path:
-            return pkg_path
-
-    return None
+from data import get_time_from_package, get_alternative_pkg
 
 
 def get_packages_time(pkgs):
