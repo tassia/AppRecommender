@@ -91,11 +91,13 @@ def print_index(index):
 
 def get_all_terms(index, docs, content_filter, normalized_weights):
     # Store all terms in one single document
+
     terms_packages = {}
     terms_doc = xapian.Document()
+
     for d in docs:
 
-        package = ""
+        package = d.document.get_data()
 
         for term in index.get_document(d.docid).termlist():
 
@@ -108,8 +110,8 @@ def get_all_terms(index, docs, content_filter, normalized_weights):
                     terms_doc.add_term(term.term)
 
             if term.term.startswith('XP'):
-                package = term.term
-            elif term.term in terms_packages and package != "":
+                continue
+            elif term.term in terms_packages:
                 terms_packages[term.term].append(package)
             else:
                 terms_packages[term.term] = [package]
