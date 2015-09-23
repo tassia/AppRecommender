@@ -3,16 +3,10 @@
 import commands
 import re
 
+import sys
+sys.path.insert(0, '../')
 
-def get_time(option, pkg):
-
-    stat_base = "stat -c '%{option}' `which {package}`"
-    stat_error = 'stat: missing operand'
-    stat_time = stat_base.format(option=option, package=pkg)
-
-    pkg_time = commands.getoutput(stat_time)
-
-    return pkg_time if not pkg_time.startswith(stat_error) else None
+from data import get_time
 
 
 def get_time_from_package(pkg):

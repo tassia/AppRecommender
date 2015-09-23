@@ -34,6 +34,7 @@ import urllib
 import simplejson as json
 import socket
 import math
+import commands
 
 from error import Error
 from config import Config
@@ -132,6 +133,17 @@ def get_tfidf_terms_weights(terms_doc, index):
             pass
 
     return weights
+
+
+def get_time(option, pkg):
+
+    stat_base = "stat -c '%{option}' `which {package}`"
+    stat_error = 'stat: missing operand'
+    stat_time = stat_base.format(option=option, package=pkg)
+
+    pkg_time = commands.getoutput(stat_time)
+
+    return pkg_time if not pkg_time.startswith(stat_error) else None
 
 
 def tfidf_weighting(index, docs, content_filter, normalized_weights=0):
