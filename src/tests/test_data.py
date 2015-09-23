@@ -24,8 +24,8 @@ import shutil
 import os
 import xapian
 
-from ..data import PopconSubmission, PopconXapianIndex, axi_search_pkg_tags
-from ..config import Config
+from src.data import PopconSubmission, PopconXapianIndex, axi_search_pkg_tags
+from src.config import Config
 
 
 class AxiSearchTests(unittest.TestCase):

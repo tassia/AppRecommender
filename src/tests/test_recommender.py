@@ -21,10 +21,10 @@ __license__ = """
 
 import unittest
 
-from ..recommender import RecommendationResult, Recommender
-from ..user import User
-from ..config import Config
-from ..strategy import ContentBased
+from src.recommender import RecommendationResult, Recommender
+from src.user import User
+from src.config import Config
+from src.strategy import ContentBased
 
 
 class RecommendationResultTests(unittest.TestCase):

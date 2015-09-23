@@ -20,7 +20,7 @@ __license__ = """
 """
 
 import unittest
-from ..singleton import Singleton
+from src.singleton import Singleton
 
 
 class SingletonTests(unittest.TestCase):

@@ -22,7 +22,7 @@ __license__ = """
 import unittest
 import xapian
 
-from ..strategy import (PkgMatchDecider, PkgExpandDecider,
+from src.strategy import (PkgMatchDecider, PkgExpandDecider,
                         TagExpandDecider)
 
 

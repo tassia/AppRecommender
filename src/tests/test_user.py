@@ -22,9 +22,9 @@ __license__ = """
 import unittest
 import xapian
 
-from ..user import User, FilterTag, FilterDescription
-from ..config import Config
-from ..data import SampleAptXapianIndex
+from src.user import User, FilterTag, FilterDescription
+from src.config import Config
+from src.data import SampleAptXapianIndex
 
 
 class FilterTagTests(unittest.TestCase):

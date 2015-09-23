@@ -3,19 +3,11 @@
 import unittest
 import xapian
 
-from src.bin.pkg_classification import linear_percent_function
 from src.bin.pkg_classification import sample_classification
 from src.bin.pkg_classification import get_pkg_debtags
 
 
 class PkgClassificationTests(unittest.TestCase):
-
-    def test_linear_percent_function(self):
-        modify, access, time_now = 100, 175, 200
-
-        percent = linear_percent_function(modify, access, time_now)
-
-        self.assertEqual(75, percent)
 
     def test_sample_classification(self):
         ex, g, m, b, h = 85, 75, 55, 35, 10

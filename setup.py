@@ -9,5 +9,5 @@ setup(
     author_email='tassia@acaia.ca',
     license='GPLv3.txt',
     packages=find_packages(),
-    test_suite="src.tests",
+    test_suite="discover_tests",
     )

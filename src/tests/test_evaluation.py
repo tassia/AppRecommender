@@ -21,9 +21,9 @@ __license__ = """
 
 import unittest
 
-from ..evaluation import (Accuracy, Precision, Recall, Coverage,
+from src.evaluation import (Accuracy, Precision, Recall, Coverage,
                           Evaluation)
-from ..recommender import RecommendationResult
+from src.recommender import RecommendationResult
 
 
 class MetricsTests(unittest.TestCase):
