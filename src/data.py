@@ -90,8 +90,12 @@ def print_index(index):
 
 def get_all_terms(index, docs, content_filter, normalized_weights):
     # Store all terms in one single document
+    terms_packages = {}
     terms_doc = xapian.Document()
     for d in docs:
+
+        package = ""
+
         for term in index.get_document(d.docid).termlist():
 
             if content_filter(term.term):
@@ -102,7 +106,14 @@ def get_all_terms(index, docs, content_filter, normalized_weights):
                 else:
                     terms_doc.add_term(term.term)
 
-    return terms_doc
+            if term.term.startswith('XP'):
+                package = term.term
+            elif term.term in terms_packages and package != "":
+                terms_packages[term.term].append(package)
+            else:
+                terms_packages[term.term] = [package]
+
+    return (terms_doc, terms_packages)
 
 
 def get_tfidf_terms_weights(terms_doc, index):
@@ -129,7 +140,8 @@ def tfidf_weighting(index, docs, content_filter, normalized_weights=0):
     documents, based on the frequency of terms in the selected set (docids).
     """
 
-    terms_doc = get_all_terms(index, docs, content_filter, normalized_weights)
+    terms_doc, terms_packages = get_all_terms(index, docs, content_filter,
+                                              normalized_weights)
     weights = get_tfidf_terms_weights(terms_doc, index)
 
     sorted_weights = list(reversed(sorted(weights.items(),
