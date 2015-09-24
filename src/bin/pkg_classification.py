@@ -1,22 +1,16 @@
 #!/usr/bin/python
 
+import sys
+sys.path.insert(0, '../')
+
+from data_classification import linear_percent_function
+
 import time
 import calendar
 import xapian
 import pickle
 
 XAPIAN_DATABASE_PATH = '/var/lib/apt-xapian-index/index'
-
-
-def linear_percent_function(modify, access, time_now):
-    modify, access = int(modify), int(access)
-
-    time_access = access - modify
-    time_actual = time_now - modify
-
-    percent = float(time_access) * 100.0 / float(time_actual)
-
-    return percent
 
 
 def sample_classification(percent):
@@ -42,7 +36,7 @@ def get_pkgs_classification(percent_function, classification_function):
 
             percent = percent_function(modify, access, time_now)
 
-            pkgs[name] = classification_function(percent)
+            pkgs[name] = classification_function(percent * 100)
 
     return pkgs
 
