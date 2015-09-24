@@ -8,6 +8,7 @@ import time
 
 pkgs_times = {}
 pkgs_time_weight = {}
+best_weight_terms = {}
 
 
 def get_time_from_package(pkg):
@@ -88,7 +89,7 @@ def calculate_time_curve(pkg_time_weight):
     return 1*math.exp((1 - pkg_time_weight)*lambda_value)
 
 
-def time_weight(term_list):
+def time_weight(term, term_list):
     weight = 0
     for pkg in term_list:
         if pkg in pkgs_time_weight:
@@ -98,4 +99,19 @@ def time_weight(term_list):
             pkgs_time_weight[pkg] = pkg_time_weight
             weight += calculate_time_curve(pkg_time_weight)
 
-    return weight
+    time_weight = float(weight) / float(len(term_list))
+
+    best_weight_terms[term] = time_weight
+
+    return time_weight
+
+
+def print_best_weight_terms():
+    index = 0
+    print "BEST TERMS"
+    for term in sorted(best_weight_terms, key=best_weight_terms.get,
+                       reverse=True):
+        if index < 10:
+            print term, best_weight_terms[term]
+
+        index += 1
