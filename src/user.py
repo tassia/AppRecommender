@@ -197,7 +197,8 @@ class User:
         """
         docs = data.axi_search_pkgs(items_repository, self.pkg_profile)
         # weights = data.tfidf_plus(items_repository,docs,content_filter)
-        weights = data.tfidf_weighting(items_repository, docs, content_filter)
+        weights = data.tfidf_weighting(items_repository, docs, content_filter,
+                                       option=0)
         # Eliminate duplicated stemmed term
         profile = self._eliminate_duplicated([w[0] for w in weights], size)
         return profile

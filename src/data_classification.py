@@ -1,5 +1,8 @@
+#!/usr/bin/env python
+
 import commands
 import calendar
+import math
 import time
 
 
@@ -56,8 +59,29 @@ def get_pkg_time_weight(pkg):
                       [None, None])
 
     if not modify and not access:
-        return 1.0
+        return 0
 
     time_now = calendar.timegm(time.gmtime())
 
     return linear_percent_function(modify, access, time_now)
+
+
+def calculate_time_curve(pkg_time_weight):
+
+    if not pkg_time_weight:
+        return 0
+
+    lambda_value = 1
+
+    return 1*math.exp((1 - pkg_time_weight)*lambda_value)
+
+
+def time_weight(term_list):
+
+    weight = 0
+    for pkg in term_list:
+
+        pkg_time_weight = get_pkg_time_weight(pkg)
+        weight += calculate_time_curve(pkg_time_weight)
+
+    return weight

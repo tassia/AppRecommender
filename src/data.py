@@ -38,6 +38,7 @@ import math
 from error import Error
 from config import Config
 from dissimilarity import JaccardDistance
+from data_classification import time_weight
 
 
 def axi_get_pkgs(axi):
@@ -118,7 +119,7 @@ def get_all_terms(index, docs, content_filter, normalized_weights):
     return (terms_doc, terms_packages)
 
 
-def get_tfidf_terms_weights(terms_doc, index):
+def get_tfidf_terms_weights(terms_doc, index, terms_package, option=0):
 
     # Compute sublinear tfidf for each term
     weights = {}
@@ -129,14 +130,18 @@ def get_tfidf_terms_weights(terms_doc, index):
             tf = 1+math.log(term.wdf)
             idf = math.log(index.get_doccount() /
                            float(index.get_termfreq(term.term)))
-            weights[term.term] = tf*idf
+            tfidf = tf*idf
+            p1 = (1-option)*tfidf
+            p2 = option*tfidf*time_weight(terms_package[term.term])
+            weights[term.term] = p1+p2
         except:
             pass
 
     return weights
 
 
-def tfidf_weighting(index, docs, content_filter, normalized_weights=0):
+def tfidf_weighting(index, docs, content_filter, normalized_weights=0,
+                    option=0):
     """
     Return a dictionary of terms and weights of all terms of a set of
     documents, based on the frequency of terms in the selected set (docids).
@@ -144,14 +149,14 @@ def tfidf_weighting(index, docs, content_filter, normalized_weights=0):
 
     terms_doc, terms_packages = get_all_terms(index, docs, content_filter,
                                               normalized_weights)
-    weights = get_tfidf_terms_weights(terms_doc, index)
+    weights = get_tfidf_terms_weights(terms_doc, index, terms_packages, 1)
 
     sorted_weights = list(reversed(sorted(weights.items(),
                                           key=operator.itemgetter(1))))
     return sorted_weights
 
 
-def tfidf_plus(index, docs, content_filter):
+def tfidf_plus(index, docs, content_filter, option=0):
     """
     Return a dictionary of terms and weights of all terms of a set of
     documents, based on the frequency of terms in the selected set (docids).
@@ -167,7 +172,8 @@ def tfidf_plus(index, docs, content_filter):
             normalized_weigths[d.docid] = d.weight/standard_deviation
         else:
             normalized_weigths[d.docid] = d.weight
-    return tfidf_weighting(index, docs, content_filter, normalized_weigths)
+    return tfidf_weighting(index, docs, content_filter, normalized_weigths,
+                           option)
 
 
 class FilteredXapianIndex(xapian.WritableDatabase):
