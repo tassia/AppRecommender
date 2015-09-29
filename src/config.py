@@ -25,8 +25,9 @@ import os
 import logging
 import logging.handlers
 
-from ConfigParser import *
+from ConfigParser import ConfigParser, MissingSectionHeaderError
 from singleton import Singleton
+
 
 class Config(Singleton):
     """
@@ -37,38 +38,44 @@ class Config(Singleton):
         Set default configuration options.
         """
         if not hasattr(self, 'initialized'):
-            ## general options
+            # general options
             self.debug = 0
             self.verbose = 1
             self.output = "apprec.log"
 
-            ## data_source options
+            # data_source options
             self.base_dir = os.path.expanduser("~/.app-recommender")
             # filters for valid packages
-            self.filters_dir = os.path.join(self.base_dir,"filters")
-            self.pkgs_filter = os.path.join(self.filters_dir,"desktopapps")
+            self.filters_dir = os.path.join(self.base_dir, "filters")
+            self.pkgs_filter = os.path.join(self.filters_dir, "desktopapps")
             # package information packages
             self.axi = "/var/lib/apt-xapian-index/index"
-            self.axi_programs = os.path.join(self.base_dir,"axi_programs")
-            self.axi_desktopapps = os.path.join(self.base_dir,"axi_desktopapps")
+            self.axi_programs = os.path.join(self.base_dir, "axi_programs")
+            self.axi_desktopapps = os.path.join(self.base_dir,
+                                                "axi_desktopapps")
             # popcon indexes
             self.index_mode = "old"
             # check if there are popcon indexes available
             self.popcon = 1
-            self.popcon_programs = os.path.join(self.base_dir,"popcon_programs")
-            self.popcon_desktopapps = os.path.join(self.base_dir,"popcon_desktopapps")
+            self.popcon_programs = os.path.join(self.base_dir,
+                                                "popcon_programs")
+            self.popcon_desktopapps = os.path.join(self.base_dir,
+                                                   "popcon_desktopapps")
             self.popcon_index = self.popcon_desktopapps
-            self.popcon_dir = os.path.join(self.base_dir,"popcon-entries")
+            self.popcon_dir = os.path.join(self.base_dir, "popcon-entries")
             self.max_popcon = 1000
             # popcon clustering
-            self.clusters_dir = os.path.join(self.base_dir,"clusters-dir")
+            self.clusters_dir = os.path.join(self.base_dir, "clusters-dir")
             self.k_medoids = 100
-            # self.dde_url = "http://dde.debian.net/dde/q/udd/packs/all/%s?t=json"
-            self.dde_url = "http://46.4.235.200:8000/q/udd/packages/prio-debian-sid/%s?t=json"
+            # self.dde_url = "http://dde.debian.net/dde/" \
+            #                "q/udd/packs/all/%s?t=json"
+
+            self.dde_url = "http://46.4.235.200:8000/" \
+                           "q/udd/packages/prio-debian-sid/%s?t=json"
             self.dde_server = "46.4.235.200"
             self.dde_port = 8000
 
-            ## recomender options
+            # recomender options
             self.strategy = "cb"
             self.weight = "bm25"
             self.bm25_k1 = 1.2
@@ -77,7 +84,7 @@ class Config(Singleton):
             self.bm25_b = 0.75
             self.bm25_nl = 0.5
             # user content profile size
-            self.profile_size = 50
+            self.profile_size = 10
             # neighborhood size
             self.k_neighbors = 50
             # popcon profiling method: full, voted
@@ -101,23 +108,30 @@ class Config(Singleton):
         print ""
         print " [ data sources ]"
         print "  -f, --filtersdir=PATH      Path to filters directory"
-        print "  -b, --pkgsfilter=FILTER    File containing packages to be considered for recommendations"
+        print "  -b, --pkgsfilter=FILTER    File containing packages" \
+              "to be considered for recommendations"
         print "  -a, --axi=PATH             Path to apt-xapian-index"
         print "  -p, --popconindex=PATH     Path to popcon index"
         print "  -e, --dde=URL              DDE url"
+
         # deprecated options
-        #print "  -m, --popcondir=PATH       Path to popcon submissions dir"
-        #print "  -u, --indexmode=MODE       'old'|'reindex'|'cluster'|'recluster'"
-        #print "  -l, --clustersdir=PATH     Path to popcon clusters dir"
-        #print "  -c, --medoids=k            Number of medoids for clustering"
-        #print "  -x, --maxpopcon=k          Number of submissions to be considered"
+        # print " -m, --popcondir=PATH    Path to popcon submissions dir"
+        # print " -u, --indexmode=MODE    " \
+        #        "'old'|'reindex'|'cluster'|'recluster'"
+        # print " -l, --clustersdir=PATH  Path to popcon clusters dir"
+        # print " -c, --medoids=k         " \
+        #        "Number of medoids for clustering"
+        # print " -x, --maxpopcon=k       " \
+        #        "Number of submissions to be considered"
+
         print ""
         print " [ recommender ]"
         print "  -w, --weight=OPTION        Search weighting scheme"
         print "  -s, --strategy=OPTION      Recommendation strategy"
         print "  -z, --profilesize=k        Size of user profile"
         print "  -i, --profiling=OPTION     Profile filter strategy"
-        print "  -n, --neighbors=k          Size of neighborhood for collaboration"
+        print "  -n, --neighbors=k          " \
+              "Size of neighborhood for collaboration"
         print ""
         print " [ weight options ] "
         print "  trad = traditional probabilistic weighting"
@@ -136,7 +150,8 @@ class Config(Singleton):
         print "  knn_plus = collaborative, tf-idf weighted knn"
         print "  knn_eset = collaborative, eset knn"
         print "  knnco = collaborative through content"
-        print "  knnco_eset = collaborative through content, eset recommendation"
+        print "  knnco_eset = collaborative through content," \
+              " eset recommendation"
 
     def read_option(self, section, option):
         """
@@ -167,7 +182,7 @@ class Config(Singleton):
         self.base_dir = os.path.expanduser(self.read_option('data_sources',
                                            'base_dir'))
         self.output = os.path.join(self.base_dir,
-                                   self.read_option('general','output'))
+                                   self.read_option('general', 'output'))
         self.filters_dir = os.path.join(self.base_dir,
                                         self.read_option('data_sources',
                                                          'filters_dir'))
@@ -179,16 +194,19 @@ class Config(Singleton):
                                          self.read_option('data_sources',
                                                           'axi_programs'))
         self.axi_desktopapps = os.path.join(self.base_dir,
-                                            self.read_option('data_sources',
-                                                             'axi_desktopapps'))
-        #self.index_mode = self.read_option('data_sources', 'index_mode')
+                                            self.read_option(
+                                                'data_sources',
+                                                'axi_desktopapps'))
+        # self.index_mode = self.read_option('data_sources', 'index_mode')
         self.popcon = int(self.read_option('data_sources', 'popcon'))
         self.popcon_programs = os.path.join(self.base_dir,
-                                            self.read_option('data_sources',
-                                                             'popcon_programs'))
+                                            self.read_option(
+                                                'data_sources',
+                                                'popcon_programs'))
         self.popcon_desktopapps = os.path.join(self.base_dir,
-                                               self.read_option('data_sources',
-                                                                'popcon_desktopapps'))
+                                               self.read_option(
+                                                   'data_sources',
+                                                   'popcon_desktopapps'))
         self.popcon_index = os.path.join(self.base_dir,
                                          self.read_option('data_sources',
                                                           'popcon_index'))
@@ -221,9 +239,9 @@ class Config(Singleton):
         short_options = "hdvo:f:b:a:e:p:m:u:l:c:x:w:s:z:i:n:"
         long_options = ["help", "debug", "verbose", "output=", "filtersdir=",
                         "pkgsfilter=", "axi=", "dde=", "popconindex=",
-                        "popcondir=", "indexmode=", "clustersdir=", "kmedoids=",
-                        "maxpopcon=", "weight=", "strategy=", "profile_size=",
-                        "profiling=", "neighbors="]
+                        "popcondir=", "indexmode=", "clustersdir=",
+                        "kmedoids=", "maxpopcon=", "weight=", "strategy=",
+                        "profile_size=", "profiling=", "neighbors="]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
@@ -291,7 +309,8 @@ class Config(Singleton):
             log_level = logging.WARNING
 
         console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+        console_handler.setFormatter(logging.Formatter(
+            '%(levelname)s: %(message)s'))
         console_handler.setLevel(log_level)
         self.logger.addHandler(console_handler)
 
@@ -299,8 +318,8 @@ class Config(Singleton):
                                                             maxBytes=50000000,
                                                             backupCount=5)
         log_format = '%(asctime)s %(levelname)-8s %(message)s'
-        file_handler.setFormatter(logging.Formatter(log_format,
-                                                    datefmt='%Y-%m-%d %H:%M:%S'))
+        file_handler.setFormatter(logging.Formatter(
+            log_format, datefmt='%Y-%m-%d %H:%M:%S'))
         file_handler.setLevel(log_level)
         self.logger.addHandler(file_handler)
         logging.info("Set up logger")
