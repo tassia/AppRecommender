@@ -4,7 +4,6 @@ import os
 import commands
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
-
 MANUAL_INSTALlED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
 
 
@@ -26,13 +25,25 @@ def collect_manual_installed_pkgs():
     packages = commands.getoutput('apt-mark showmanual')
 
     with open(MANUAL_INSTALlED_PKGS_PATH, 'w') as text:
-       text.write(packages)
+        text.write(packages)
+
+
+def collect_all_user_pkgs(file_path):
+
+    create_file(file_path)
+    dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
+
+    with open(file_path, 'w') as pkgs:
+
+        for pkg in dpkg_output.splitlines():
+            pkg = pkg.split('\t')[0]
+            pkgs.write(pkg+"\n")
+
 
 def main():
 
     create_log_folder()
-    create_file(LOG_PATH+"/all_pkgs.txt")
-
+    collect_all_user_pkgs(LOG_PATH+"/all_pkgs.txt")
     collect_manual_installed_pkgs()
 
 
