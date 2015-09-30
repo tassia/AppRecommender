@@ -4,6 +4,7 @@ import os
 import commands
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
+ALL_INSTALED_PKGS = LOG_PATH+"/all_pkgs.txt"
 MANUAL_INSTALlED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
 
 
@@ -28,12 +29,12 @@ def collect_manual_installed_pkgs():
         text.write(packages)
 
 
-def collect_all_user_pkgs(file_path):
+def collect_all_user_pkgs():
 
-    create_file(file_path)
+    create_file(ALL_INSTALED_PKGS)
     dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
 
-    with open(file_path, 'w') as pkgs:
+    with open(ALL_INSTALED_PKGS, 'w') as pkgs:
 
         for pkg in dpkg_output.splitlines():
             pkg = pkg.split('\t')[0]
@@ -43,7 +44,7 @@ def collect_all_user_pkgs(file_path):
 def main():
 
     create_log_folder()
-    collect_all_user_pkgs(LOG_PATH+"/all_pkgs.txt")
+    collect_all_user_pkgs()
     collect_manual_installed_pkgs()
 
 
