@@ -21,7 +21,7 @@ __license__ = """
 """
 import os
 import sys
-sys.path.insert(0,'../')
+sys.path.insert(0, '../')
 import logging
 import datetime
 
@@ -30,10 +30,10 @@ from data import FilteredPopconXapianIndex
 
 if __name__ == '__main__':
     base_dir = os.path.expanduser("~/.app-recommender/")
-    axi_path = os.path.join(base_dir,"axi_XD")
-    path = os.path.join(base_dir,"popcon_XD")
-    popcon_dir = os.path.join(base_dir,"popcon-entries")
-    tags_filter = os.path.join(base_dir,"filters/debtags")
+    axi_path = os.path.join(base_dir, "axi_XD")
+    path = os.path.join(base_dir, "popcon_XD")
+    popcon_dir = os.path.join(base_dir, "popcon-entries")
+    tags_filter = os.path.join(base_dir, "filters/debtags")
 
     # set up config for logging
     cfg = Config()
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     begin_time = datetime.datetime.now()
     logging.info("Popcon indexing started at %s" % begin_time)
     # use config file or command line options
-    index = FilteredPopconXapianIndex(path,popcon_dir,axi_path,tags_filter)
+    index = FilteredPopconXapianIndex(path, popcon_dir, axi_path, tags_filter)
 
     end_time = datetime.datetime.now()
     logging.info("Popcon indexing completed at %s" % end_time)
