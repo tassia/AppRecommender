@@ -30,17 +30,17 @@ def get_time_from_package(pkg):
 
 
 def get_alternative_pkg(pkg):
-
     dpkg_command = "dpkg -L {0}| grep /usr/bin/"
     dpkg_command += " || dpkg -L {0}| grep /usr/sbin/"
-    bin_path = '/usr/bin'
     pkg_bin = commands.getoutput(dpkg_command.format(pkg))
 
-    for pkg_path in pkg_bin.splitlines():
+    if "not installed" in pkg_bin:
+        return None
 
-        if bin_path in pkg_path:
-            return pkg_path
-        elif pkg in pkg_path:
+    for pkg_path in pkg_bin.splitlines():
+        stat_command = "stat {0}".format(pkg_path)
+        stat_output = commands.getoutput(stat_command)
+        if "File:" in stat_output:
             return pkg_path
 
     return None
