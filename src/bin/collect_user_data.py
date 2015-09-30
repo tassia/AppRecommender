@@ -4,10 +4,13 @@ import os
 import commands
 from subprocess import Popen, PIPE, STDOUT
 
+from pkg_time_list import save_package_time, get_packages_time
+
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
-ALL_INSTALED_PKGS = LOG_PATH+"/all_pkgs.txt"
-MANUAL_INSTALlED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
-HISTORY = LOG_PATH+"/user_history"
+ALL_INSTALLED_PKGS = LOG_PATH+"/all_pkgs.txt"
+MANUAL_INSTALLED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
+PKGS_TIME_PATH = LOG_PATH + '/pkgs_time.txt'
+HISTORY = LOG_PATH+"/user_history.txt"
 
 
 def create_log_folder():
@@ -24,19 +27,21 @@ def create_file(file_path):
 
 
 def collect_manual_installed_pkgs():
-    create_file(MANUAL_INSTALlED_PKGS_PATH)
+    create_file(MANUAL_INSTALLED_PKGS_PATH)
     packages = commands.getoutput('apt-mark showmanual')
 
-    with open(MANUAL_INSTALlED_PKGS_PATH, 'w') as text:
-        text.write(packages)
+    packages = [pkg for pkg in packages.splitlines()]
+
+    with open(MANUAL_INSTALLED_PKGS_PATH, 'w') as text:
+        for pkg in packages:
+            text.write(pkg+'\n')
 
 
 def collect_all_user_pkgs():
-
-    create_file(ALL_INSTALED_PKGS)
+    create_file(ALL_INSTALLED_PKGS)
     dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
 
-    with open(ALL_INSTALED_PKGS, 'w') as pkgs:
+    with open(ALL_INSTALLED_PKGS, 'w') as pkgs:
 
         for pkg in dpkg_output.splitlines():
             pkg = pkg.split('\t')[0]
@@ -57,13 +62,23 @@ def collect_user_history():
             history.write(command.split('  ')[1] + '\n')
 
 
-def main():
+def collect_pkgs_time():
+    manual_pkgs = []
+    with open(MANUAL_INSTALLED_PKGS_PATH, 'r') as text:
+        manual_pkgs = [line.strip() for line in text]
 
+    pkgs_time = get_packages_time(manual_pkgs)
+
+    save_package_time(pkgs_time, PKGS_TIME_PATH)
+
+
+def main():
     create_log_folder()
     collect_all_user_pkgs()
     collect_manual_installed_pkgs()
     collect_user_history()
 
+    collect_pkgs_time()
 
 if __name__ == '__main__':
     main()

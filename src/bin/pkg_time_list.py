@@ -6,7 +6,7 @@ import re
 import sys
 sys.path.insert(0, '../')
 
-from data import get_time_from_package, get_alternative_pkg
+from data_classification import get_time_from_package, get_alternative_pkg
 
 
 def get_packages_time(pkgs):
@@ -35,12 +35,12 @@ def print_package_time(pkgs_time):
         print "{0} : Modify {1}, Access {2}".format(key, value[0], value[1])
 
 
-def save_package(pkg_time):
+def save_package_time(pkgs_time, file_path='pkg_data.txt'):
 
-    with open('pkg_data.txt', 'w') as pkg_data:
+    with open(file_path, 'w') as pkg_data:
 
         pkg_str = "{pkg} {modify} {access}\n"
-        for pkg, times in pkg_time.iteritems():
+        for pkg, times in pkgs_time.iteritems():
 
             pkg_line = pkg_str.format(pkg=pkg, modify=times[0],
                                       access=times[1])
@@ -69,7 +69,7 @@ def main():
     print_package_time(pkgs_time)
 
     print "\nSize of dictionary:", len(pkgs_time)
-    save_package(pkgs_time)
+    save_package_time(pkgs_time)
 
 
 if __name__ == "__main__":
