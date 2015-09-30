@@ -3,6 +3,7 @@
 import commands
 import calendar
 import math
+import operator
 import time
 import xapian
 import data
@@ -18,7 +19,6 @@ user_tfidf_weight_min = 1000.0
 
 
 def get_time_from_package(pkg):
-
     if pkg in pkgs_times:
         modify, access = pkgs_times[pkg]
     else:
@@ -34,14 +34,12 @@ def get_alternative_pkg(pkg):
     dpkg_command += " || dpkg -L {0}| grep /usr/sbin/"
     pkg_bin = commands.getoutput(dpkg_command.format(pkg))
 
-    if "not installed" in pkg_bin:
-        return None
-
+    possible_pkgs = {}
     for pkg_path in pkg_bin.splitlines():
-        stat_command = "stat {0}".format(pkg_path)
-        stat_output = commands.getoutput(stat_command)
-        if "File:" in stat_output:
-            return pkg_path
+        possible_pkgs[pkg_path] = get_time('X', pkg_path)
+
+    if bool(possible_pkgs):
+        return sorted(possible_pkgs.items(), key=operator.itemgetter(1))[0][0]
 
     return None
 
@@ -54,7 +52,6 @@ def get_time(option, pkg):
     pkg_time = commands.getoutput(stat_time)
 
     if not pkg_time.startswith(stat_error):
-        pkgs_times[pkg] = pkg_time
         return pkg_time
 
     return None
