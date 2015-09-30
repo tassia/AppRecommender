@@ -19,6 +19,7 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 class Error(Exception):
     """
     Base class for exceptions.

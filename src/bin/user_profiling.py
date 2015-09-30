@@ -20,24 +20,24 @@ __license__ = """
 """
 
 import sys
-sys.path.insert(0,'../')
+sys.path.insert(0, '../')
 import user
 import xapian
 
-repo = xapian.Database("/home/tassia/.app-recommender/axi_programs")
+repo = xapian.Database("~/.app-recommender/axi_programs")
 user = user.LocalSystem()
-with open("/home/tassia/.app-recommender/filters/debtags") as tags:
+with open("~/.app-recommender/filters/debtags") as tags:
     valid_tags = [line.strip() for line in tags if not line.startswith("#")]
 size = 20
 
 print "\nTF-IDF profiles"
-print "\nby tag: ", user.content_profile(repo,"tag",size,valid_tags)
-print "\nby desc: ", user.content_profile(repo,"desc",size)
-print "\nmix:", user.content_profile(repo,"mix",size,valid_tags)
-print "\nhalf", user.content_profile(repo,"half",size,valid_tags)
+print "\nby tag: ", user.content_profile(repo, "tag", size, valid_tags)
+print "\nby desc: ", user.content_profile(repo, "desc", size)
+print "\nmix:", user.content_profile(repo, "mix", size, valid_tags)
+print "\nhalf", user.content_profile(repo, "half", size, valid_tags)
 
 print "\nEset profile"
-print "\nby tag: ", user.content_profile(repo,"tag_eset",size,valid_tags)
-print "\nby desc:", user.content_profile(repo,"desc_eset",size)
-print "\nmix: ", user.content_profile(repo,"mix_eset",size,valid_tags)
-print "\nhalf", user.content_profile(repo,"half_eset",size,valid_tags)
+print "\nby tag: ", user.content_profile(repo, "tag_eset", size, valid_tags)
+print "\nby desc:", user.content_profile(repo, "desc_eset", size)
+print "\nmix: ", user.content_profile(repo, "mix_eset", size, valid_tags)
+print "\nhalf", user.content_profile(repo, "half_eset", size, valid_tags)

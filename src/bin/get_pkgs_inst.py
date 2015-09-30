@@ -8,7 +8,7 @@ import sys
 from operator import itemgetter
 
 if __name__ == '__main__':
-    if len(sys.argv)<2:
+    if len(sys.argv) < 2:
         print "Usage: get_pkgs_inst popcon_results_path"
         exit(1)
 

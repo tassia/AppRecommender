@@ -21,27 +21,27 @@ __license__ = """
 
 import os
 import sys
-sys.path.insert(0,'../')
+sys.path.insert(0, '../')
 import logging
-import random
 import datetime
 
 from config import Config
 from recommender import Recommender
-from user import LocalSystem, RandomPopcon
+from user import LocalSystem
 
 if __name__ == '__main__':
     begin_time = datetime.datetime.now()
     cfg = Config()
     rec = Recommender(cfg)
     logging.info("Computation started at %s" % begin_time)
-    #user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,"desktopapps"))
+    # user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,
+    #                                                 "desktopapps"))
     user = LocalSystem()
-    user.filter_pkg_profile(os.path.join(cfg.filters_dir,"desktopapps"))
+    user.filter_pkg_profile(os.path.join(cfg.filters_dir, "desktopapps"))
     user.maximal_pkg_profile()
 
     logging.info("Recommending applications for user %s" % user.user_id)
-    logging.info(rec.get_recommendation(user,20))
+    logging.info(rec.get_recommendation(user, 20))
 
     end_time = datetime.datetime.now()
     logging.info("Computation completed at %s" % end_time)

@@ -22,23 +22,28 @@ __license__ = """
 
 import os
 import sys
-sys.path.insert(0,'../')
+sys.path.insert(0, '../')
 import logging
 import datetime
 
 from config import Config
-from evaluation import CrossValidation, Precision, Recall, F_score, FPR, Accuracy
+from evaluation import (CrossValidation, Precision, Recall,
+                        F_score, FPR, Accuracy)
 from recommender import Recommender
-from user import RandomPopcon,LocalSystem,PopconSystem
+from user import PopconSystem
 
 if __name__ == '__main__':
     cfg = Config()
     rec = Recommender(cfg)
-    #user = LocalSystem()
-    #user = RandomPopcon(cfg.popcon_dir)
-    #user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,"desktopapps"))
-    user = PopconSystem(os.path.expanduser("~/.app-recommender/popcon-entries/00/0001166d0737c6dffb083071e5ee69f5"))
-    user.filter_pkg_profile(os.path.join(cfg.filters_dir,"desktopapps"))
+    # user = LocalSystem()
+    # user = RandomPopcon(cfg.popcon_dir)
+    # user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,
+    #                                                 "desktopapps"))
+
+    popcon_entries = "~/.app-recommender/popcon-entries/" \
+                     "00/0001166d0737c6dffb083071e5ee69f5"
+    user = PopconSystem(os.path.expanduser(popcon_entries))
+    user.filter_pkg_profile(os.path.join(cfg.filters_dir, "desktopapps"))
     user.maximal_pkg_profile()
     begin_time = datetime.datetime.now()
 
@@ -48,7 +53,7 @@ if __name__ == '__main__':
     metrics.append(F_score(0.5))
     metrics.append(Accuracy())
     metrics.append(FPR())
-    validation = CrossValidation(0.9,20,rec,metrics,0.005)
+    validation = CrossValidation(0.9, 20, rec, metrics, 0.005)
     validation.run(user)
     print validation
 

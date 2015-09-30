@@ -3,7 +3,6 @@
 # rank_terms.py - rank index terms by frequency
 
 import xapian
-import os
 from operator import itemgetter
 import sys
 
@@ -25,5 +24,5 @@ if __name__ == '__main__':
             sorted_freqs = sorted(frequencies.items(), key=itemgetter(1))
         except:
             print "Could not extract terms list from %s" % sys.argv[2]
-        for term,freq in sorted_freqs:
-            print term,str(freq)
+        for term, freq in sorted_freqs:
+            print term, str(freq)

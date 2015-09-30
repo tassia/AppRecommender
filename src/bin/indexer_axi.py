@@ -22,11 +22,10 @@ __license__ = """
 
 import os
 import sys
-sys.path.insert(0,'../')
+sys.path.insert(0, '../')
 import datetime
 
 from config import Config
-from error import Error
 import data
 import xapian
 
@@ -50,12 +49,12 @@ if __name__ == '__main__':
             pkgs_list = [line.strip() for line in valid]
         filter_str = pkgs_filter.split("/")[-1]
 
-        index = data.SampleAptXapianIndex(pkgs_list,axi,
-                                          os.path.join(base_dir,"axi_"+filter_str))
+        index = data.SampleAptXapianIndex(pkgs_list, axi,
+                                          os.path.join(base_dir,
+                                                       "axi_"+filter_str))
         print ("Axi size: %d" % axi.get_doccount())
         print ("Packages list length: %d" % len(pkgs_list))
-        print ("Sample index size: %d" %
-                     index.get_doccount())
+        print ("Sample index size: %d" % index.get_doccount())
 
     # axi filtered by terms provided by command line
     if "filter" in sys.argv:
@@ -66,12 +65,12 @@ if __name__ == '__main__':
             print ("Usage: indexer axi_filter term [additional terms]")
             exit(1)
         terms_str = "_".join([t.split("::")[-1] for t in terms])
-        index = data.FilteredXapianIndex(terms,axi,
-                                         os.path.join(base_dir,"axi_"+terms_str))
+        index = data.FilteredXapianIndex(terms, axi,
+                                         os.path.join(base_dir,
+                                                      "axi_"+terms_str))
         print ("Axi size: %d" % axi.get_doccount())
         print ("Terms filter: %s" % terms)
-        print ("Filtered index size: %d" %
-                     index.get_doccount())
+        print ("Filtered index size: %d" % index.get_doccount())
 
     end_time = datetime.datetime.now()
     print ("Indexing completed at %s" % end_time)

@@ -25,16 +25,17 @@ import random
 from collections import defaultdict
 import logging
 
+from user import User
+from recommender import RecommendationResult
 from error import Error
-from user import *
-from recommender import *
 from singleton import Singleton
+
 
 class Metric(Singleton):
     """
     Base class for metrics. Strategy design pattern.
     """
-    def get_errors(self,evaluation):
+    def get_errors(self, evaluation):
         """
         Compute prediction errors.
         """
@@ -46,7 +47,7 @@ class Metric(Singleton):
                 evaluation.real_item_scores[k] = 0.0
             if k not in evaluation.predicted_item_scores:
                 evaluation.predicted_item_scores[k] = 0.0
-            errors.append(float(evaluation.predicted_item_scores[k]-
+            errors.append(float(evaluation.predicted_item_scores[k] -
                           evaluation.real_item_scores[k]))
         return errors
 
@@ -61,13 +62,16 @@ class SimpleAccuracy(Metric):
         """
         self.desc = "  S_Accuracy  "
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
-        return float((evaluation.repository_size-
-                      len(evaluation.false_positive))-
-                      len(evaluation.false_negative))/evaluation.repository_size
+        simple_accurary = float((evaluation.repository_size -
+                                 len(evaluation.false_positive)) -
+                                len(evaluation.false_negative))
+
+        return simple_accurary/evaluation.repository_size
+
 
 class Accuracy(Metric):
     """
@@ -79,15 +83,18 @@ class Accuracy(Metric):
         """
         self.desc = "    Accuracy  "
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
-        error_1 = (float(len(evaluation.false_positive))/
-               (evaluation.repository_size-len(evaluation.real_relevant)))
-        error_2 = (float(len(evaluation.false_negative))/len(evaluation.real_relevant))
+        error_1 = (float(len(evaluation.false_positive)) /
+                        (evaluation.repository_size -
+                         len(evaluation.real_relevant)))
+        error_2 = (float(len(evaluation.false_negative)) /
+                   len(evaluation.real_relevant))
         accuracy = 1-(float(error_1+error_2)/2)
         return accuracy
+
 
 class Precision(Metric):
     """
@@ -100,11 +107,13 @@ class Precision(Metric):
         """
         self.desc = "  Precision  "
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
-        return float(len(evaluation.true_positive))/len(evaluation.predicted_relevant)
+        precision = float(len(evaluation.true_positive))
+        return precision/len(evaluation.predicted_relevant)
+
 
 class Recall(Metric):
     """
@@ -117,11 +126,13 @@ class Recall(Metric):
         """
         self.desc = "    Recall   "
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
-        return float(len(evaluation.true_positive))/len(evaluation.real_relevant)
+        recall = float(len(evaluation.true_positive))
+        return recall/len(evaluation.real_relevant)
+
 
 class FPR(Metric):
     """
@@ -133,12 +144,13 @@ class FPR(Metric):
         """
         self.desc = "    FPR    "
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
-        return (float(len(evaluation.false_positive))/
+        return (float(len(evaluation.false_positive)) /
                 evaluation.real_negative_len)
+
 
 class MCC(Metric):
     """
@@ -150,7 +162,7 @@ class MCC(Metric):
         """
         self.desc = "    MCC    "
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
@@ -158,33 +170,35 @@ class MCC(Metric):
         FP = len(evaluation.false_positive)
         FN = len(evaluation.false_negative)
         VN = evaluation.true_negative_len
-        if (VP+FP)==0 or (VP+FN)==0 or (VN+FP)==0 or (VN+FN)==0:
+        if (VP+FP) == 0 or (VP+FN) == 0 or (VN+FP) == 0 or (VN+FN) == 0:
             return 0
         MCC = (((VP*VN)-(FP*FN))/math.sqrt((VP+FP)*(VP+FN)*(VN+FP)*(VN+FN)))
         return MCC
 
+
 class F_score(Metric):
     """
-    Classification accuracy metric which correlates precision and recall into an
-    unique measure.
+    Classification accuracy metric which correlates precision and
+    recall into an unique measure.
     """
-    def __init__(self,k):
+    def __init__(self, k):
         """
         Set metric description.
         """
         self.desc = "  F(%.1f)  " % k
         self.k = k
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
         p = Precision().run(evaluation)
         r = Recall().run(evaluation)
-        if ((self.k*self.k*p)+r)>0:
+        if ((self.k*self.k*p)+r) > 0:
             return float(((1+(self.k*self.k))*((p*r)/((self.k*self.k*p)+r))))
         else:
             return 0
+
 
 class MAE(Metric):
     """
@@ -196,16 +210,17 @@ class MAE(Metric):
         """
         self.desc = "     MAE     "
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
         errors = self.get_errors(evaluation)
         return sum(errors)/len(errors)
 
+
 class MSE(Metric):
     """
-    Prediction accuracy metric defined as the mean square error. 
+    Prediction accuracy metric defined as the mean square error.
     """
     def __init__(self):
         """
@@ -213,17 +228,18 @@ class MSE(Metric):
         """
         self.desc = "     MSE     "
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
         errors = self.get_errors(evaluation)
-        square_errors = [pow(x,2) for x in errors]
+        square_errors = [pow(x, 2) for x in errors]
         return sum(square_errors)/len(square_errors)
+
 
 class RMSE(MSE):
     """
-    Prediction accuracy metric defined as the root mean square error. 
+    Prediction accuracy metric defined as the root mean square error.
     """
     def __init__(self):
         """
@@ -231,11 +247,12 @@ class RMSE(MSE):
         """
         self.desc = "     RMSE     "
 
-    def run(self,evaluation):
+    def run(self, evaluation):
         """
         Compute metric.
         """
         return math.sqrt(MSE.run(evaluation))
+
 
 class Coverage(Metric):
     """
@@ -248,7 +265,7 @@ class Coverage(Metric):
         """
         self.desc = "   Coverage  "
 
-    def run(self,evaluations_set):
+    def run(self, evaluations_set):
         """
         Compute metric.
         """
@@ -257,11 +274,12 @@ class Coverage(Metric):
             covered.update(set(evaluation.predicted_relevant))
         return float(len(covered))/evaluation.repository_size
 
+
 class Evaluation:
     """
     Class designed to perform prediction evaluation, given data and metric.
     """
-    def __init__(self,predicted,real,repository_size):
+    def __init__(self, predicted, real, repository_size):
         """
         Set initial parameters.
         """
@@ -273,13 +291,15 @@ class Evaluation:
 
         self.true_positive = [v[0] for v in self.predicted_relevant if v[0] in
                               [w[0] for w in self.real_relevant]]
-        self.false_positive = [v[0] for v in self.predicted_relevant if not v[0] in
-                               [w[0] for w in self.real_relevant]]
+        self.false_positive = [v[0] for v in self.predicted_relevant
+                               if not v[0] in [w[0]
+                               for w in self.real_relevant]]
         self.false_negative = [v[0] for v in self.real_relevant if not v[0] in
                                [w[0] for w in self.predicted_relevant]]
 
-        self.real_negative_len = self.repository_size-len(self.real_relevant)
-        self.true_negative_len = (self.real_negative_len-len(self.false_positive))
+        self.real_negative_len = self.repository_size - len(self.real_relevant)
+        self.true_negative_len = (self.real_negative_len -
+                                  len(self.false_positive))
         logging.debug("TP: %d" % len(self.true_positive))
         logging.debug("FP: %d" % len(self.false_positive))
         logging.debug("FN: %d" % len(self.false_negative))
@@ -288,24 +308,27 @@ class Evaluation:
         logging.debug("Relevant: %d" % len(self.real_relevant))
         logging.debug("Irrelevant: %d" % self.real_negative_len)
 
-    def run(self,metric):
+    def run(self, metric):
         """
         Perform the evaluation with the given metric.
         """
         return metric.run(self)
 
+
 class CrossValidation:
     """
     Class designed to perform cross-validation process.
     """
-    def __init__(self,partition_proportion,rounds,rec,metrics_list,result_proportion):
+    def __init__(self, partition_proportion, rounds, rec,
+                 metrics_list, result_proportion):
         """
         Set initial parameters.
         """
-        if partition_proportion<1 and partition_proportion>0:
+        if partition_proportion < 1 and partition_proportion > 0:
             self.partition_proportion = partition_proportion
         else:
-            logging.critical("Partition proportion must be a value in the interval [0,1].")
+            logging.critical("Partition proportion must be a value"
+                             "in the interval [0,1].")
             raise Error
         self.rounds = rounds
         self.recommender = rec
@@ -313,7 +336,7 @@ class CrossValidation:
         self.cross_results = defaultdict(list)
         self.result_proportion = result_proportion
 
-    def run(self,user):
+    def run(self, user):
         """
         Perform cross-validation.
         """
@@ -327,37 +350,41 @@ class CrossValidation:
             round_partition = {}
             # move items from cross_item_score to round-partition
             for j in range(partition_size):
-                if len(cross_item_score)>0:
+                if len(cross_item_score) > 0:
                     random_key = random.choice(cross_item_score.keys())
                 else:
                     logging.critical("Empty cross_item_score.")
                     raise Error
                 round_partition[random_key] = cross_item_score.pop(random_key)
-            logging.debug("Round partition: %s",str(round_partition))
-            logging.debug("Cross item-score: %s",str(cross_item_score))
+            logging.debug("Round partition: %s", str(round_partition))
+            logging.debug("Cross item-score: %s", str(cross_item_score))
             # round user is created with remaining items
             round_user = User(cross_item_score)
-            result_size = int(self.recommender.items_repository.get_doccount()*
-                              self.result_proportion)
+            result_size = (self.recommender.items_repository.get_doccount() *
+                           self.result_proportion)
+            result_size = int(result_size)
             logging.debug("size %d" % result_size)
             if not result_size:
                 logging.critical("Recommendation size is zero.")
                 raise Error
-            predicted_result = self.recommender.get_recommendation(round_user,result_size)
+            predicted_result = self.recommender.get_recommendation(round_user,
+                                                                   result_size)
             if not predicted_result.size:
-                logging.critical("No recommendation produced. Abort cross-validation.")
+                logging.critical("No recommendation produced"
+                                 " Abort cross-validation.")
                 raise Error
             # partition is considered the expected result
             real_result = RecommendationResult(round_partition)
-            logging.debug("Predicted result: %s",predicted_result)
-            evaluation = Evaluation(predicted_result,real_result,
-                                    self.recommender.items_repository.get_doccount())
+            num_docs = self.recommender.items_repository.get_doccount()
+
+            logging.debug("Predicted result: %s", predicted_result)
+            evaluation = Evaluation(predicted_result, real_result, num_docs)
             for metric in self.metrics_list:
                 result = evaluation.run(metric)
                 self.cross_results[metric.desc].append(result)
             # moving back items from round_partition to cross_item_score
-            while len(round_partition)>0:
-                item,score = round_partition.popitem()
+            while len(round_partition) > 0:
+                item, score = round_partition.popitem()
                 cross_item_score[item] = score
 
     def __str__(self):
@@ -374,7 +401,7 @@ class CrossValidation:
             for metric in self.metrics_list:
                 metrics_result += ("     %2.1f%%    |" %
                                    (self.cross_results[metric.desc][r]*100))
-            str += "|   %d   |%s\n" % (r,metrics_result)
+            str += "|   %d   |%s\n" % (r, metrics_result)
         metrics_mean = ""
         for metric in self.metrics_list:
             mean = float(sum(self.cross_results[metric.desc]) /
@@ -382,4 +409,3 @@ class CrossValidation:
             metrics_mean += "     %2.1f%%    |" % (mean*100)
         str += "|  Mean |%s\n" % (metrics_mean)
         return str
-
