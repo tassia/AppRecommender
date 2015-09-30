@@ -2,10 +2,12 @@
 
 import os
 import commands
+from subprocess import Popen, PIPE, STDOUT
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 ALL_INSTALED_PKGS = LOG_PATH+"/all_pkgs.txt"
 MANUAL_INSTALlED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
+HISTORY = LOG_PATH+"/user_history"
 
 
 def create_log_folder():
@@ -41,11 +43,26 @@ def collect_all_user_pkgs():
             pkgs.write(pkg+"\n")
 
 
+def collect_user_history():
+
+    create_file(HISTORY)
+    shell_command = 'bash -i -c "history -r; history"'
+    proc = Popen(shell_command, shell=True, stdin=PIPE, stdout=PIPE,
+                 stderr=STDOUT, close_fds=True)
+    history_output = proc.stdout.read()
+
+    with open(HISTORY, 'w') as history:
+
+        for command in history_output.splitlines():
+            history.write(command.split('  ')[1] + '\n')
+
+
 def main():
 
     create_log_folder()
     collect_all_user_pkgs()
     collect_manual_installed_pkgs()
+    collect_user_history()
 
 
 if __name__ == '__main__':
