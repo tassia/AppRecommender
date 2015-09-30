@@ -19,6 +19,7 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 class Singleton(object):
     """
     Base class for inheritance of only-one-instance classes.
@@ -31,4 +32,3 @@ class Singleton(object):
         if '_inst' not in vars(cls):
             cls._inst = object.__new__(cls)
         return cls._inst
-
