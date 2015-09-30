@@ -5,12 +5,14 @@ import commands
 from subprocess import Popen, PIPE, STDOUT
 
 from pkg_time_list import save_package_time, get_packages_time
+from data_classification import get_alternative_pkg
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
-ALL_INSTALLED_PKGS = LOG_PATH+"/all_pkgs.txt"
+ALL_INSTALLED_PKGS = LOG_PATH + '/all_pkgs.txt'
 MANUAL_INSTALLED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
 PKGS_TIME_PATH = LOG_PATH + '/pkgs_time.txt'
-HISTORY = LOG_PATH+"/user_history.txt"
+HISTORY = LOG_PATH + '/user_history.txt'
+PKGS_BINARY = LOG_PATH + '/pkgs_binary.txt'
 
 
 def create_log_folder():
@@ -42,14 +44,12 @@ def collect_all_user_pkgs():
     dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
 
     with open(ALL_INSTALLED_PKGS, 'w') as pkgs:
-
         for pkg in dpkg_output.splitlines():
             pkg = pkg.split('\t')[0]
             pkgs.write(pkg+"\n")
 
 
 def collect_user_history():
-
     create_file(HISTORY)
     shell_command = 'bash -i -c "history -r; history"'
     proc = Popen(shell_command, shell=True, stdin=PIPE, stdout=PIPE,
@@ -57,7 +57,6 @@ def collect_user_history():
     history_output = proc.stdout.read()
 
     with open(HISTORY, 'w') as history:
-
         for command in history_output.splitlines():
             history.write(command.split('  ')[1] + '\n')
 
@@ -72,13 +71,53 @@ def collect_pkgs_time():
     save_package_time(pkgs_time, PKGS_TIME_PATH)
 
 
+def collect_pkgs_binary():
+    pkgs = []
+    pkgs_binary = {}
+
+    with open(ALL_INSTALLED_PKGS, 'r') as text:
+        pkgs = [line.strip() for line in text]
+
+    for pkg in pkgs:
+        binary = get_pkg_binary(pkg)
+        if binary:
+            pkgs_binary[pkg] = binary
+
+    write_text = "{pkg} {binary}\n"
+    with open(PKGS_BINARY, 'w') as text:
+        for pkg, binary in pkgs_binary.iteritems():
+            text.write(write_text.format(pkg=pkg, binary=binary))
+
+
+def get_pkg_binary(pkg):
+    stat_command = "stat `which {0}`".format(pkg)
+    stat_success = "File:"
+    pkg_bin = commands.getoutput(stat_command.format(pkg))
+
+    if stat_success in pkg_bin:
+        return pkg
+
+    return get_alternative_pkg(pkg)
+
+
 def main():
+    print "Creating log folder"
     create_log_folder()
+
+    print "Collecting all user packages"
     collect_all_user_pkgs()
+
+    print "Collecting manual installed packages"
     collect_manual_installed_pkgs()
+
+    print "Collecting user history"
     collect_user_history()
 
+    print "Collecting packages time"
     collect_pkgs_time()
+
+    print "Collecting packages binary"
+    collect_pkgs_binary()
 
 if __name__ == '__main__':
     main()
