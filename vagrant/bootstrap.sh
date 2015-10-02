@@ -7,3 +7,6 @@ apt-get install vim -y
 echo "Install AppRecommender dependencies"
 cd /vagrant
 ./install_dependencies.sh
+
+cd /vagrant/src/bin
+./prepare_data.sh
