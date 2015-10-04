@@ -25,9 +25,10 @@ sys.path.insert(0, '../')
 from app_recommender import AppRecommender
 
 if __name__ == '__main__':
+    option = 0
     recommendation_size = 20
     no_auto_pkg_profile = True
 
     app_recommender = AppRecommender()
     app_recommender.make_recommendation(recommendation_size,
-                                        no_auto_pkg_profile)
+                                        no_auto_pkg_profile, option)

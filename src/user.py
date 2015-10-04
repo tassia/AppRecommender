@@ -149,25 +149,27 @@ class User:
         """
         self.demographic_profile = DemographicProfile()(profiles_set)
 
-    def content_profile(self, items_repository, content, size, valid_tags=0):
+    def content_profile(self, items_repository, content, size, valid_tags=0,
+                        option=0):
         """
         Get user profile for a specific type of content: packages tags,
         description or both (mixed and half-half profiles)
         """
         if content == "tag":
             profile = self.tfidf_profile(items_repository, size,
-                                         FilterTag(valid_tags))
+                                         FilterTag(valid_tags), option)
         elif content == "desc":
             profile = self.tfidf_profile(items_repository,
-                                         size, FilterDescription())
+                                         size, FilterDescription(), option)
         elif content == "mix":
             profile = self.tfidf_profile(items_repository, size,
-                                         FilterTag_or_Description(valid_tags))
+                                         FilterTag_or_Description(valid_tags),
+                                         option)
         elif content == "half":
             tag_profile = self.tfidf_profile(items_repository, size,
-                                             FilterTag(valid_tags))
+                                             FilterTag(valid_tags), option)
             desc_profile = self.tfidf_profile(items_repository, size,
-                                              FilterDescription())
+                                              FilterDescription(), option)
             profile = tag_profile[:size/2]+desc_profile[:size/2]
         elif content == "time":
             tag_profile = self.tfidf_profile(items_repository, size,
@@ -202,6 +204,7 @@ class User:
         Return the most relevant tags for the user list of packages based on
         the sublinear tfidf weight of packages' tags.
         """
+
         docs = data.axi_search_pkgs(items_repository, self.pkg_profile)
         # weights = data.tfidf_plus(items_repository,docs,content_filter)
         weights = data.tfidf_weighting(items_repository, docs, content_filter,
