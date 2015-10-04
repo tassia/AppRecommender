@@ -3,10 +3,14 @@
 import os
 import logging
 import commands
-from subprocess import Popen, PIPE, STDOUT
+import sys
 
+sys.path.insert(0, '../')
+
+from subprocess import Popen, PIPE, STDOUT
 from pkg_time_list import save_package_time, get_packages_time
 from data_classification import get_alternative_pkg
+from app_recommender import AppRecommender
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 ALL_INSTALLED_PKGS = LOG_PATH + '/all_pkgs.txt'
@@ -133,8 +137,40 @@ def get_pkg_binary(pkg):
     return get_alternative_pkg(pkg)
 
 
-def get_recommendation():
-    pass
+def get_pkgs_of_recommendation(recommendation_size, no_auto_pkg_profile,
+                               option):
+    app_recommender = AppRecommender()
+
+    recommender = (app_recommender.make_recommendation(recommendation_size,
+                   no_auto_pkg_profile, option))
+    pkgs = [pkg.split(':')[1][1:] for pkg in str(recommender).splitlines()[1:]]
+
+    return pkgs
+
+
+def collect_user_preferences():
+    recommendation_size = 5
+    no_auto_pkg_profile = True
+
+    first_rec = get_pkgs_of_recommendation(recommendation_size,
+                                           no_auto_pkg_profile, 0)
+    second_rec = get_pkgs_of_recommendation(recommendation_size,
+                                            no_auto_pkg_profile, 1)
+
+    all_rec = sorted(list(set(first_rec) | set(second_rec)))
+
+    index = 0
+    user_preferences = {}
+    all_rec_len = len(all_rec)
+
+    print "rank a package recommendation with 0-10"
+
+    message = "[{0}/{1}] - {2} , rank: "
+    for pkg in all_rec:
+        rank = raw_input(message.format((index+1), all_rec_len, pkg))
+        rank = int(rank)
+        user_preferences[pkg] = rank
+        index += 1
 
 
 def main():
@@ -142,6 +178,9 @@ def main():
 
     print "Creating log folder"
     create_log_folder()
+
+    print "Collecting user preferences"
+    collect_user_preferences()
 
     print "Collecting all user packages"
     collect_all_user_pkgs()
