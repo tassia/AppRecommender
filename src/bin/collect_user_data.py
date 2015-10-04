@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import logging
 import commands
 from subprocess import Popen, PIPE, STDOUT
 
@@ -17,16 +18,17 @@ POPCON_SUBMISSION = LOG_PATH + '/popcon-submission'
 
 
 def create_log_folder():
-
     if not os.path.exists(LOG_PATH):
         os.mkdir(LOG_PATH, 0755)
 
 
 def create_file(file_path):
-
     if not os.path.exists(file_path):
         with open(file_path, 'a'):
             os.utime(file_path, None)
+        return True
+
+    return False
 
 
 def rename_file(original_name, new_name):
@@ -58,64 +60,66 @@ def collect_popcon_submission():
 
 
 def collect_manual_installed_pkgs():
-    create_file(MANUAL_INSTALLED_PKGS_PATH)
-    packages = commands.getoutput('apt-mark showmanual')
+    if create_file(MANUAL_INSTALLED_PKGS_PATH):
+        packages = commands.getoutput('apt-mark showmanual')
 
-    packages = [pkg for pkg in packages.splitlines()]
+        packages = [pkg for pkg in packages.splitlines()]
 
-    with open(MANUAL_INSTALLED_PKGS_PATH, 'w') as text:
-        for pkg in packages:
-            text.write(pkg+'\n')
+        with open(MANUAL_INSTALLED_PKGS_PATH, 'w') as text:
+            for pkg in packages:
+                text.write(pkg+'\n')
 
 
 def collect_all_user_pkgs():
-    create_file(ALL_INSTALLED_PKGS)
-    dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
+    if create_file(ALL_INSTALLED_PKGS):
+        dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
 
-    with open(ALL_INSTALLED_PKGS, 'w') as pkgs:
-        for pkg in dpkg_output.splitlines():
-            pkg = pkg.split('\t')[0]
-            pkgs.write(pkg+"\n")
+        with open(ALL_INSTALLED_PKGS, 'w') as pkgs:
+            for pkg in dpkg_output.splitlines():
+                pkg = pkg.split('\t')[0]
+                pkgs.write(pkg+"\n")
 
 
 def collect_user_history():
-    create_file(HISTORY)
-    shell_command = 'bash -i -c "history -r; history"'
-    proc = Popen(shell_command, shell=True, stdin=PIPE, stdout=PIPE,
-                 stderr=STDOUT, close_fds=True)
-    history_output = proc.stdout.read()
+    if create_file(HISTORY):
+        shell_command = 'bash -i -c "history -r; history"'
+        proc = Popen(shell_command, shell=True, stdin=PIPE, stdout=PIPE,
+                     stderr=STDOUT, close_fds=True)
+        history_output = proc.stdout.read()
 
-    with open(HISTORY, 'w') as history:
-        for command in history_output.splitlines():
-            history.write(command.split('  ')[1] + '\n')
+        with open(HISTORY, 'w') as history:
+            for command in history_output.splitlines():
+                history.write(command.split('  ')[1] + '\n')
 
 
 def collect_pkgs_time():
-    manual_pkgs = []
-    with open(MANUAL_INSTALLED_PKGS_PATH, 'r') as text:
-        manual_pkgs = [line.strip() for line in text]
+    if create_file(PKGS_TIME_PATH):
+        manual_pkgs = []
+        with open(MANUAL_INSTALLED_PKGS_PATH, 'r') as text:
+            manual_pkgs = [line.strip() for line in text]
 
-    pkgs_time = get_packages_time(manual_pkgs)
+        pkgs_time = get_packages_time(manual_pkgs)
 
-    save_package_time(pkgs_time, PKGS_TIME_PATH)
+        save_package_time(pkgs_time, PKGS_TIME_PATH)
 
 
 def collect_pkgs_binary():
-    pkgs = []
-    pkgs_binary = {}
+    if create_file(PKGS_BINARY):
+        pkgs = []
+        pkgs_binary = {}
 
-    with open(ALL_INSTALLED_PKGS, 'r') as text:
-        pkgs = [line.strip() for line in text]
+        with open(ALL_INSTALLED_PKGS, 'r') as text:
+            pkgs = [line.strip() for line in text]
 
-    for pkg in pkgs:
-        binary = get_pkg_binary(pkg)
-        if binary:
-            pkgs_binary[pkg] = binary
+        for pkg in pkgs:
+            binary = get_pkg_binary(pkg)
+            if binary:
+                pkgs_binary[pkg] = binary
 
-    write_text = "{pkg} {binary}\n"
-    with open(PKGS_BINARY, 'w') as text:
-        for pkg, binary in pkgs_binary.iteritems():
-            text.write(write_text.format(pkg=pkg, binary=binary))
+        write_text = "{pkg} {binary}\n"
+        with open(PKGS_BINARY, 'w') as text:
+            for pkg, binary in pkgs_binary.iteritems():
+                text.write(write_text.format(pkg=pkg, binary=binary))
 
 
 def get_pkg_binary(pkg):
@@ -129,7 +133,13 @@ def get_pkg_binary(pkg):
     return get_alternative_pkg(pkg)
 
 
+def get_recommendation():
+    pass
+
+
 def main():
+    logging.getLogger().disabled = True
+
     print "Creating log folder"
     create_log_folder()
 
