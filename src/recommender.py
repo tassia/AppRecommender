@@ -25,6 +25,8 @@ import xapian
 import operator
 import strategy
 
+from config import Config
+
 
 class RecommendationResult:
     """
@@ -69,17 +71,18 @@ class Recommender:
     """
     Class designed to play the role of recommender.
     """
-    def __init__(self, cfg):
+    def __init__(self):
         """
         Set initial parameters.
         """
-        self.cfg = cfg
+        self.cfg = Config()
         # Load xapian indexes
         # self.axi_programs = xapian.Database(cfg.axi_programs)
-        self.axi_desktopapps = xapian.Database(cfg.axi_desktopapps)
-        if cfg.popcon:
+        self.axi_desktopapps = xapian.Database(self.cfg.axi_desktopapps)
+        if self.cfg.popcon:
             # self.popcon_programs = xapian.Database(cfg.popcon_programs)
-            self.popcon_desktopapps = xapian.Database(cfg.popcon_desktopapps)
+            self.popcon_desktopapps = xapian.Database(
+                self.cfg.popcon_desktopapps)
         # Load valid programs, desktopapps and tags
         # format: one package or tag name per line
         # self.valid_programs = []
@@ -89,20 +92,20 @@ class Recommender:
         # with open(os.path.join(cfg.filters_dir,"programs")) as pkgs:
         #    self.valid_programs = [line.strip() for line in pkgs
         #                           if not line.startswith("#")]
-        with open(os.path.join(cfg.filters_dir, "desktopapps")) as pkgs:
+        with open(os.path.join(self.cfg.filters_dir, "desktopapps")) as pkgs:
             self.valid_desktopapps = [line.strip() for line in pkgs
                                       if not line.startswith("#")]
-        with open(os.path.join(cfg.filters_dir, "debtags")) as tags:
+        with open(os.path.join(self.cfg.filters_dir, "debtags")) as tags:
             self.valid_tags = [line.strip() for line in tags
                                if not line.startswith("#")]
         # Set xapian index weighting scheme
-        if cfg.weight == "bm25":
-            self.weight = xapian.BM25Weight(cfg.bm25_k1, cfg.bm25_k2,
-                                            cfg.bm25_k3, cfg.bm25_b,
-                                            cfg.bm25_nl)
+        if self.cfg.weight == "bm25":
+            self.weight = xapian.BM25Weight(self.cfg.bm25_k1, self.cfg.bm25_k2,
+                                            self.cfg.bm25_k3, self.cfg.bm25_b,
+                                            self.cfg.bm25_nl)
         else:
             self.weight = xapian.TradWeight()
-        self.set_strategy(cfg.strategy)
+        self.set_strategy(self.cfg.strategy)
 
     def set_strategy(self, strategy_str, k=0, n=0):
         """

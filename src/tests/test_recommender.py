@@ -50,7 +50,7 @@ class RecommenderTests(unittest.TestCase):
         cfg.popcon_dir = "test_data/popcon_dir"
         cfg.clusters_dir = "test_data/clusters_dir"
         cfg.popcon = 0
-        self.rec = Recommender(cfg)
+        self.rec = Recommender()
 
     def test_set_strategy(self):
         self.rec.set_strategy("cb")
