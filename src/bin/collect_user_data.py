@@ -18,6 +18,9 @@ MANUAL_INSTALLED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
 PKGS_TIME_PATH = LOG_PATH + '/pkgs_time.txt'
 HISTORY = LOG_PATH + '/user_history.txt'
 PKGS_BINARY = LOG_PATH + '/pkgs_binary.txt'
+OLD_RECOMMENDATION = LOG_PATH + '/old_rec.txt'
+NEW_RECOMMENDATION = LOG_PATH + '/new_rec.txt'
+USER_PREFERENCES = LOG_PATH + '/user_preferences.txt'
 POPCON_SUBMISSION = LOG_PATH + '/popcon-submission'
 
 
@@ -33,6 +36,20 @@ def create_file(file_path):
         return True
 
     return False
+
+
+def delete_file(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+
+def save_pkg_list(pkgs, file_path):
+    delete_file(file_path)
+    create_file(file_path)
+
+    with open(file_path, 'w') as text:
+        for pkg in pkgs:
+            text.write(str(pkg) + '\n')
 
 
 def rename_file(original_name, new_name):
@@ -69,9 +86,7 @@ def collect_manual_installed_pkgs():
 
         packages = [pkg for pkg in packages.splitlines()]
 
-        with open(MANUAL_INSTALLED_PKGS_PATH, 'w') as text:
-            for pkg in packages:
-                text.write(pkg+'\n')
+        save_pkg_list(packages, MANUAL_INSTALLED_PKGS_PATH)
 
 
 def collect_all_user_pkgs():
@@ -152,12 +167,12 @@ def collect_user_preferences():
     recommendation_size = 5
     no_auto_pkg_profile = True
 
-    first_rec = get_pkgs_of_recommendation(recommendation_size,
-                                           no_auto_pkg_profile, 0)
-    second_rec = get_pkgs_of_recommendation(recommendation_size,
-                                            no_auto_pkg_profile, 1)
+    old_rec = get_pkgs_of_recommendation(recommendation_size,
+                                         no_auto_pkg_profile, 0)
+    new_rec = get_pkgs_of_recommendation(recommendation_size,
+                                         no_auto_pkg_profile, 1)
 
-    all_rec = sorted(list(set(first_rec) | set(second_rec)))
+    all_rec = sorted(list(set(old_rec) | set(new_rec)))
 
     index = 0
     user_preferences = {}
@@ -171,6 +186,13 @@ def collect_user_preferences():
         rank = int(rank)
         user_preferences[pkg] = rank
         index += 1
+
+    preferences_list = ["{0}:{1}".format(pkg, user_preferences[pkg])
+                        for pkg in all_rec]
+
+    save_pkg_list(old_rec, OLD_RECOMMENDATION)
+    save_pkg_list(new_rec, NEW_RECOMMENDATION)
+    save_pkg_list(preferences_list, USER_PREFERENCES)
 
 
 def main():
