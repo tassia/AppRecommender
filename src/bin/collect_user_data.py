@@ -43,13 +43,13 @@ def delete_file(file_path):
         os.remove(file_path)
 
 
-def save_pkg_list(pkgs, file_path):
+def save_list(list, file_path):
     delete_file(file_path)
     create_file(file_path)
 
     with open(file_path, 'w') as text:
-        for pkg in pkgs:
-            text.write(str(pkg) + '\n')
+        for element in list:
+            text.write(str(element) + '\n')
 
 
 def rename_file(original_name, new_name):
@@ -86,17 +86,16 @@ def collect_manual_installed_pkgs():
 
         packages = [pkg for pkg in packages.splitlines()]
 
-        save_pkg_list(packages, MANUAL_INSTALLED_PKGS_PATH)
+        save_list(packages, MANUAL_INSTALLED_PKGS_PATH)
 
 
 def collect_all_user_pkgs():
     if create_file(ALL_INSTALLED_PKGS):
         dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
 
-        with open(ALL_INSTALLED_PKGS, 'w') as pkgs:
-            for pkg in dpkg_output.splitlines():
-                pkg = pkg.split('\t')[0]
-                pkgs.write(pkg+"\n")
+        packages = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()]
+
+        save_list(packages, ALL_INSTALLED_PKGS)
 
 
 def collect_user_history():
@@ -106,9 +105,10 @@ def collect_user_history():
                      stderr=STDOUT, close_fds=True)
         history_output = proc.stdout.read()
 
-        with open(HISTORY, 'w') as history:
-            for command in history_output.splitlines():
-                history.write(command.split('  ')[1] + '\n')
+        history_list = [command.split('  ')[1]
+                        for command in history_output.splitlines()]
+
+        save_list(history_list, HISTORY)
 
 
 def collect_pkgs_time():
@@ -131,14 +131,16 @@ def collect_pkgs_binary():
             pkgs = [line.strip() for line in text]
 
         for pkg in pkgs:
-            binary = get_pkg_binary(pkg)
-            if binary:
-                pkgs_binary[pkg] = binary
+            pkg_binary = get_pkg_binary(pkg)
+            if pkg_binary:
+                pkgs_binary[pkg] = pkg_binary
 
-        write_text = "{pkg} {binary}\n"
-        with open(PKGS_BINARY, 'w') as text:
-            for pkg, binary in pkgs_binary.iteritems():
-                text.write(write_text.format(pkg=pkg, binary=binary))
+        write_text = "{0} {1}"
+
+        formated_list = [write_text.format(pkg, binary)
+                         for pkg, binary in pkgs_binary.iteritems()]
+
+        save_list(formated_list, PKGS_BINARY)
 
 
 def get_pkg_binary(pkg):
@@ -190,9 +192,9 @@ def collect_user_preferences():
     preferences_list = ["{0}:{1}".format(pkg, user_preferences[pkg])
                         for pkg in all_rec]
 
-    save_pkg_list(old_rec, OLD_RECOMMENDATION)
-    save_pkg_list(new_rec, NEW_RECOMMENDATION)
-    save_pkg_list(preferences_list, USER_PREFERENCES)
+    save_list(old_rec, OLD_RECOMMENDATION)
+    save_list(new_rec, NEW_RECOMMENDATION)
+    save_list(preferences_list, USER_PREFERENCES)
 
 
 def main():
