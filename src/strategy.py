@@ -133,7 +133,8 @@ class ContentBased(RecommendationStrategy):
         """
         logging.debug("Composing user profile...")
         profile = user.content_profile(rec.items_repository, self.content,
-                                       self.profile_size, rec.valid_tags, option)
+                                       self.profile_size, rec.valid_tags,
+                                       option)
         logging.debug(profile)
         result = self.get_sugestion_from_profile(rec, user, profile, rec_size)
         return result
