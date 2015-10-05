@@ -13,6 +13,7 @@ MANUAL_INSTALLED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
 PKGS_TIME_PATH = LOG_PATH + '/pkgs_time.txt'
 HISTORY = LOG_PATH + '/user_history.txt'
 PKGS_BINARY = LOG_PATH + '/pkgs_binary.txt'
+POPCON_SUBMISSION = LOG_PATH + '/popcon-submission'
 
 
 def create_log_folder():
@@ -26,6 +27,34 @@ def create_file(file_path):
     if not os.path.exists(file_path):
         with open(file_path, 'a'):
             os.utime(file_path, None)
+
+
+def rename_file(original_name, new_name):
+    os.rename(original_name, new_name)
+
+
+def get_submission_id(submission_header):
+
+    fields = submission_header.split(' ')
+    return fields[2][3:]
+
+
+def collect_popcon_submission():
+    popcon = Popen('sudo /usr/sbin/popularity-contest',
+                   shell=True, stdin=PIPE,
+                   stdout=PIPE,
+                   stderr=PIPE)
+
+    popcon_output = popcon.stdout.read()
+
+    with open(POPCON_SUBMISSION, 'w') as submission:
+        popcon_parse = popcon_output.splitlines()
+        submission_id = get_submission_id(popcon_parse[0])
+
+        for line in popcon_parse:
+            submission.write(line+"\n")
+
+    rename_file(POPCON_SUBMISSION, LOG_PATH+"/"+submission_id)
 
 
 def collect_manual_installed_pkgs():
@@ -118,6 +147,10 @@ def main():
 
     print "Collecting packages binary"
     collect_pkgs_binary()
+
+    print "Collecting popularity-contest submission"
+    collect_popcon_submission()
+
 
 if __name__ == '__main__':
     main()
