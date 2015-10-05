@@ -43,12 +43,12 @@ def delete_file(file_path):
         os.remove(file_path)
 
 
-def save_list(list, file_path):
+def save_list(list_to_save, file_path):
     delete_file(file_path)
     create_file(file_path)
 
     with open(file_path, 'w') as text:
-        for element in list:
+        for element in list_to_save:
             text.write(str(element) + '\n')
 
 
@@ -70,12 +70,12 @@ def collect_popcon_submission():
 
     popcon_output = popcon.stdout.read()
 
-    with open(POPCON_SUBMISSION, 'w') as submission:
-        popcon_parse = popcon_output.splitlines()
-        submission_id = get_submission_id(popcon_parse[0])
+    popcon_parse = popcon_output.splitlines()
+    submission_id = get_submission_id(popcon_parse[0])
 
-        for line in popcon_parse:
-            submission.write(line+"\n")
+    submission = [line for line in popcon_parse]
+
+    save_list(submission, POPCON_SUBMISSION)
 
     rename_file(POPCON_SUBMISSION, LOG_PATH+"/"+submission_id)
 
