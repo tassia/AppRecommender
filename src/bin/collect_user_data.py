@@ -24,6 +24,12 @@ USER_PREFERENCES = LOG_PATH + '/user_preferences.txt'
 POPCON_SUBMISSION = LOG_PATH + '/popcon-submission'
 
 
+PKGS_DEPENDENCIES = ['python', 'python-xapian', 'python-apt', 'python-cluster',
+                     'python-webpy', 'python-simplejson', 'python-numpy',
+                     'apt-xapian-index', 'python-xdg', 'debtags', 'python-pip',
+                     'popularity-contest']
+
+
 def create_log_folder():
     if not os.path.exists(LOG_PATH):
         os.mkdir(LOG_PATH, 0755)
@@ -93,7 +99,8 @@ def collect_all_user_pkgs():
     if create_file(ALL_INSTALLED_PKGS):
         dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
 
-        packages = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()]
+        packages = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()
+                    if not ('deinstall' in pkg.split('\t')[-1])]
 
         save_list(packages, ALL_INSTALLED_PKGS)
 
@@ -197,8 +204,39 @@ def collect_user_preferences():
     save_list(preferences_list, USER_PREFERENCES)
 
 
+def get_uninstalled_dependencies():
+    user_pkgs = []
+    unistalled_pkgs = []
+
+    with open(ALL_INSTALLED_PKGS, 'r') as text:
+        user_pkgs = [line for line in text.read().splitlines()]
+
+    for pkg in PKGS_DEPENDENCIES:
+        if not (pkg in user_pkgs):
+            unistalled_pkgs.append(pkg)
+
+    return unistalled_pkgs
+
+
+def check_dependencies():
+    unistalled_pkgs = get_uninstalled_dependencies()
+    unistalled_dependencies = ''
+
+    if len(unistalled_pkgs) > 0:
+        unistalled_dependencies = ''.join(str(pkg)+' '
+                                          for pkg in unistalled_pkgs)
+
+    return unistalled_dependencies
+
+
 def main():
     logging.getLogger().disabled = True
+
+    print "Checking dependencies"
+    unistalled_dependencies = check_dependencies()
+    if len(unistalled_dependencies) > 0:
+        print 'These packages need to be installed:', unistalled_dependencies
+        return
 
     print "Creating log folder"
     create_log_folder()
