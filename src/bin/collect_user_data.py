@@ -97,11 +97,7 @@ def collect_manual_installed_pkgs():
 
 def collect_all_user_pkgs():
     if create_file(ALL_INSTALLED_PKGS):
-        dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
-
-        packages = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()
-                    if not ('deinstall' in pkg.split('\t')[-1])]
-
+        packages = get_all_user_pkgs()
         save_list(packages, ALL_INSTALLED_PKGS)
 
 
@@ -204,12 +200,20 @@ def collect_user_preferences():
     save_list(preferences_list, USER_PREFERENCES)
 
 
+def get_all_user_pkgs():
+    dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
+
+    packages = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()
+                if not ('deinstall' in pkg.split('\t')[-1])]
+
+    return packages
+
+
 def get_uninstalled_dependencies():
     user_pkgs = []
     unistalled_pkgs = []
 
-    with open(ALL_INSTALLED_PKGS, 'r') as text:
-        user_pkgs = [line for line in text.read().splitlines()]
+    user_pkgs = get_all_user_pkgs()
 
     for pkg in PKGS_DEPENDENCIES:
         if not (pkg in user_pkgs):
