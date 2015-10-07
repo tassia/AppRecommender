@@ -164,8 +164,7 @@ def get_pkgs_of_recommendation(recommendation_size, no_auto_pkg_profile,
 
     recommender = (app_recommender.make_recommendation(recommendation_size,
                                                        no_auto_pkg_profile,
-                                                       option)
-                   )
+                                                       option))
     pkgs = [pkg.split(':')[1][1:] for pkg in str(recommender).splitlines()[1:]]
 
     return pkgs
@@ -207,7 +206,7 @@ def get_all_user_pkgs():
     dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
 
     packages = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()
-                if not 'deinstall' in pkg.split('\t')[-1]]
+                if 'deinstall' not in pkg.split('\t')[-1]]
 
     return packages
 
@@ -219,7 +218,7 @@ def get_uninstalled_dependencies():
     user_pkgs = get_all_user_pkgs()
 
     for pkg in PKGS_DEPENDENCIES:
-        if not pkg in user_pkgs:
+        if pkg not in user_pkgs:
             unistalled_pkgs.append(pkg)
 
     return unistalled_pkgs
