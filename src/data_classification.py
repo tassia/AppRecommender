@@ -46,12 +46,12 @@ def get_alternative_pkg(pkg):
 
 def get_time(option, pkg):
     stat_base = "stat -c '%{option}' `which {package}`"
-    stat_error = 'stat: missing operand'
+    stat_error = 'stat:'
     stat_time = stat_base.format(option=option, package=pkg)
 
     pkg_time = commands.getoutput(stat_time)
 
-    if not pkg_time.startswith(stat_error):
+    if stat_error not in pkg_time:
         return pkg_time
 
     return None
