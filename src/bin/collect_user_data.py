@@ -22,6 +22,7 @@ OLD_RECOMMENDATION = LOG_PATH + '/old_rec.txt'
 NEW_RECOMMENDATION = LOG_PATH + '/new_rec.txt'
 USER_PREFERENCES = LOG_PATH + '/user_preferences.txt'
 POPCON_SUBMISSION = LOG_PATH + '/popcon-submission'
+PC_INFORMATIONS = LOG_PATH + '/pc_informations.txt'
 
 
 PKGS_DEPENDENCIES = ['python', 'python-xapian', 'python-apt', 'python-cluster',
@@ -233,6 +234,19 @@ def check_dependencies():
     return unistalled_dependencies
 
 
+def collect_pc_informations():
+    informations = []
+    linux_kernel_version = commands.getoutput('uname -s -r')
+
+    distribution_version = commands.getoutput('lsb_release -a')
+    distribution_version = distribution_version.splitlines()
+
+    informations.append(linux_kernel_version)
+    informations.extend(distribution_version)
+
+    save_list(informations, PC_INFORMATIONS)
+
+
 def main():
     logging.getLogger().disabled = True
 
@@ -245,8 +259,11 @@ def main():
     print "Creating log folder"
     create_log_folder()
 
-    print "Collecting user preferences"
-    collect_user_preferences()
+    # print "Collecting user preferences"
+    # collect_user_preferences()
+
+    print "Collecting PC informations"
+    collect_pc_informations()
 
     print "Collecting all user packages"
     collect_all_user_pkgs()
