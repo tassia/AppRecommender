@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, '../')
 
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE
 from pkg_time_list import save_package_time, get_packages_time
 from data_classification import get_alternative_pkg
 from app_recommender import AppRecommender
@@ -99,19 +99,6 @@ def collect_all_user_pkgs():
     if create_file(ALL_INSTALLED_PKGS):
         packages = get_all_user_pkgs()
         save_list(packages, ALL_INSTALLED_PKGS)
-
-
-def collect_user_history():
-    if create_file(HISTORY):
-        shell_command = 'bash -i -c "history -r; history"'
-        proc = Popen(shell_command, shell=True, stdin=PIPE, stdout=PIPE,
-                     stderr=STDOUT, close_fds=True)
-        history_output = proc.stdout.read()
-
-        history_list = [command.split('  ')[1]
-                        for command in history_output.splitlines()]
-
-        save_list(history_list, HISTORY)
 
 
 def collect_pkgs_time():
@@ -270,9 +257,6 @@ def main():
 
     print "Collecting manual installed packages"
     collect_manual_installed_pkgs()
-
-    print "Collecting user history"
-    collect_user_history()
 
     print "Collecting packages time"
     collect_pkgs_time()
