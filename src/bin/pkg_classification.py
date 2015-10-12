@@ -74,11 +74,11 @@ def get_debtags_name(file_path):
     return debtags_name
 
 
-def create_row_table_list(labels_name, pkg_element):
+def create_row_table_list(labels_name, pkg_elements):
     row_list = []
 
     for debtag in labels_name:
-        row_list.append(1 if debtag in pkg_element else 0)
+        row_list.append(1 if debtag in pkg_elements else 0)
 
     return row_list
 
@@ -91,6 +91,26 @@ def get_terms_for_all_pkgs(axi, pkgs):
     return pkg_terms
 
 
+def get_pkgs_table_classification(axi, pkgs, debtags_name, terms_name):
+    pkgs_classification = {}
+
+    for key, value in pkgs.iteritems():
+
+        pkgs_classification[key] = []
+
+        debtags = get_pkg_debtags(axi, key)
+        debtags = create_row_table_list(debtags_name, debtags)
+        pkgs_classification[key].extend(debtags)
+
+        terms = get_pkg_terms(axi, key)
+        terms = create_row_table_list(list(terms_name), terms)
+        pkgs_classification[key].extend(terms)
+
+        pkgs_classification[key].append(value)
+
+    return pkgs_classification
+
+
 def main():
     axi = xapian.Database(XAPIAN_DATABASE_PATH)
     pkgs = get_pkgs_classification(linear_percent_function,
@@ -99,24 +119,11 @@ def main():
     debtags_name = get_debtags_name('tags.txt')
     terms_name = sorted(get_terms_for_all_pkgs(axi, pkgs.keys()))
 
-    pkg_classifications = {}
-
-    for key, value in pkgs.iteritems():
-
-        pkg_classifications[key] = []
-
-        debtags = get_pkg_debtags(axi, key)
-        debtags = create_row_table_list(debtags_name, debtags)
-        pkg_classifications[key].extend(debtags)
-
-        terms = get_pkg_terms(axi, key)
-        terms = create_row_table_list(list(terms_name), terms)
-        pkg_classifications[key].extend(terms)
-
-        pkg_classifications[key].append(value)
+    pkgs_classifications = (get_pkgs_table_classification(axi, pkgs,
+                            debtags_name, terms_name))
 
     with open('pkg_classification.txt', 'wb') as text:
-        pickle.dump(pkg_classifications, text)
+        pickle.dump(pkgs_classifications, text)
 
 
 if __name__ == "__main__":
