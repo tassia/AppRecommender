@@ -41,7 +41,7 @@ def get_pkgs_classification(percent_function, classification_function):
     return pkgs
 
 
-def get_pkg_debtags(axi, pkg_name):
+def get_pkg_data(axi, pkg_name, data_type):
     pkg_name = 'XP'+pkg_name
 
     query = xapian.Query(xapian.Query.OP_OR, [pkg_name])
@@ -53,10 +53,18 @@ def get_pkg_debtags(axi, pkg_name):
     pkg_info = []
     for pkg in mset:
         for term in axi.get_document(pkg.docid).termlist():
-            if term.term.startswith('XT'):
-                pkg_info.append(term.term[2:])
+            if term.term.startswith(data_type):
+                pkg_info.append(term.term[len(data_type):])
 
     return pkg_info
+
+
+def get_pkg_debtags(axi, pkg_name):
+    return get_pkg_data(axi, pkg_name, 'XT')
+
+
+def get_pkg_terms(axi, pkg_name):
+    return get_pkg_data(axi, pkg_name, 'Z')
 
 
 def get_debtags_name(file_path):
@@ -66,13 +74,41 @@ def get_debtags_name(file_path):
     return debtags_name
 
 
-def create_debtag_list(debtags_name, pkg_debtag):
-    debtag_list = []
+def create_row_table_list(labels_name, pkg_elements):
+    row_list = []
 
-    for debtag in debtags_name:
-        debtag_list.append(1 if debtag in pkg_debtag else 0)
+    for debtag in labels_name:
+        row_list.append(1 if debtag in pkg_elements else 0)
 
-    return debtag_list
+    return row_list
+
+
+def get_terms_for_all_pkgs(axi, pkgs):
+    pkg_terms = set()
+    for pkg in pkgs:
+        pkg_terms = pkg_terms | set(get_pkg_terms(axi, pkg))
+
+    return pkg_terms
+
+
+def get_pkgs_table_classification(axi, pkgs, debtags_name, terms_name):
+    pkgs_classification = {}
+
+    for key, value in pkgs.iteritems():
+
+        pkgs_classification[key] = []
+
+        debtags = get_pkg_debtags(axi, key)
+        debtags = create_row_table_list(debtags_name, debtags)
+        pkgs_classification[key].extend(debtags)
+
+        terms = get_pkg_terms(axi, key)
+        terms = create_row_table_list(list(terms_name), terms)
+        pkgs_classification[key].extend(terms)
+
+        pkgs_classification[key].append(value)
+
+    return pkgs_classification
 
 
 def main():
@@ -81,17 +117,13 @@ def main():
                                    sample_classification)
 
     debtags_name = get_debtags_name('tags.txt')
+    terms_name = sorted(get_terms_for_all_pkgs(axi, pkgs.keys()))
 
-    debtag_classifications = []
-
-    for key, value in pkgs.iteritems():
-        debtags = get_pkg_debtags(axi, key)
-        debtags = create_debtag_list(debtags_name, debtags)
-        debtags.append(value)
-        debtag_classifications.append(debtags)
+    pkgs_classifications = (get_pkgs_table_classification(axi, pkgs,
+                            debtags_name, terms_name))
 
     with open('pkg_classification.txt', 'wb') as text:
-        pickle.dump(debtag_classifications, text)
+        pickle.dump(pkgs_classifications, text)
 
 
 if __name__ == "__main__":
