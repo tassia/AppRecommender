@@ -86,7 +86,7 @@ def calculate_time_curve(pkg_time_weight):
 
     lambda_value = 1
 
-    return 1*math.exp((1 - pkg_time_weight)*lambda_value)
+    return 1/math.exp((1 - pkg_time_weight)*lambda_value)
 
 
 def time_weight(term, term_list):
