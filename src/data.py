@@ -151,7 +151,7 @@ def tfidf_weighting(index, docs, content_filter, normalized_weights=0,
 
     terms_doc, terms_packages = get_all_terms(index, docs, content_filter,
                                               normalized_weights)
-    weights = get_tfidf_terms_weights(terms_doc, index, terms_packages, 1)
+    weights = get_tfidf_terms_weights(terms_doc, index, terms_packages, option)
 
     sorted_weights = list(reversed(sorted(weights.items(),
                                           key=operator.itemgetter(1))))
