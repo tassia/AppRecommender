@@ -142,6 +142,7 @@ class Config(Singleton):
         print "  cbt = content-based, tags only profile"
         print "  cbd = content-based, description terms only profile"
         print "  cbh = content-based, half-half profile"
+        print "  cbtm = content-based, time-context profile"
         print "  cb_eset = cb with eset profiling"
         print "  cbt_eset = cbt with eset profiling"
         print "  cbd_eset = cbd_eset with eset profiling"
