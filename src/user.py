@@ -169,6 +169,10 @@ class User:
             desc_profile = self.tfidf_profile(items_repository, size,
                                               FilterDescription())
             profile = tag_profile[:size/2]+desc_profile[:size/2]
+        elif content == "time":
+            profile = self.tfidf_profile(items_repository, size,
+                                         FilterTag_or_Description(valid_tags),
+                                         option=1)
         elif content == "tag_eset":
             profile = self.eset_profile(items_repository, size,
                                         FilterTag(valid_tags))
@@ -190,7 +194,7 @@ class User:
         logging.debug("User %s profile: %s" % (content, profile))
         return profile
 
-    def tfidf_profile(self, items_repository, size, content_filter):
+    def tfidf_profile(self, items_repository, size, content_filter, option=0):
         """
         Return the most relevant tags for the user list of packages based on
         the sublinear tfidf weight of packages' tags.
@@ -198,7 +202,7 @@ class User:
         docs = data.axi_search_pkgs(items_repository, self.pkg_profile)
         # weights = data.tfidf_plus(items_repository,docs,content_filter)
         weights = data.tfidf_weighting(items_repository, docs, content_filter,
-                                       option=0)
+                                       option=option)
         # Eliminate duplicated stemmed term
         profile = self._eliminate_duplicated([w[0] for w in weights], size)
         return profile

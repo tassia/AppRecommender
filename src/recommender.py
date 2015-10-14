@@ -145,6 +145,8 @@ class Recommender:
             self.strategy = strategy.ContentBased("desc", profile_size)
         elif strategy_str == "cbh":
             self.strategy = strategy.ContentBased("half", profile_size)
+        elif strategy_str == "cbtm":
+            self.strategy = strategy.ContentBased("time", profile_size)
         elif strategy_str == "cb_eset":
             self.strategy = strategy.ContentBased("mix_eset", profile_size)
         elif strategy_str == "cbt_eset":
