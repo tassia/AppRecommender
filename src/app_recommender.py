@@ -14,14 +14,14 @@ class AppRecommender:
         self.recommender = Recommender()
 
     def make_recommendation(self, recommendation_size,
-                            no_auto_pkg_profile=False, option=0):
+                            no_auto_pkg_profile=False):
         begin_time = datetime.datetime.now()
         logging.info("Computation started at %s" % begin_time)
         # user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,
         #                                                 "desktopapps"))
         user = self.get_user(no_auto_pkg_profile)
         user_reccomendation = (self.recommender.get_recommendation(
-                               user, recommendation_size, option))
+                               user, recommendation_size))
 
         logging.info("Recommending applications for user %s" % user.user_id)
         logging.info(user_reccomendation)

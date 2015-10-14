@@ -91,7 +91,7 @@ class RecommendationStrategy:
     """
     Base class for recommendation strategies.
     """
-    def run(self, rec, user, recommendation_size, option=0):
+    def run(self, rec, user, recommendation_size):
         raise NotImplementedError
 
 
@@ -127,14 +127,13 @@ class ContentBased(RecommendationStrategy):
         result = recommender.RecommendationResult(item_score, ranking)
         return result
 
-    def run(self, rec, user, rec_size, option=0):
+    def run(self, rec, user, rec_size):
         """
         Perform recommendation strategy.
         """
         logging.debug("Composing user profile...")
         profile = user.content_profile(rec.items_repository, self.content,
-                                       self.profile_size, rec.valid_tags,
-                                       option)
+                                       self.profile_size, rec.valid_tags)
         logging.debug(profile)
         result = self.get_sugestion_from_profile(rec, user, profile, rec_size)
         return result
@@ -201,14 +200,13 @@ class Knn(Collaborative):
         self.description = "Knn"
         self.neighbours = k
 
-    def run(self, rec, user, recommendation_size, option=0):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
         neighborhood = self.get_neighborhood(user, rec)
         weights = data.tfidf_weighting(rec.users_repository, neighborhood,
-                                       PkgExpandDecider(user.items()),
-                                       option)
+                                       PkgExpandDecider(user.items()))
         item_score = {}
         ranking = []
         for pkg in weights[:recommendation_size]:
@@ -227,13 +225,13 @@ class KnnPlus(Collaborative):
         self.description = "Knn plus"
         self.neighbours = k
 
-    def run(self, rec, user, recommendation_size, option=0):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
         neighborhood = self.get_neighborhood(user, rec)
         weights = data.tfidf_plus(rec.users_repository, neighborhood,
-                                  PkgExpandDecider(user.items(), option=0))
+                                  PkgExpandDecider(user.items()))
         item_score = {}
         ranking = []
         for pkg in weights[:recommendation_size]:
@@ -252,7 +250,7 @@ class KnnEset(Collaborative):
         self.description = "KnnEset"
         self.neighbours = k
 
-    def run(self, rec, user, recommendation_size, option=0):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
@@ -272,7 +270,7 @@ class CollaborativeEset(Collaborative):
     def __init__(self):
         self.description = "Collaborative-Eset"
 
-    def run(self, rec, user, recommendation_size, option=0):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
@@ -304,14 +302,13 @@ class KnnContent(Collaborative):
         self.description = "Knn-Content"
         self.neighbours = k
 
-    def run(self, rec, user, recommendation_size, option=0):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
         neighborhood = self.get_neighborhood(user, rec)
         weights = data.tfidf_weighting(rec.users_repository, neighborhood,
-                                       PkgExpandDecider(user.items()),
-                                       option)
+                                       PkgExpandDecider(user.items()))
         profile = [w[0] for w in weights][:rec.cfg.profile_size]
 
         result = ContentBased("tag", rec.cfg.profile_size)
@@ -328,7 +325,7 @@ class KnnContentEset(Collaborative):
         self.description = "Knn-Content-Eset"
         self.neighbours = k
 
-    def run(self, rec, user, recommendation_size, option=0):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """
@@ -352,7 +349,7 @@ class Demographic(RecommendationStrategy):
         self.description = "Demographic"
         self.strategy_str = strategy_str.lstrip("demo_")
 
-    def run(self, rec, user, recommendation_size, option=0):
+    def run(self, rec, user, recommendation_size):
         """
         Perform recommendation strategy.
         """

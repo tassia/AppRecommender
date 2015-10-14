@@ -172,8 +172,8 @@ class Recommender:
             logging.info("Strategy not defined.")
             return
 
-    def get_recommendation(self, user, result_size=100, option=0):
+    def get_recommendation(self, user, result_size=100):
         """
         Produces recommendation using previously loaded strategy.
         """
-        return self.strategy.run(self, user, result_size, option)
+        return self.strategy.run(self, user, result_size)
