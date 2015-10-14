@@ -106,12 +106,28 @@ def time_weight(term, term_list):
     return time_weight
 
 
-def print_best_weight_terms():
+def print_best_weight_terms(terms_package):
     index = 0
     print "BEST TERMS"
+
+    with open('package.txt', 'w') as text:
+        for key, value in terms_package.iteritems():
+            pkgs = ""
+            for pkg in value:
+                pkgs += pkg
+                pkgs += ","
+
+            text.write("{0}: {1}\n".format(key, pkgs))
+
     for term in sorted(best_weight_terms, key=best_weight_terms.get,
                        reverse=True):
         if index < 10:
+            print "\n"
             print term, best_weight_terms[term]
+            print '-'
+
+            for pkg in terms_package[term]:
+                print "[{0}: {1} {2}]\n".format(pkg, get_pkg_time_weight(pkg),
+                                                get_alternative_pkg(pkg))
 
         index += 1

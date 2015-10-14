@@ -138,7 +138,7 @@ def get_tfidf_terms_weights(terms_doc, index, terms_package, option=0):
         except:
             pass
 
-    print_best_weight_terms()
+    print_best_weight_terms(terms_package)
     return weights
 
 
