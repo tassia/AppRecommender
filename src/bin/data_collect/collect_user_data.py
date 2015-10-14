@@ -6,6 +6,7 @@ import commands
 import sys
 
 sys.path.insert(0, '../')
+sys.path.insert(0, '../../')
 
 from subprocess import Popen, PIPE
 from pkg_time_list import save_package_time, get_packages_time
@@ -25,7 +26,7 @@ POPCON_SUBMISSION = LOG_PATH + '/popcon-submission'
 PC_INFORMATIONS = LOG_PATH + '/pc_informations.txt'
 
 
-PKGS_DEPENDENCIES = ['popularity-contest']
+PKGS_DEPENDENCIES = []
 
 
 def create_log_folder():
@@ -67,7 +68,7 @@ def get_submission_id(submission_header):
 
 
 def collect_popcon_submission():
-    popcon = Popen('../../popularity-contest',
+    popcon = Popen('./popularity-contest',
                    shell=True, stdin=PIPE,
                    stdout=PIPE,
                    stderr=PIPE)
