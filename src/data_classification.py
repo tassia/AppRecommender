@@ -92,7 +92,7 @@ def calculate_time_curve(pkg_time_weight):
 def time_weight(term, term_list):
     weight = []
     weight_len = 5
-    weight_delta = 0.5
+    weight_delta = 0.2
 
     for pkg in term_list:
         if pkg in pkgs_time_weight:
@@ -102,6 +102,7 @@ def time_weight(term, term_list):
             pkgs_time_weight[pkg] = pkg_time_weight
             weight.append(calculate_time_curve(pkg_time_weight))
 
+    weight = list(reversed(sorted(weight)))
     if len(weight) < weight_len:
         for i in range(len(weight), weight_len):
             weight.append(weight[-1] - weight_delta)
