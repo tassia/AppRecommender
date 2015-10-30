@@ -96,7 +96,7 @@ def time_weight(term, term_list):
 
     for pkg in term_list:
         if pkg in pkgs_time_weight:
-            weight += pkgs_time_weight[pkg]
+            weight.append(pkgs_time_weight[pkg])
         else:
             pkg_time_weight = get_pkg_time_weight(pkg)
             pkgs_time_weight[pkg] = pkg_time_weight
@@ -116,16 +116,8 @@ def time_weight(term, term_list):
 
 def print_best_weight_terms(terms_package):
     index = 0
+    total = 0
     print "BEST TERMS"
-
-    with open('package.txt', 'w') as text:
-        for key, value in terms_package.iteritems():
-            pkgs = ""
-            for pkg in value:
-                pkgs += pkg
-                pkgs += ","
-
-            text.write("{0}: {1}\n".format(key, pkgs))
 
     for term in sorted(best_weight_terms, key=best_weight_terms.get,
                        reverse=True):
@@ -138,4 +130,9 @@ def print_best_weight_terms(terms_package):
                 print "[{0}: {1} {2}]\n".format(pkg, get_pkg_time_weight(pkg),
                                                 get_alternative_pkg(pkg))
 
+                total += 1
+                if total > 5:
+                    break
+
+        total = 0
         index += 1

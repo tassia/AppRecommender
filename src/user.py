@@ -170,9 +170,12 @@ class User:
                                               FilterDescription())
             profile = tag_profile[:size/2]+desc_profile[:size/2]
         elif content == "time":
-            profile = self.tfidf_profile(items_repository, size,
-                                         FilterTag_or_Description(valid_tags),
-                                         option=1)
+            tag_profile = self.tfidf_profile(items_repository, size,
+                                             FilterTag(valid_tags), option=1)
+            desc_profile = self.tfidf_profile(items_repository, size,
+                                              FilterDescription(), option=1)
+            profile = tag_profile[:size/2]+desc_profile[:size/2]
+
         elif content == "tag_eset":
             profile = self.eset_profile(items_repository, size,
                                         FilterTag(valid_tags))
