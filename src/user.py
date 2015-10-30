@@ -170,9 +170,12 @@ class User:
                                               FilterDescription())
             profile = tag_profile[:size/2]+desc_profile[:size/2]
         elif content == "time":
-            profile = self.tfidf_profile(items_repository, size,
-                                         FilterTag_or_Description(valid_tags),
-                                         option=1)
+            tag_profile = self.tfidf_profile(items_repository, size,
+                                             FilterTag(valid_tags), option=1)
+            desc_profile = self.tfidf_profile(items_repository, size,
+                                              FilterDescription(), option=1)
+            profile = tag_profile[:size/2]+desc_profile[:size/2]
+
         elif content == "tag_eset":
             profile = self.eset_profile(items_repository, size,
                                         FilterTag(valid_tags))
@@ -378,11 +381,17 @@ class LocalSystem(User):
         """
         cache = apt.Cache()
         old_profile_size = len(self.pkg_profile)
+
+        manual_installed = commands.getoutput('apt-mark showmanual')
+        manual_installed = manual_installed.splitlines()
+        system_pkgs = self.get_system_pkgs()
+
         for p in self.pkg_profile[:]:  # iterate list copy
             try:
                 if p in cache:
-                    pkg = cache[p]
-                    if pkg.is_auto_installed:
+                    if (p not in manual_installed or
+                       p in system_pkgs or
+                       p.startswith('lib')):
                         self.pkg_profile.remove(p)
             except:
                 logging.debug("Package not found in cache: %s" % p)
@@ -391,3 +400,22 @@ class LocalSystem(User):
                       "profile size from %d to %d." %
                       (old_profile_size, profile_size))
         return self.pkg_profile
+
+    def get_system_pkgs(self):
+        system_pkgs = []
+        all_pkgs = commands.getoutput("dpkg-query -Wf \
+                                      '${Package;-40}${Priority}\n'")
+
+        priority_terms = set(['important', 'required', 'standard'])
+        languages_terms = set(['python', 'perl'])
+
+        for line in all_pkgs.splitlines():
+            line_split = line.split(' ')
+            pkg_name = line_split[0]
+            pkg_priority = line_split[-1].strip()
+
+            if (pkg_priority in priority_terms and
+               pkg_name not in languages_terms):
+                system_pkgs.append(pkg_name)
+
+        return system_pkgs

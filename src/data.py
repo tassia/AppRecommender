@@ -38,8 +38,7 @@ import math
 from error import Error
 from config import Config
 from dissimilarity import JaccardDistance
-from data_classification import time_weight
-from data_classification import print_best_weight_terms
+from data_classification import time_weight, print_best_weight_terms
 
 
 def axi_get_pkgs(axi):
@@ -132,13 +131,16 @@ def get_tfidf_terms_weights(terms_doc, index, terms_package, option=0):
             idf = math.log(index.get_doccount() /
                            float(index.get_termfreq(term.term)))
             tfidf = tf*idf
-            p1 = (1-option)*tfidf
-            p2 = option*tfidf*time_weight(term.term, terms_package[term.term])
-            weights[term.term] = p1+p2
+
+            weights[term.term] = tfidf
+
+            if option and tfidf > 12:
+                weights[term.term] *= time_weight(term.term,
+                                                  terms_package[term.term])
         except:
             pass
 
-    print_best_weight_terms()
+    print_best_weight_terms(terms_package)
     return weights
 
 
