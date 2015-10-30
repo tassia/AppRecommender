@@ -20,21 +20,41 @@ __license__ = """
 """
 
 import sys
+import getopt
 sys.path.insert(0, '../')
 import xapian
+import logging
+import logging.handlers
 
 if __name__ == '__main__':
+    short_options = "hdvo:p:t:"
+    long_options = ["help", "path", "tag"]
 
-    axi_path = ""
-    if len(sys.argv) < 2:
-        axi_path = "/var/lib/apt-xapian-index/index"
-    elif sys.argv[1] == '-h':
-        print "Usage: get_axipkgs index_path"
-        print ("If without index_path, the default is:"
-               "/var/lib/apt-xapian-index/index")
-        exit(1)
-    else:
-        axi_path = sys.argv[1]
+    axi_tag = 'XP'
+    axi_path = "/var/lib/apt-xapian-index/index"
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], short_options,
+                                   long_options)
+    except getopt.GetoptError as error:
+        logging.error("Bad syntax: %s" % str(error))
+        sys.exit()
+
+    for option, param in opts:
+        if option in ("-h", "--help"):
+            print "Usage: get_axipkgs"
+            print " -h, --help \t Show this help"
+            print " -p, --path \t Set axi_path, default is\
+                  '/var/lib/apt-xapian-index/index'"
+            print " -t, --tag \t Set axi_tag, exemple: XP, XT, Z. \
+                  Default is XP"
+            sys.exit()
+        elif option in ("-p", "--path"):
+            axi_path = param
+        elif option in ("-t", "--tag"):
+            axi_tag = param
+        else:
+            assert False, "unhandled option"
 
     axi = xapian.Database(axi_path)
 
@@ -46,5 +66,6 @@ if __name__ == '__main__':
             pass
         if doc:
             xp_terms = [t.term for t in doc.termlist()
-                        if t.term.startswith("XP")]
-            print xp_terms[0].lstrip('XP')
+                        if t.term.startswith(axi_tag)]
+            if xp_terms:
+                print xp_terms[0].lstrip(axi_tag)
