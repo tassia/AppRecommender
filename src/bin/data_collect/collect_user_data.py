@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import apt
 import os
 import logging
 import commands
@@ -175,9 +176,14 @@ def collect_user_preferences():
 
     print "rank a package recommendation with 0-10"
 
-    message = "[{0}/{1}] - {2} , rank: "
+    message = "\n\nPackage [{0}/{1}] - {2} \n"
+    message += "Description: {3}\n"
+    message += "Rank: "
+
     for pkg in all_recommendations:
-        rank = raw_input(message.format((index+1), all_rec_len, pkg))
+        pkg_description = apt.Cache()[pkg].versions[0].description
+        rank = raw_input(message.format((index+1), all_rec_len, pkg,
+                                        pkg_description))
         rank = int(rank)
         user_preferences[pkg] = rank
         index += 1
