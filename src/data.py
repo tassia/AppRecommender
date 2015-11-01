@@ -34,13 +34,11 @@ import urllib
 import simplejson as json
 import socket
 import math
+import data_classification
 
 from error import Error
 from config import Config
 from dissimilarity import JaccardDistance
-# from data_classification import print_best_weight_terms
-from data_classification import (time_weight,
-                                 term_tfidf_weight_on_user)
 
 
 def axi_get_pkgs(axi):
@@ -137,11 +135,14 @@ def get_tfidf_terms_weights(terms_doc, index, terms_package, option=0):
             weights[term.term] = tfidf
 
             if option:
-                weights[term.term] *= term_tfidf_weight_on_user(term.term)
+                weights[term.term] *= (data_classification
+                                       .term_tfidf_weight_on_user(term.term))
 
                 if tfidf > 12:
-                    weights[term.term] *= time_weight(term.term,
-                                                      terms_package[term.term])
+                    weight = (data_classification
+                              .time_weight(term.term,
+                                           terms_package[term.term]))
+                    weights[term.term] *= weight
         except:
             pass
 
