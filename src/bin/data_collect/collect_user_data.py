@@ -11,7 +11,7 @@ sys.path.insert(0, '../../')
 from subprocess import Popen, PIPE
 from pkg_time_list import save_package_time, get_packages_time
 from data_classification import get_alternative_pkg
-# from app_recommender import AppRecommender
+from app_recommender import AppRecommender
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 ALL_INSTALLED_PKGS = LOG_PATH + '/all_pkgs.txt'
@@ -19,8 +19,7 @@ MANUAL_INSTALLED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
 PKGS_TIME_PATH = LOG_PATH + '/pkgs_time.txt'
 HISTORY = LOG_PATH + '/user_history.txt'
 PKGS_BINARY = LOG_PATH + '/pkgs_binary.txt'
-OLD_RECOMMENDATION = LOG_PATH + '/old_rec.txt'
-NEW_RECOMMENDATION = LOG_PATH + '/new_rec.txt'
+RECOMMENDATION_PATH = LOG_PATH + '/{0}_recommendation.txt'
 USER_PREFERENCES = LOG_PATH + '/user_preferences.txt'
 POPCON_SUBMISSION = LOG_PATH + '/popcon-submission'
 PC_INFORMATIONS = LOG_PATH + '/pc_informations.txt'
@@ -143,49 +142,53 @@ def get_pkg_binary(pkg):
     return get_alternative_pkg(pkg)
 
 
-# def get_pkgs_of_recommendation(recommendation_size, no_auto_pkg_profile,
-#                                option):
-#     app_recommender = AppRecommender()
-#
-#     recommender = (app_recommender.make_recommendation(recommendation_size,
-#                                                        no_auto_pkg_profile,
-#                                                        option))
-#     pkgs = [pkg.split(':')[1][1:]
-#             for pkg in str(recommender).splitlines()[1:]]
-#
-#     return pkgs
+def get_pkgs_of_recommendation(recommendation_size, strategy,
+                               no_auto_pkg_profile):
+    app_recommender = AppRecommender()
+
+    app_recommender.recommender.set_strategy(strategy)
+    recommender = (app_recommender.make_recommendation(recommendation_size,
+                                                       no_auto_pkg_profile))
+    pkgs = [pkg.split(':')[1][1:]
+            for pkg in str(recommender).splitlines()[1:]]
+
+    return pkgs
 
 
-# def collect_user_preferences():
-#     recommendation_size = 5
-#     no_auto_pkg_profile = True
-#
-#     old_rec = get_pkgs_of_recommendation(recommendation_size,
-#                                          no_auto_pkg_profile, 0)
-#     new_rec = get_pkgs_of_recommendation(recommendation_size,
-#                                          no_auto_pkg_profile, 1)
-#
-#     all_rec = sorted(list(set(old_rec) | set(new_rec)))
-#
-#     index = 0
-#     user_preferences = {}
-#     all_rec_len = len(all_rec)
-#
-#     print "rank a package recommendation with 0-10"
-#
-#     message = "[{0}/{1}] - {2} , rank: "
-#     for pkg in all_rec:
-#         rank = raw_input(message.format((index+1), all_rec_len, pkg))
-#         rank = int(rank)
-#         user_preferences[pkg] = rank
-#         index += 1
-#
-#     preferences_list = ["{0}:{1}".format(pkg, user_preferences[pkg])
-#                         for pkg in all_rec]
-#
-#     save_list(old_rec, OLD_RECOMMENDATION)
-#     save_list(new_rec, NEW_RECOMMENDATION)
-#     save_list(preferences_list, USER_PREFERENCES)
+def collect_user_preferences():
+    recommendation_size = 5
+    no_auto_pkg_profile = True
+
+    recommendations = {}
+
+    recommendations['cb'] = (get_pkgs_of_recommendation(recommendation_size,
+                             'cb', no_auto_pkg_profile))
+    recommendations['cbt'] = (get_pkgs_of_recommendation(recommendation_size,
+                              'cbt', no_auto_pkg_profile))
+
+    all_recommendations = set(sum(recommendations.values(), []))
+    all_recommendations = sorted(list(all_recommendations))
+
+    index = 0
+    user_preferences = {}
+    all_rec_len = len(all_recommendations)
+
+    print "rank a package recommendation with 0-10"
+
+    message = "[{0}/{1}] - {2} , rank: "
+    for pkg in all_recommendations:
+        rank = raw_input(message.format((index+1), all_rec_len, pkg))
+        rank = int(rank)
+        user_preferences[pkg] = rank
+        index += 1
+
+    preferences_list = ["{0}:{1}".format(pkg, user_preferences[pkg])
+                        for pkg in all_recommendations]
+
+    for rec_key, rec_value in recommendations.iteritems():
+        save_list(rec_value, RECOMMENDATION_PATH.format(rec_key))
+
+    save_list(preferences_list, USER_PREFERENCES)
 
 
 def get_all_user_pkgs():
@@ -246,8 +249,8 @@ def main():
     print "Creating log folder"
     create_log_folder()
 
-    # print "Collecting user preferences"
-    # collect_user_preferences()
+    print "Collecting user preferences"
+    collect_user_preferences()
 
     print "Collecting PC informations"
     collect_pc_informations()
