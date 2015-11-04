@@ -135,14 +135,10 @@ def get_tfidf_terms_weights(terms_doc, index, terms_package, option=0):
             weights[term.term] = tfidf
 
             if option:
-                weights[term.term] *= (data_classification
-                                       .term_tfidf_weight_on_user(term.term))
-
-                if tfidf > 12:
-                    weight = (data_classification
-                              .time_weight(term.term,
-                                           terms_package[term.term]))
-                    weights[term.term] *= weight
+                weight = (data_classification
+                          .time_weight(term.term,
+                                       terms_package[term.term]))
+                weights[term.term] *= weight
         except:
             pass
 
