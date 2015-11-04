@@ -2,7 +2,9 @@
 
 import commands
 import calendar
+import logging
 import math
+import operator
 import time
 import xapian
 import data
@@ -18,7 +20,6 @@ user_tfidf_weight_min = 1000.0
 
 
 def get_time_from_package(pkg):
-
     if pkg in pkgs_times:
         modify, access = pkgs_times[pkg]
     else:
@@ -30,31 +31,28 @@ def get_time_from_package(pkg):
 
 
 def get_alternative_pkg(pkg):
-
     dpkg_command = "dpkg -L {0}| grep /usr/bin/"
     dpkg_command += " || dpkg -L {0}| grep /usr/sbin/"
-    bin_path = '/usr/bin'
     pkg_bin = commands.getoutput(dpkg_command.format(pkg))
 
+    possible_pkgs = {}
     for pkg_path in pkg_bin.splitlines():
+        possible_pkgs[pkg_path] = get_time('X', pkg_path)
 
-        if bin_path in pkg_path:
-            return pkg_path
-        elif pkg in pkg_path:
-            return pkg_path
+    if bool(possible_pkgs):
+        return sorted(possible_pkgs.items(), key=operator.itemgetter(1))[0][0]
 
     return None
 
 
 def get_time(option, pkg):
     stat_base = "stat -c '%{option}' `which {package}`"
-    stat_error = 'stat: missing operand'
+    stat_error = 'stat:'
     stat_time = stat_base.format(option=option, package=pkg)
 
     pkg_time = commands.getoutput(stat_time)
 
-    if not pkg_time.startswith(stat_error):
-        pkgs_times[pkg] = pkg_time
+    if stat_error not in pkg_time:
         return pkg_time
 
     return None
@@ -161,18 +159,19 @@ def term_tfidf_weight_on_user(term):
 def print_best_weight_terms(terms_package):
     index = 0
     total = 0
-    print "BEST TERMS"
+    logging.info("BEST TERMS")
 
     for term in sorted(best_weight_terms, key=best_weight_terms.get,
                        reverse=True):
         if index < 10:
-            print "\n"
-            print term, best_weight_terms[term]
-            print '-'
+            logging.info("\n")
+            logging.info(term, best_weight_terms[term])
+            logging.info('-')
 
             for pkg in terms_package[term]:
-                print "[{0}: {1} {2}]\n".format(pkg, get_pkg_time_weight(pkg),
-                                                get_alternative_pkg(pkg))
+                logging.info("[{0}: {1} {2}]\n".format(pkg,
+                             get_pkg_time_weight(pkg),
+                             get_alternative_pkg(pkg)))
 
                 total += 1
                 if total > 5:

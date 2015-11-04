@@ -56,7 +56,7 @@ class Config(Singleton):
             # popcon indexes
             self.index_mode = "old"
             # check if there are popcon indexes available
-            self.popcon = 1
+            self.popcon = 0
             self.popcon_programs = os.path.join(self.base_dir,
                                                 "popcon_programs")
             self.popcon_desktopapps = os.path.join(self.base_dir,

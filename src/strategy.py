@@ -206,8 +206,7 @@ class Knn(Collaborative):
         """
         neighborhood = self.get_neighborhood(user, rec)
         weights = data.tfidf_weighting(rec.users_repository, neighborhood,
-                                       PkgExpandDecider(user.items()),
-                                       option=0)
+                                       PkgExpandDecider(user.items()))
         item_score = {}
         ranking = []
         for pkg in weights[:recommendation_size]:
@@ -232,7 +231,7 @@ class KnnPlus(Collaborative):
         """
         neighborhood = self.get_neighborhood(user, rec)
         weights = data.tfidf_plus(rec.users_repository, neighborhood,
-                                  PkgExpandDecider(user.items(), option=0))
+                                  PkgExpandDecider(user.items()))
         item_score = {}
         ranking = []
         for pkg in weights[:recommendation_size]:
@@ -309,8 +308,7 @@ class KnnContent(Collaborative):
         """
         neighborhood = self.get_neighborhood(user, rec)
         weights = data.tfidf_weighting(rec.users_repository, neighborhood,
-                                       PkgExpandDecider(user.items()),
-                                       option=0)
+                                       PkgExpandDecider(user.items()))
         profile = [w[0] for w in weights][:rec.cfg.profile_size]
 
         result = ContentBased("tag", rec.cfg.profile_size)
