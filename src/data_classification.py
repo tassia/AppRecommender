@@ -2,6 +2,7 @@
 
 import commands
 import calendar
+import logging
 import math
 import operator
 import time
@@ -158,18 +159,19 @@ def term_tfidf_weight_on_user(term):
 def print_best_weight_terms(terms_package):
     index = 0
     total = 0
-    print "BEST TERMS"
+    logging.info("BEST TERMS")
 
     for term in sorted(best_weight_terms, key=best_weight_terms.get,
                        reverse=True):
         if index < 10:
-            print "\n"
-            print term, best_weight_terms[term]
-            print '-'
+            logging.info("\n")
+            logging.info(term, best_weight_terms[term])
+            logging.info('-')
 
             for pkg in terms_package[term]:
-                print "[{0}: {1} {2}]\n".format(pkg, get_pkg_time_weight(pkg),
-                                                get_alternative_pkg(pkg))
+                logging.info("[{0}: {1} {2}]\n".format(pkg,
+                             get_pkg_time_weight(pkg),
+                             get_alternative_pkg(pkg)))
 
                 total += 1
                 if total > 5:

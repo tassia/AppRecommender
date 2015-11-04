@@ -157,7 +157,7 @@ def get_pkgs_of_recommendation(recommendation_size, strategy,
 
 
 def collect_user_preferences():
-    recommendation_size = 5
+    recommendation_size = 20
     no_auto_pkg_profile = True
 
     recommendations = {}
@@ -174,17 +174,33 @@ def collect_user_preferences():
     user_preferences = {}
     all_rec_len = len(all_recommendations)
 
-    print "rank a package recommendation with 0-10"
-
     message = "\n\nPackage [{0}/{1}] - {2} \n"
-    message += "Description: {3}\n"
+    message += "Description: {3}\n\n"
+    message += "Rank a package recommendation with 1-4\n"
+    message += "1 - Bad\n"
+    message += "2 - Redundant\n"
+    message += "3 - Useful\n"
+    message += "4 - Useful Surprise\n\n"
     message += "Rank: "
+
+    message_error = "\nPlease use digits 1-4 to rank a package: "
 
     for pkg in all_recommendations:
         pkg_description = apt.Cache()[pkg].versions[0].description
-        rank = raw_input(message.format((index+1), all_rec_len, pkg,
-                                        pkg_description))
-        rank = int(rank)
+
+        rank = -1
+        raw_message = message.format((index+1), all_rec_len, pkg,
+                                     pkg_description)
+
+        while rank < 1 or rank > 4:
+            try:
+                rank = raw_input(raw_message)
+                rank = int(rank)
+            except:
+                rank = -2
+
+            raw_message = message_error
+
         user_preferences[pkg] = rank
         index += 1
 
