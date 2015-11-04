@@ -4,11 +4,17 @@ import commands
 import calendar
 import math
 import time
+import xapian
+import data
+import os
 
+from user import FilterTag, FilterDescription
 
 pkgs_times = {}
 pkgs_time_weight = {}
 best_weight_terms = {}
+user_tfidf_weights = {}
+user_tfidf_weight_min = 1000.0
 
 
 def get_time_from_package(pkg):
@@ -84,9 +90,10 @@ def calculate_time_curve(pkg_time_weight):
     if not pkg_time_weight:
         return 0
 
+    const_a = 10
     lambda_value = 1
 
-    return 1/math.exp((1 - pkg_time_weight)*lambda_value)
+    return const_a * (1/math.exp((1 - pkg_time_weight)*lambda_value))
 
 
 def time_weight(term, term_list):
@@ -112,6 +119,43 @@ def time_weight(term, term_list):
     best_weight_terms[term] = time_weight
 
     return time_weight
+
+
+def term_tfidf_weight_on_user(term):
+    global user_tfidf_weights
+    global user_tfidf_weight_min
+
+    try:
+        if len(user_tfidf_weights) == 0:
+            axipath = os.path.expanduser("~/.app-recommender/axi_desktopapps/")
+            axi_index = xapian.Database(axipath)
+
+            dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
+            pkgs = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()
+                    if 'deinstall' not in pkg.split('\t')[-1]]
+
+            docs = data.axi_search_pkgs(axi_index, pkgs)
+
+            tags_weights = data.tfidf_weighting(axi_index, docs,
+                                                FilterTag(0), option=0)
+            description_weights = (data.tfidf_weighting(axi_index, docs,
+                                   FilterDescription(), option=0))
+
+            user_tfidf_weights = dict(tags_weights + description_weights)
+
+            user_tfidf_weight_min = (sum(user_tfidf_weights[item]
+                                     for item in user_tfidf_weights) /
+                                     len(user_tfidf_weights))
+            user_tfidf_weight_min = user_tfidf_weight_min / 2
+
+        if ((term not in user_tfidf_weights) or
+           (user_tfidf_weights[term] < user_tfidf_weight_min)):
+            return 0
+        else:
+            return 1
+
+    except Exception, e:
+        print "ERROR: ", e
 
 
 def print_best_weight_terms(terms_package):
