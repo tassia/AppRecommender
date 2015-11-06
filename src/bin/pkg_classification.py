@@ -5,15 +5,18 @@ sys.path.insert(0, '../')
 
 from data_classification import linear_percent_function
 from config import Config
+from os import path
+
+import data_classification as data_cl
 
 import time
 import calendar
 import xapian
 import pickle
 
-XAPIAN_DATABASE_PATH = '/var/lib/apt-xapian-index/index'
 USER_DATA_DIR = Config().user_data_dir
 BASE_DIR = Config().base_dir
+XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
 
 
 def sample_classification(percent):
@@ -56,8 +59,14 @@ def get_pkg_data(axi, pkg_name, data_type):
     pkg_info = []
     for pkg in mset:
         for term in axi.get_document(pkg.docid).termlist():
-            if term.term.startswith(data_type):
-                pkg_info.append(term.term[len(data_type):])
+
+            pkg_term = term.term
+
+            if pkg_term.startswith(data_type):
+                pkg_info.append(pkg_term[len(data_type):])
+            elif data_type == 'term':
+                if pkg_term.startswith('Z') or pkg_term[0].islower():
+                    pkg_info.append(pkg_term)
 
     return pkg_info
 
@@ -67,7 +76,7 @@ def get_pkg_debtags(axi, pkg_name):
 
 
 def get_pkg_terms(axi, pkg_name):
-    return get_pkg_data(axi, pkg_name, 'Z')
+    return get_pkg_data(axi, pkg_name, 'term')
 
 
 def get_debtags_name(file_path):
@@ -94,6 +103,19 @@ def get_terms_for_all_pkgs(axi, pkgs):
     return pkg_terms
 
 
+def filter_terms(pkg_terms):
+
+    data_cl.generate_all_terms_tfidf()
+    tfidf_weights = data_cl.user_tfidf_weights
+    tfidf_threshold = sum(tfidf_weights.values())/len(tfidf_weights)
+
+    for term in pkg_terms.copy():
+        tfidf = data_cl.term_tfidf_weight_on_user(term)
+
+        if tfidf <= tfidf_threshold:
+            pkg_terms.remove(term)
+
+
 def get_pkgs_table_classification(axi, pkgs, debtags_name, terms_name):
     pkgs_classification = {}
 
@@ -116,11 +138,13 @@ def get_pkgs_table_classification(axi, pkgs, debtags_name, terms_name):
 
 def main():
     axi = xapian.Database(XAPIAN_DATABASE_PATH)
-    pkgs = get_pkgs_classification(linear_percent_function,
+    pkgs = get_pkgs_classification(data_cl.linear_percent_function,
                                    sample_classification)
 
     debtags_name = get_debtags_name(BASE_DIR + '/filters/debtags')
-    terms_name = sorted(get_terms_for_all_pkgs(axi, pkgs.keys()))
+    terms_name = get_terms_for_all_pkgs(axi, pkgs.keys())
+    filter_terms(terms_name)
+    terms_name = sorted(terms_name)
 
     pkgs_classifications = (get_pkgs_table_classification(axi, pkgs,
                             debtags_name, terms_name))
