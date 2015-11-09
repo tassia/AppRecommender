@@ -7,6 +7,8 @@ import logging
 import commands
 import sys
 
+from threading import Thread
+
 sys.path.insert(0, '../')
 sys.path.insert(0, '../../')
 
@@ -201,12 +203,26 @@ def collect_user_preferences():
 
     message_error = "\nPlease use digits 1-4 to rank a package: "
 
-    for pkg in all_recommendations:
+    for i in range(len(all_recommendations)):
+        pkg = all_recommendations[i]
         pkg_description = apt.Cache()[pkg].versions[0].description
 
         rank = -1
+
         raw_message = message.format((index+1), all_rec_len, pkg,
                                      pkg_description)
+
+        update_prints()
+        print "\n\nCollecting user preferences"
+
+        if i > 0:
+            print "\n"
+
+        for j in range(i):
+            prev_pkg = all_recommendations[j]
+
+            print("[{0}/{1}] {2}, rank: {3}".format(j+1, all_rec_len, prev_pkg,
+                  user_preferences[prev_pkg]))
 
         while rank < 1 or rank > 4:
             try:
@@ -220,8 +236,8 @@ def collect_user_preferences():
         user_preferences[pkg] = rank
         index += 1
 
-    preferences_list = ["{0}:{1}".format(pkg, user_preferences[pkg])
-                        for pkg in all_recommendations]
+    preferences_list = ["{0}:{1}".format(package, user_preferences[pkg])
+                        for package in all_recommendations]
 
     for rec_key, rec_value in recommendations.iteritems():
         save_list(rec_value, RECOMMENDATION_PATH.format(rec_key))
@@ -275,6 +291,33 @@ def collect_pc_informations():
     save_list(informations, PC_INFORMATIONS)
 
 
+def collect_user_data():
+    collect_pc_informations()
+    collect_all_user_pkgs()
+    collect_manual_installed_pkgs()
+    collect_pkgs_time()
+    collect_pkgs_binary()
+    collect_popcon_submission()
+
+
+def initial_prints():
+    print "Creating log folder"
+
+    print "Data will be collected:"
+    print " - PC informations"
+    print " - All user packages"
+    print " - Manual installed packages"
+    print " - Packages modify and access time"
+    print " - Binary of packages"
+    print " - popularity-contest submission"
+
+
+def update_prints():
+    print '\n'*80
+    os.system('clear')
+    initial_prints()
+
+
 def main():
     logging.getLogger().disabled = True
 
@@ -284,30 +327,16 @@ def main():
     #     print 'These packages need to be installed:', unistalled_dependencies
     #     return
 
-    print "Creating log folder"
+    initial_prints()
     create_log_folder()
 
-    print "Collecting user preferences"
+    t = Thread(target=collect_user_data)
+    t.start()
+
     collect_user_preferences()
 
-    print "Collecting PC informations"
-    collect_pc_informations()
-
-    print "Collecting all user packages"
-    collect_all_user_pkgs()
-
-    print "Collecting manual installed packages"
-    collect_manual_installed_pkgs()
-
-    print "Collecting packages time"
-    collect_pkgs_time()
-
-    print "Collecting packages binary"
-    collect_pkgs_binary()
-
-    print "Collecting popularity-contest submission"
-    collect_popcon_submission()
-
+    print "\n\nWaiting finish the data collection"
+    t.join()
 
 if __name__ == '__main__':
     main()
