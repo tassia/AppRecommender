@@ -27,7 +27,7 @@ use 5.6.0;
 
 my $dpkg_db="/var/lib/dpkg/info";
 my $dpkg_origin="/etc/dpkg/origins/default";
-my $popcon_conf="/etc/popularity-contest.conf";
+my $popcon_conf="./popularity-contest.conf";
 
 # $popcon_conf is in shell-script format
 my $HOSTID = qx(unset MY_HOSTID; . $popcon_conf; echo \$MY_HOSTID );
