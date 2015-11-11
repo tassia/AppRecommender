@@ -303,7 +303,7 @@ def collect_user_data():
 def initial_prints():
     print "Creating log folder"
 
-    print "Data will be collected:"
+    print "Data that will be collected:"
     print " - PC informations"
     print " - All user packages"
     print " - Manual installed packages"
@@ -335,7 +335,7 @@ def main():
 
     collect_user_preferences()
 
-    print "\n\nWaiting finish the data collection"
+    print "\n\nWaiting for data collection to finish"
     t.join()
 
 if __name__ == '__main__':
