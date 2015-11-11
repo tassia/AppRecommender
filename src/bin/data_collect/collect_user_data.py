@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import apt
+import binascii
 import os
 import logging
 import commands
@@ -67,7 +68,22 @@ def get_submission_id(submission_header):
     return fields[2][3:]
 
 
+def create_popularity_contest_file():
+    if os.path.exists('popularity-contest.conf'):
+        return
+
+    host_id = binascii.hexlify(os.urandom(16))
+
+    with open('popularity-contest.conf', 'w') as text:
+        text.write('MY_HOSTID="{0}"\n'.format(host_id))
+        text.write('PARTICIPATE="no"\n')
+        text.write('USEHTTP="no"\n')
+        text.write('DAY="4"\n')
+
+
 def collect_popcon_submission():
+    create_popularity_contest_file()
+
     popcon = Popen('./popularity-contest',
                    shell=True, stdin=PIPE,
                    stdout=PIPE,
