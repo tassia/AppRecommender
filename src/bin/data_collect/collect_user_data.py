@@ -151,11 +151,10 @@ def collect_pkgs_binary():
 
 
 def get_pkg_binary(pkg):
-    stat_command = "stat `which {0}`".format(pkg)
-    stat_success = "File:"
+    stat_command = "which {0}".format(pkg)
     pkg_bin = commands.getoutput(stat_command.format(pkg))
 
-    if stat_success in pkg_bin:
+    if pkg_bin:
         return pkg
 
     return get_alternative_pkg(pkg)
