@@ -11,3 +11,4 @@ src/web/submissions/
 *.log
 .vagrant/
 *.swp
+user_data/

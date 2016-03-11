@@ -13,7 +13,6 @@ USER_DATA_DIR = Config().user_data_dir
 
 
 def get_packages_time(pkgs):
-
     pkgs_time = {}
 
     for pkg in pkgs:
@@ -33,13 +32,11 @@ def get_packages_time(pkgs):
 
 
 def print_package_time(pkgs_time):
-
     for key, value in pkgs_time.iteritems():
         print "{0} : Modify {1}, Access {2}".format(key, value[0], value[1])
 
 
 def save_package_time(pkgs_time, file_path=USER_DATA_DIR + 'pkg_data.txt'):
-
     with open(file_path, 'w') as pkg_data:
 
         pkg_str = "{pkg} {modify} {access}\n"
@@ -51,7 +48,6 @@ def save_package_time(pkgs_time, file_path=USER_DATA_DIR + 'pkg_data.txt'):
 
 
 def get_packages_from_apt_mark():
-
     dpkg_output = commands.getoutput('apt-mark showmanual')
     pkgs = []
 
@@ -64,7 +60,6 @@ def get_packages_from_apt_mark():
 
 
 def main():
-
     manual_pkgs = get_packages_from_apt_mark()
     print "Size of manual installed packages apt-mark:", len(manual_pkgs)
 

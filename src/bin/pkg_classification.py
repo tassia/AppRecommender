@@ -13,6 +13,7 @@ import time
 import calendar
 import xapian
 import pickle
+from os import path, makedirs
 
 USER_DATA_DIR = Config().user_data_dir
 BASE_DIR = Config().base_dir
@@ -136,7 +137,33 @@ def get_pkgs_table_classification(axi, pkgs, debtags_name, terms_name):
     return pkgs_classification
 
 
+def have_files():
+    have = True
+    scripts = []
+
+    if not path.exists('../../user_data'):
+        makedirs('../../user_data')
+
+    if not path.isfile('../../user_data/pkg_data.txt'):
+        have = False
+        scripts.append("pkg_time_list.py")
+
+    if not path.isfile('../../user_data/tags.txt'):
+        have = False
+        scripts.append("get_axipkgs.py -t XT > ../../user_data/tags.txt")
+
+    if not have:
+        print("Run scripts to generate important files:")
+        for script in scripts:
+            print("-  {0}".format(script))
+
+    return have
+
+
 def main():
+    if not have_files():
+        return
+
     axi = xapian.Database(XAPIAN_DATABASE_PATH)
     pkgs = get_pkgs_classification(data_cl.linear_percent_function,
                                    sample_classification)
