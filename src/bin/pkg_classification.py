@@ -162,7 +162,7 @@ def have_files():
 
 def main():
     if not have_files():
-        return
+        exit(1)
 
     axi = xapian.Database(XAPIAN_DATABASE_PATH)
     pkgs = get_pkgs_classification(data_cl.linear_percent_function,
@@ -175,6 +175,11 @@ def main():
 
     pkgs_classifications = (get_pkgs_table_classification(axi, pkgs,
                             debtags_name, terms_name))
+
+    pkgs_classifications_indices = debtags_name + terms_name
+
+    with open(USER_DATA_DIR + 'pkgs_classifications_indices.txt', 'wb') as text:
+        pickle.dump(pkgs_classifications_indices, text)
 
     with open(USER_DATA_DIR + 'pkg_classification.txt', 'wb') as text:
         pickle.dump(pkgs_classifications, text)
