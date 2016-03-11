@@ -7,12 +7,15 @@ from data_classification import linear_percent_function
 from config import Config
 from os import path
 
+import numpy as np
 import data_classification as data_cl
 
+import bayes_matrix
 import time
 import calendar
 import xapian
 import pickle
+
 from os import path, makedirs
 
 USER_DATA_DIR = Config().user_data_dir
@@ -66,9 +69,7 @@ def get_pkg_data(axi, pkg_name, data_type):
             if pkg_term.startswith(data_type):
                 pkg_info.append(pkg_term[len(data_type):])
             elif data_type == 'term':
-                if pkg_term.startswith('Z'):
-                    pkg_info.append(pkg_term[1:])
-                if pkg_term[0].islower():
+                if pkg_term.startswith('Z') or pkg_term[0].islower():
                     pkg_info.append(pkg_term)
 
     return pkg_info
@@ -143,16 +144,16 @@ def have_files():
     have = True
     scripts = []
 
-    if not path.exists('../../user_data'):
-        makedirs('../../user_data')
+    if not path.exists(USER_DATA_DIR):
+        makedirs(USER_DATA_DIR)
 
-    if not path.isfile('../../user_data/pkg_data.txt'):
+    if not path.isfile(USER_DATA_DIR + 'pkg_data.txt'):
         have = False
         scripts.append("pkg_time_list.py")
 
-    if not path.isfile('../../user_data/tags.txt'):
+    if not path.isfile(USER_DATA_DIR + 'tags.txt'):
         have = False
-        scripts.append("get_axipkgs.py -t XT > ../../user_data/tags.txt")
+        scripts.append("get_axipkgs.py -t XT > {0}tags.txt".format(USER_DATA_DIR))
 
     if not have:
         print("Run scripts to generate important files:")
@@ -177,7 +178,6 @@ def main():
 
     pkgs_classifications = (get_pkgs_table_classification(axi, pkgs,
                             debtags_name, terms_name))
-
     pkgs_classifications_indices = debtags_name + terms_name
 
     with open(USER_DATA_DIR + 'pkgs_classifications_indices.txt', 'wb') as text:
@@ -186,6 +186,12 @@ def main():
     with open(USER_DATA_DIR + 'pkg_classification.txt', 'wb') as text:
         pickle.dump(pkgs_classifications, text)
 
+    all_matrix = (np.matrix(pkgs_classifications.values()))
+    attribute_matrix = all_matrix[0:, 0:-1]
+    classifications = all_matrix[0:, -1]
+    order_of_classifications = ['H', 'B', 'M', 'G', 'EX']
+
+    bayes_matrix.training(attribute_matrix, classifications, order_of_classifications)
 
 if __name__ == "__main__":
     main()
