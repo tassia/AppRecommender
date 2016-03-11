@@ -44,7 +44,8 @@ class Config(Singleton):
             self.output = "apprec.log"
 
             # data_source options
-            self.base_dir = os.path.expanduser("~/.app-recommender")
+            self.base_dir = os.path.expanduser('~/.app-recommender')
+            self.user_data_dir = 'user_data/'
             # filters for valid packages
             self.filters_dir = os.path.join(self.base_dir, "filters")
             self.pkgs_filter = os.path.join(self.filters_dir, "desktopapps")
@@ -173,7 +174,7 @@ class Config(Singleton):
             self.config = ConfigParser()
             self.config.read(['/etc/apprecommender/recommender.conf',
                               os.path.expanduser('~/.app_recommender.rc'),
-                              'app_recommender.cfg'])
+                              os.path.expanduser('app_recommender.cfg')])
         except (MissingSectionHeaderError), err:
             logging.error("Error in config file syntax: %s", str(err))
             os.abort()
@@ -182,6 +183,9 @@ class Config(Singleton):
         self.debug = int(self.read_option('general', 'verbose'))
         self.base_dir = os.path.expanduser(self.read_option('data_sources',
                                            'base_dir'))
+        self.user_data_dir = os.path.join(self.base_dir,
+                                          self.read_option('data_sources',
+                                                           'user_data_dir'))
         self.output = os.path.join(self.base_dir,
                                    self.read_option('general', 'output'))
         self.filters_dir = os.path.join(self.base_dir,
