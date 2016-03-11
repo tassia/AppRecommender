@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, '../')
 
 from data_classification import linear_percent_function
+from config import Config
 
 import time
 import calendar
@@ -11,6 +12,8 @@ import xapian
 import pickle
 
 XAPIAN_DATABASE_PATH = '/var/lib/apt-xapian-index/index'
+USER_DATA_DIR = Config().user_data_dir
+BASE_DIR = Config().base_dir
 
 
 def sample_classification(percent):
@@ -30,7 +33,7 @@ def get_pkgs_classification(percent_function, classification_function):
     pkgs = {}
     time_now = calendar.timegm(time.gmtime())
 
-    with open('pkg_data.txt', 'r') as pkg_data:
+    with open(USER_DATA_DIR + 'pkg_data.txt', 'r') as pkg_data:
         for pkg_line in pkg_data:
             name, modify, access = pkg_line.split(' ')
 
@@ -116,13 +119,13 @@ def main():
     pkgs = get_pkgs_classification(linear_percent_function,
                                    sample_classification)
 
-    debtags_name = get_debtags_name('tags.txt')
+    debtags_name = get_debtags_name(BASE_DIR + '/filters/debtags')
     terms_name = sorted(get_terms_for_all_pkgs(axi, pkgs.keys()))
 
     pkgs_classifications = (get_pkgs_table_classification(axi, pkgs,
                             debtags_name, terms_name))
 
-    with open('pkg_classification.txt', 'wb') as text:
+    with open(USER_DATA_DIR + 'pkg_classification.txt', 'wb') as text:
         pickle.dump(pkgs_classifications, text)
 
 
