@@ -32,9 +32,11 @@ from singleton import Singleton
 
 
 class Metric(Singleton):
+
     """
     Base class for metrics. Strategy design pattern.
     """
+
     def get_errors(self, evaluation):
         """
         Compute prediction errors.
@@ -53,9 +55,11 @@ class Metric(Singleton):
 
 
 class SimpleAccuracy(Metric):
+
     """
     Classification accuracy metric which consider classes sizes.
     """
+
     def __init__(self):
         """
         Set metric description.
@@ -70,13 +74,15 @@ class SimpleAccuracy(Metric):
                                  len(evaluation.false_positive)) -
                                 len(evaluation.false_negative))
 
-        return simple_accurary/evaluation.repository_size
+        return simple_accurary / evaluation.repository_size
 
 
 class Accuracy(Metric):
+
     """
     Classification accuracy metric which consider classes sizes.
     """
+
     def __init__(self):
         """
         Set metric description.
@@ -92,15 +98,17 @@ class Accuracy(Metric):
                          len(evaluation.real_relevant)))
         error_2 = (float(len(evaluation.false_negative)) /
                    len(evaluation.real_relevant))
-        accuracy = 1-(float(error_1+error_2)/2)
+        accuracy = 1 - (float(error_1 + error_2) / 2)
         return accuracy
 
 
 class Precision(Metric):
+
     """
     Classification accuracy metric defined as the percentage of relevant itens
     among the predicted ones.
     """
+
     def __init__(self):
         """
         Set metric description.
@@ -112,14 +120,16 @@ class Precision(Metric):
         Compute metric.
         """
         precision = float(len(evaluation.true_positive))
-        return precision/len(evaluation.predicted_relevant)
+        return precision / len(evaluation.predicted_relevant)
 
 
 class Recall(Metric):
+
     """
     Classification ccuracy metric defined as the percentage of relevant itens
     which were predicted as so.
     """
+
     def __init__(self):
         """
         Set metric description.
@@ -131,13 +141,15 @@ class Recall(Metric):
         Compute metric.
         """
         recall = float(len(evaluation.true_positive))
-        return recall/len(evaluation.real_relevant)
+        return recall / len(evaluation.real_relevant)
 
 
 class FPR(Metric):
+
     """
     False positive rate (used for ploting ROC curve).
     """
+
     def __init__(self):
         """
         Set metric description.
@@ -153,9 +165,11 @@ class FPR(Metric):
 
 
 class MCC(Metric):
+
     """
     Matthews correlation coefficient.
     """
+
     def __init__(self):
         """
         Set metric description.
@@ -170,17 +184,21 @@ class MCC(Metric):
         FP = len(evaluation.false_positive)
         FN = len(evaluation.false_negative)
         VN = evaluation.true_negative_len
-        if (VP+FP) == 0 or (VP+FN) == 0 or (VN+FP) == 0 or (VN+FN) == 0:
+        if ((VP + FP) == 0 or (VP + FN) == 0 or
+           (VN + FP) == 0 or (VN + FN) == 0):
             return 0
-        MCC = (((VP*VN)-(FP*FN))/math.sqrt((VP+FP)*(VP+FN)*(VN+FP)*(VN+FN)))
+        MCC = (((VP * VN) - (FP * FN)) /
+               math.sqrt((VP + FP) * (VP + FN) * (VN + FP) * (VN + FN)))
         return MCC
 
 
 class F_score(Metric):
+
     """
     Classification accuracy metric which correlates precision and
     recall into an unique measure.
     """
+
     def __init__(self, k):
         """
         Set metric description.
@@ -194,16 +212,19 @@ class F_score(Metric):
         """
         p = Precision().run(evaluation)
         r = Recall().run(evaluation)
-        if ((self.k*self.k*p)+r) > 0:
-            return float(((1+(self.k*self.k))*((p*r)/((self.k*self.k*p)+r))))
+        if ((self.k * self.k * p) + r) > 0:
+            return float(((1 + (self.k * self.k)) * ((p * r) /
+                         ((self.k * self.k * p) + r))))
         else:
             return 0
 
 
 class MAE(Metric):
+
     """
     Prediction accuracy metric defined as the mean absolute error.
     """
+
     def __init__(self):
         """
         Set metric description.
@@ -215,13 +236,15 @@ class MAE(Metric):
         Compute metric.
         """
         errors = self.get_errors(evaluation)
-        return sum(errors)/len(errors)
+        return sum(errors) / len(errors)
 
 
 class MSE(Metric):
+
     """
     Prediction accuracy metric defined as the mean square error.
     """
+
     def __init__(self):
         """
         Set metric description.
@@ -234,13 +257,15 @@ class MSE(Metric):
         """
         errors = self.get_errors(evaluation)
         square_errors = [pow(x, 2) for x in errors]
-        return sum(square_errors)/len(square_errors)
+        return sum(square_errors) / len(square_errors)
 
 
 class RMSE(MSE):
+
     """
     Prediction accuracy metric defined as the root mean square error.
     """
+
     def __init__(self):
         """
         Set metric description.
@@ -255,10 +280,12 @@ class RMSE(MSE):
 
 
 class Coverage(Metric):
+
     """
     Evaluation metric defined as the percentage of itens covered by the
     recommender (have been recommended at least once).
     """
+
     def __init__(self):
         """
         Set initial parameters.
@@ -272,13 +299,15 @@ class Coverage(Metric):
         covered = set()
         for evaluation in evaluations_set:
             covered.update(set(evaluation.predicted_relevant))
-        return float(len(covered))/evaluation.repository_size
+        return float(len(covered)) / evaluation.repository_size
 
 
 class Evaluation:
+
     """
     Class designed to perform prediction evaluation, given data and metric.
     """
+
     def __init__(self, predicted, real, repository_size):
         """
         Set initial parameters.
@@ -316,9 +345,11 @@ class Evaluation:
 
 
 class CrossValidation:
+
     """
     Class designed to perform cross-validation process.
     """
+
     def __init__(self, partition_proportion, rounds, rec,
                  metrics_list, result_proportion):
         """
@@ -344,7 +375,7 @@ class CrossValidation:
         cross_item_score = {}
         for pkg in user.pkg_profile:
             cross_item_score[pkg] = user.item_score[pkg]
-        partition_size = int(len(cross_item_score)*self.partition_proportion)
+        partition_size = int(len(cross_item_score) * self.partition_proportion)
         # main iteration
         for r in range(self.rounds):
             round_partition = {}
@@ -400,12 +431,12 @@ class CrossValidation:
             metrics_result = ""
             for metric in self.metrics_list:
                 metrics_result += ("     %2.1f%%    |" %
-                                   (self.cross_results[metric.desc][r]*100))
+                                   (self.cross_results[metric.desc][r] * 100))
             str += "|   %d   |%s\n" % (r, metrics_result)
         metrics_mean = ""
         for metric in self.metrics_list:
             mean = float(sum(self.cross_results[metric.desc]) /
                          len(self.cross_results[metric.desc]))
-            metrics_mean += "     %2.1f%%    |" % (mean*100)
+            metrics_mean += "     %2.1f%%    |" % (mean * 100)
         str += "|  Mean |%s\n" % (metrics_mean)
         return str

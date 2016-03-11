@@ -43,7 +43,7 @@ from dissimilarity import JaccardDistance
 
 def axi_get_pkgs(axi):
     pkgs_names = []
-    for docid in range(1, axi.get_lastdocid()+1):
+    for docid in range(1, axi.get_lastdocid() + 1):
         try:
             doc = axi.get_document(docid)
         except:
@@ -55,7 +55,7 @@ def axi_get_pkgs(axi):
 
 
 def axi_search_pkgs(axi, pkgs_list):
-    terms = ["XP"+item for item in pkgs_list]
+    terms = ["XP" + item for item in pkgs_list]
     query = xapian.Query(xapian.Query.OP_OR, terms)
     enquire = xapian.Enquire(axi)
     enquire.set_query(query)
@@ -65,7 +65,7 @@ def axi_search_pkgs(axi, pkgs_list):
 
 def axi_search_pkg_tags(axi, pkg):
     enquire = xapian.Enquire(axi)
-    enquire.set_query(xapian.Query("XP"+pkg))
+    enquire.set_query(xapian.Query("XP" + pkg))
     matches = enquire.get_mset(0, 1)
     if not matches:
         logging.debug("Package %s not found in items repository" % pkg)
@@ -82,7 +82,7 @@ def axi_search_pkg_tags(axi, pkg):
 def print_index(index):
     output = "\n---\n" + xapian.Database.__repr__(index) + "\n---\n"
     for term in index.allterms():
-        output += term.term+"\n"
+        output += term.term + "\n"
         output += str([index.get_document(posting.docid).get_data()
                        for posting in index.postlist(term.term)])
         output += "\n---"
@@ -127,11 +127,11 @@ def get_tfidf_terms_weights(terms_doc, index, terms_package, option=0):
         try:
             # Even if it shouldn't raise error...
             # math.log: ValueError: math domain error
-            tf = 1+math.log(term.wdf)
+            tf = 1 + math.log(term.wdf)
             idf = math.log(index.get_doccount() /
                            float(index.get_termfreq(term.term)))
 
-            tfidf = tf*idf
+            tfidf = tf * idf
             weights[term.term] = tfidf
 
             if option:
@@ -170,13 +170,14 @@ def tfidf_plus(index, docs, content_filter, option=0):
     """
     normalized_weigths = {}
     population = [d.weight for d in docs]
-    mean = sum(population)/len(population)
-    variance = sum([(p-mean)*(p-mean) for p in population])/len(population)
+    mean = sum(population) / len(population)
+    variance = sum([(p - mean) * (p - mean)
+                   for p in population]) / len(population)
     standard_deviation = math.sqrt(variance)
     for d in docs:
         if standard_deviation > 1:
             # values between [0-1] would cause the opposite effect
-            normalized_weigths[d.docid] = d.weight/standard_deviation
+            normalized_weigths[d.docid] = d.weight / standard_deviation
         else:
             normalized_weigths[d.docid] = d.weight
     return tfidf_weighting(index, docs, content_filter, normalized_weigths,
@@ -184,14 +185,16 @@ def tfidf_plus(index, docs, content_filter, option=0):
 
 
 class FilteredXapianIndex(xapian.WritableDatabase):
+
     """
     Filtered Xapian Index
     """
+
     def __init__(self, terms, index_path, path):
         xapian.WritableDatabase.__init__(self, path,
                                          xapian.DB_CREATE_OR_OVERWRITE)
         index = xapian.Database(index_path)
-        for docid in range(1, index.get_lastdocid()+1):
+        for docid in range(1, index.get_lastdocid() + 1):
             try:
                 doc = index.get_document(docid)
                 docterms = [term.term for term in doc.termlist()]
@@ -216,10 +219,12 @@ class FilteredXapianIndex(xapian.WritableDatabase):
 
 
 class SampleAptXapianIndex(xapian.WritableDatabase):
+
     """
     Sample data source for packages information, generated from a list of
     packages.
     """
+
     def __init__(self, pkgs_list, axi, path):
         xapian.WritableDatabase.__init__(self, path,
                                          xapian.DB_CREATE_OR_OVERWRITE)
@@ -232,9 +237,11 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
 
 
 class DebianPackage():
+
     """
     Class to load package information.
     """
+
     def __init__(self, pkg_name):
         self.name = pkg_name
 
@@ -360,6 +367,7 @@ class DebianPackage():
 
 
 class PopconSubmission():
+
     def __init__(self, path, user_id=0, binary=1):
         self.packages = dict()
         self.path = path
@@ -369,9 +377,9 @@ class PopconSubmission():
             self.user_id = user_id
 
     def __str__(self):
-        output = "\nPopularity-contest submission ID "+self.user_id
+        output = "\nPopularity-contest submission ID " + self.user_id
         for pkg, weight in self.packages.items():
-            output += "\n "+pkg+": "+str(weight)
+            output += "\n " + pkg + ": " + str(weight)
         return output
 
     def get_filtered(self, filter_list):
@@ -416,9 +424,11 @@ class PopconSubmission():
 
 
 class FilteredPopconXapianIndex(xapian.WritableDatabase):
+
     """
     Data source for popcon submissions defined as a xapian database.
     """
+
     def __init__(self, path, popcon_dir, axi_path, tags_filter):
         """
         Set initial attributes.
@@ -465,15 +475,15 @@ class FilteredPopconXapianIndex(xapian.WritableDatabase):
                                   (submission.user_id, len(submission_pkgs)))
                 else:
                     doc.set_data(submission.user_id)
-                    doc.add_term("ID"+submission.user_id)
-                    doc.add_term("ARCH"+submission.arch)
+                    doc.add_term("ID" + submission.user_id)
+                    doc.add_term("ARCH" + submission.arch)
                     logging.debug("Parsing popcon submission \'%s\'" %
                                   submission.user_id)
                     for pkg, freq in submission_pkgs.items():
                         tags = axi_search_pkg_tags(self.axi, pkg)
                         # if the package was found in axi
                         if tags:
-                            doc.add_term("XP"+pkg, freq)
+                            doc.add_term("XP" + pkg, freq)
                             # if the package has tags associated with it
                             if not tags == "notags":
                                 for tag in tags:
@@ -494,9 +504,11 @@ class FilteredPopconXapianIndex(xapian.WritableDatabase):
 
 # Deprecated class, must be reviewed
 class PopconXapianIndex(xapian.WritableDatabase):
+
     """
     Data source for popcon submissions defined as a singleton xapian database.
     """
+
     def __init__(self, cfg):
         """
         Set initial attributes.
@@ -607,7 +619,7 @@ class PopconXapianIndex(xapian.WritableDatabase):
                         tags = axi_search_pkg_tags(self.axi, pkg)
                         # if the package was foung in axi
                         if tags:
-                            doc.add_term("XP"+pkg, freq)
+                            doc.add_term("XP" + pkg, freq)
                             # if the package has tags associated with it
                             if not tags == "notags":
                                 for tag in tags:
@@ -663,8 +675,8 @@ class KMedoidsClustering(cluster.KMeansClustering):
             self.distanceMatrix[submission.user_id] = {}
 
     def loadDistanceMatrix(self, cluster):
-        for i in range(len(cluster)-1):
-            for j in range(i+1, len(cluster)):
+        for i in range(len(cluster) - 1):
+            for j in range(i + 1, len(cluster)):
                 try:
                     user_id_i = cluster[i].user_id
                     user_id_j = cluster[j].user_id

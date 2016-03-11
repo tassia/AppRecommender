@@ -29,9 +29,11 @@ from error import Error
 
 
 class PkgMatchDecider(xapian.MatchDecider):
+
     """
     Extend xapian.MatchDecider to not consider installed packages.
     """
+
     def __init__(self, pkgs_list):
         """
         Set initial parameters.
@@ -53,9 +55,11 @@ class PkgMatchDecider(xapian.MatchDecider):
 
 
 class PkgExpandDecider(xapian.ExpandDecider):
+
     """
     Extend xapian.ExpandDecider to consider packages only.
     """
+
     def __init__(self, pkgs_list):
         """
         Set initial parameters.
@@ -77,9 +81,11 @@ class PkgExpandDecider(xapian.ExpandDecider):
 
 
 class TagExpandDecider(xapian.ExpandDecider):
+
     """
     Extend xapian.ExpandDecider to consider tags only.
     """
+
     def __call__(self, term):
         """
         True if the term is a package tag.
@@ -88,17 +94,21 @@ class TagExpandDecider(xapian.ExpandDecider):
 
 
 class RecommendationStrategy:
+
     """
     Base class for recommendation strategies.
     """
+
     def run(self, rec, user, recommendation_size):
         raise NotImplementedError
 
 
 class ContentBased(RecommendationStrategy):
+
     """
     Content-based recommendation strategy based on Apt-xapian-index.
     """
+
     def __init__(self, content, profile_size):
         self.description = "Content-based"
         self.content = content
@@ -115,7 +125,7 @@ class ContentBased(RecommendationStrategy):
             mset = enquire.get_mset(0, recommendation_size, None,
                                     PkgMatchDecider(user.items()))
         except xapian.DatabaseError as error:
-            logging.critical("Content-based strategy: "+error.get_msg())
+            logging.critical("Content-based strategy: " + error.get_msg())
 
         # Compose result dictionary
         item_score = {}
@@ -140,12 +150,14 @@ class ContentBased(RecommendationStrategy):
 
 
 class Collaborative(RecommendationStrategy):
+
     """
     Colaborative recommendation strategy.
     """
+
     def get_user_profile(self, user, rec):
         logging.debug("Composing user profile...")
-        profile = ["XP"+package for package in
+        profile = ["XP" + package for package in
                    user.filter_pkg_profile(rec.valid_pkgs)]
         logging.debug(profile)
         return profile
@@ -156,7 +168,7 @@ class Collaborative(RecommendationStrategy):
         return enquire
 
     # def get_rset_from_profile(self, profile):
-    #    # Create document to represent user profile and mark it as relevant
+    # Create document to represent user profile and mark it as relevant
     #    return rset
 
     def get_neighborhood(self, user, rec):
@@ -170,7 +182,7 @@ class Collaborative(RecommendationStrategy):
             mset = enquire.get_mset(0, self.neighbours)
         except xapian.DatabaseError as error:
             error_msg = "Could not compose user neighborhood.\n "
-            logging.critical(error_msg+error.get_msg())
+            logging.critical(error_msg + error.get_msg())
             raise Error
         return mset
 
@@ -193,9 +205,11 @@ class Collaborative(RecommendationStrategy):
 
 
 class Knn(Collaborative):
+
     """
     KNN based packages tf-idf weights.
     """
+
     def __init__(self, k):
         self.description = "Knn"
         self.neighbours = k
@@ -218,9 +232,11 @@ class Knn(Collaborative):
 
 
 class KnnPlus(Collaborative):
+
     """
     KNN based packages tf-idf weights.
     """
+
     def __init__(self, k):
         self.description = "Knn plus"
         self.neighbours = k
@@ -243,9 +259,11 @@ class KnnPlus(Collaborative):
 
 
 class KnnEset(Collaborative):
+
     """
     KNN based on query expansion.
     """
+
     def __init__(self, k):
         self.description = "KnnEset"
         self.neighbours = k
@@ -264,9 +282,11 @@ class KnnEset(Collaborative):
 
 
 class CollaborativeEset(Collaborative):
+
     """
     Colaborative strategy based on query expansion.
     """
+
     def __init__(self):
         self.description = "Collaborative-Eset"
 
@@ -295,9 +315,11 @@ class CollaborativeEset(Collaborative):
 
 
 class KnnContent(Collaborative):
+
     """
     Hybrid "Colaborative through content" recommendation strategy.
     """
+
     def __init__(self, k):
         self.description = "Knn-Content"
         self.neighbours = k
@@ -318,9 +340,11 @@ class KnnContent(Collaborative):
 
 
 class KnnContentEset(Collaborative):
+
     """
     Hybrid "Colaborative through content" recommendation strategy.
     """
+
     def __init__(self, k):
         self.description = "Knn-Content-Eset"
         self.neighbours = k
@@ -342,9 +366,11 @@ class KnnContentEset(Collaborative):
 
 
 class Demographic(RecommendationStrategy):
+
     """
     Hybrid rotation strategy based on demographic data.
     """
+
     def __init__(self, strategy_str):
         self.description = "Demographic"
         self.strategy_str = strategy_str.lstrip("demo_")
@@ -360,7 +386,7 @@ class Demographic(RecommendationStrategy):
         program_profile = user.filter_pkg_profile(program_dir)
         desktop_profile = user.filter_pkg_profile(desktop_dir)
         if len(desktop_profile) > 10 or (len(desktop_profile) >
-                                         len(program_profile)/2):
+                                         len(program_profile) / 2):
             rec.set_strategy(self.strategy_str)
             # Redefine repositories after configuring strategy
             rec.items_repository = rec.axi_desktopapps
