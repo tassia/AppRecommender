@@ -66,7 +66,9 @@ def get_pkg_data(axi, pkg_name, data_type):
             if pkg_term.startswith(data_type):
                 pkg_info.append(pkg_term[len(data_type):])
             elif data_type == 'term':
-                if pkg_term.startswith('Z') or pkg_term[0].islower():
+                if pkg_term.startswith('Z'):
+                    pkg_info.append(pkg_term[1:])
+                if pkg_term[0].islower():
                     pkg_info.append(pkg_term)
 
     return pkg_info
