@@ -20,13 +20,15 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
-import random
+import apt
 import commands
 import datetime
-import xapian
 import logging
-import apt
+import os
+import pickle
+import random
+import xapian
+
 from error import Error
 from singleton import Singleton
 import data
@@ -392,11 +394,26 @@ class LocalSystem(User):
         """
         item_score = {}
         dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
+
         for line in dpkg_output.splitlines():
             pkg = line.split('\t')[0]
             item_score[pkg] = 1
+
         self.user_id = "local-" + str(datetime.datetime.now())
+
         User.__init__(self, item_score)
+
+    def get_time_score(self, time_classification_path):
+        try:
+            with open(time_classification_path, 'rb') as time_pkg:
+                time_score = pickle.load(time_pkg)
+        except IOError as e:
+            logging.debug(
+                "File not found: {0} with error:\n{1}".format(
+                    time_classification_path, e.message))
+            return []
+
+        return time_score
 
     def no_auto_pkg_profile(self):
         """
