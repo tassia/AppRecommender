@@ -3,24 +3,32 @@
 import sys
 sys.path.insert(0, '../')
 
-from data_classification import linear_percent_function
 from config import Config
 from os import path
+from bayes_matrix import BayesMatrix
 
 import numpy as np
 import data_classification as data_cl
 
-import bayes_matrix
 import time
 import calendar
 import xapian
 import pickle
 
-from os import path, makedirs
+from os import makedirs
 
 USER_DATA_DIR = Config().user_data_dir
 BASE_DIR = Config().base_dir
 XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
+
+TAGS_PATH = USER_DATA_DIR + 'tags.txt'
+PKG_DATA_PATH = USER_DATA_DIR + 'pkg_data.txt'
+DEBTAGS_NAME_PATH = BASE_DIR + '/filters/debtags'
+
+PKGS_CLASSIFICATIONS = USER_DATA_DIR + 'pkgs_classifications.txt'
+PKGS_CLASSIFICATIONS_INDICES = (USER_DATA_DIR +
+                                'pkgs_classifications_indices.txt')
+MACHINE_LEARNING_TRAINING = USER_DATA_DIR + "machine_learning_training.txt"
 
 
 def sample_classification(percent):
@@ -40,7 +48,7 @@ def get_pkgs_classification(percent_function, classification_function):
     pkgs = {}
     time_now = calendar.timegm(time.gmtime())
 
-    with open(USER_DATA_DIR + 'pkg_data.txt', 'r') as pkg_data:
+    with open(PKG_DATA_PATH, 'r') as pkg_data:
         for pkg_line in pkg_data:
             name, modify, access = pkg_line.split(' ')
 
@@ -147,13 +155,14 @@ def have_files():
     if not path.exists(USER_DATA_DIR):
         makedirs(USER_DATA_DIR)
 
-    if not path.isfile(USER_DATA_DIR + 'pkg_data.txt'):
+    if not path.isfile(PKG_DATA_PATH):
         have = False
         scripts.append("pkg_time_list.py")
 
-    if not path.isfile(USER_DATA_DIR + 'tags.txt'):
+    if not path.isfile(TAGS_PATH):
         have = False
-        scripts.append("get_axipkgs.py -t XT > {0}tags.txt".format(USER_DATA_DIR))
+        scripts.append("get_axipkgs.py -t XT > {0}tags.txt"
+                       .format(USER_DATA_DIR))
 
     if not have:
         print("Run scripts to generate important files:")
@@ -171,19 +180,20 @@ def main():
     pkgs = get_pkgs_classification(data_cl.linear_percent_function,
                                    sample_classification)
 
-    debtags_name = get_debtags_name(BASE_DIR + '/filters/debtags')
+    debtags_name = get_debtags_name(DEBTAGS_NAME_PATH)
     terms_name = get_terms_for_all_pkgs(axi, pkgs.keys())
     filter_terms(terms_name)
     terms_name = sorted(terms_name)
 
     pkgs_classifications = (get_pkgs_table_classification(axi, pkgs,
-                            debtags_name, terms_name))
+                                                          debtags_name,
+                                                          terms_name))
     pkgs_classifications_indices = debtags_name + terms_name
 
-    with open(USER_DATA_DIR + 'pkgs_classifications_indices.txt', 'wb') as text:
+    with open(PKGS_CLASSIFICATIONS_INDICES, 'wb') as text:
         pickle.dump(pkgs_classifications_indices, text)
 
-    with open(USER_DATA_DIR + 'pkg_classification.txt', 'wb') as text:
+    with open(PKGS_CLASSIFICATIONS, 'wb') as text:
         pickle.dump(pkgs_classifications, text)
 
     all_matrix = (np.matrix(pkgs_classifications.values()))
@@ -191,7 +201,11 @@ def main():
     classifications = all_matrix[0:, -1]
     order_of_classifications = ['H', 'B', 'M', 'G', 'EX']
 
-    bayes_matrix.training(attribute_matrix, classifications, order_of_classifications)
+    bayes_matrix = BayesMatrix()
+    bayes_matrix.training(attribute_matrix, classifications,
+                          order_of_classifications)
+
+    BayesMatrix.save(bayes_matrix, MACHINE_LEARNING_TRAINING)
 
 if __name__ == "__main__":
     main()

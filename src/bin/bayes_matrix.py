@@ -1,70 +1,90 @@
-from config import Config
-
 import pickle
 import numpy as np
 
-USER_DATA_DIR = Config().user_data_dir
 
+class BayesMatrix:
 
-def convert_order_of_classifications_on_numbers(order_of_classifications):
-    numbers = ""
-    for i in range(len(order_of_classifications)):
-        numbers += "{0};".format(i)
+    @staticmethod
+    def save(bayes_matrix, file_path):
+        with open(file_path, 'wb') as text:
+            pickle.dump(bayes_matrix, text)
 
-    return np.matrix(numbers[0:-1])
+    @staticmethod
+    def load(file_path):
+        with open(file_path, 'rb') as text:
+            bayes_matrix = pickle.load(text)
 
+        return bayes_matrix
 
-def convert_classifications_on_numbers(classifications, order_of_classifications, B):
-    numbers = ""
-    for i in range(len(classifications)):
-        number = order_of_classifications.index(classifications[i])
-        numbers += "{0};".format(number)
+    def __init__(self):
+        self.D = None
+        self.B = None
+        self.L = None
+        self.A = None
+        self.H = None
+        self.R = None
+        self.PH = None
+        self.PR1 = None
+        self.DIAG_H = None
 
-    return np.matrix(numbers[0:-1])
+    def training(self, attribute_matrix, classifications,
+                 order_of_classifications):
+        self.D = attribute_matrix.astype(float)
+        self.B = (self.convert_order_of_classifications_on_numbers(
+                  order_of_classifications).astype(float))
+        self.L = (self.convert_classifications_on_numbers(classifications,
+                  order_of_classifications,
+                  self.B).astype(float))
+        self.A = self.get_adjacent_matrix(self.L,
+                                          self.B.shape[0],
+                                          self.D.shape[0]).astype(float)
 
+        self.H = self.A.dot(np.ones((self.D.shape[0], 1)))
+        self.PH = self.H/self.D.shape[0]
 
-def training(attribute_matrix, classifications, order_of_classifications):
-    D = attribute_matrix.astype(float)
-    B = convert_order_of_classifications_on_numbers(order_of_classifications).astype(float)
-    L = convert_classifications_on_numbers(classifications, order_of_classifications, B).astype(float)
-    A = get_adjacent_matrix(L, B.shape[0], D.shape[0]).astype(float)
+        self.R = self.A * self.D
 
-    H = A.dot(np.ones((D.shape[0], 1)))
-    PH = H/D.shape[0]
+        self.DIAG_H = np.diag(np.array(self.H)[:, 0])
+        self.PR1 = np.linalg.inv(self.DIAG_H)*self.R
+        self.PR2 = 1 - self.PR1
 
-    R = A * D
+        self.PR1 = np.eye(self.PR1.shape[1], self.PR1.shape[0]) * self.PR1
+        self.PR2 = np.eye(self.PR2.shape[1], self.PR2.shape[0]) * self.PR2
 
-    DIAG_H = np.diag(np.array(H)[:, 0])
-    PR1 = np.linalg.inv(DIAG_H)*R
-    PR2 = 1 - PR1
+        # v_linha = 1 - V
+        # PV1 = PR1 * np.diag(np.array(V.T)[:, 0])
+        # PV2 = PR2 * np.diag(np.array(v_linha.T)[:, 0])
 
-    PR1 = np.eye(PR1.shape[1], PR1.shape[0]) * PR1
-    PR2 = np.eye(PR2.shape[1], PR2.shape[0]) * PR2
+        # PV = PV1 + PV2 + 1
+        # U = np.log(PV).sum(axis=1)
 
-    results = {'PH': PH, 'PR1': PR1, 'PR2': PR2}
+        # PH = np.log(PH + 1)
+        # U = np.eye(B.shape[0], D.shape[1]) * U
+        # U = np.diag(np.array(PH)[:, 0]) * U
 
-    print "Save"
-    with open(USER_DATA_DIR + 'machine_learning_training.txt', 'wb') as text:
-        pickle.dump(results, text)
+        # print U
 
-    # v_linha = 1 - V
-    # PV1 = PR1 * np.diag(np.array(V.T)[:, 0])
-    # PV2 = PR2 * np.diag(np.array(v_linha.T)[:, 0])
+    def convert_order_of_classifications_on_numbers(self,
+                                                    order_of_classifications):
+        numbers = ""
+        for i in range(len(order_of_classifications)):
+            numbers += "{0};".format(i)
 
-    # PV = PV1 + PV2 + 1
-    # U = np.log(PV).sum(axis=1)
+        return np.matrix(numbers[0:-1])
 
-    # PH = np.log(PH + 1)
-    # U = np.eye(B.shape[0], D.shape[1]) * U
-    # U = np.diag(np.array(PH)[:, 0]) * U
+    def convert_classifications_on_numbers(self, classifications,
+                                           order_of_classifications, B):
+        numbers = ""
+        for i in range(len(classifications)):
+            number = order_of_classifications.index(classifications[i])
+            numbers += "{0};".format(number)
 
-    # print U
+        return np.matrix(numbers[0:-1])
 
+    def get_adjacent_matrix(self, L, num_labels, num_packages):
+        adjacent_matrix = np.zeros((num_labels, num_packages))
 
-def get_adjacent_matrix(L, num_labels, num_packages):
-    adjacent_matrix = np.zeros((num_labels, num_packages))
+        for i in range(len(L)):
+            adjacent_matrix[L[i].item()][i] = 1
 
-    for i in range(len(L)):
-        adjacent_matrix[L[i].item()][i] = 1
-
-    return adjacent_matrix
+        return adjacent_matrix
