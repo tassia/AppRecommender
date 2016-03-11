@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
         index = data.SampleAptXapianIndex(pkgs_list, axi,
                                           os.path.join(base_dir,
-                                                       "axi_"+filter_str))
+                                                       "axi_" + filter_str))
         print ("Axi size: %d" % axi.get_doccount())
         print ("Packages list length: %d" % len(pkgs_list))
         print ("Sample index size: %d" % index.get_doccount())
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         terms_str = "_".join([t.split("::")[-1] for t in terms])
         index = data.FilteredXapianIndex(terms, axi,
                                          os.path.join(base_dir,
-                                                      "axi_"+terms_str))
+                                                      "axi_" + terms_str))
         print ("Axi size: %d" % axi.get_doccount())
         print ("Terms filter: %s" % terms)
         print ("Filtered index size: %d" % index.get_doccount())

@@ -20,7 +20,7 @@ if __name__ == '__main__':
                 print terms_list
                 frequencies = {}
                 for term in terms_list:
-                    frequencies[term] = index.get_termfreq(sys.argv[3]+term)
+                    frequencies[term] = index.get_termfreq(sys.argv[3] + term)
             sorted_freqs = sorted(frequencies.items(), key=itemgetter(1))
         except:
             print "Could not extract terms list from %s" % sys.argv[2]

@@ -100,7 +100,7 @@ def collect_popcon_submission():
 
     save_list(submission, POPCON_SUBMISSION)
 
-    rename_file(POPCON_SUBMISSION, LOG_PATH+"/"+submission_id)
+    rename_file(POPCON_SUBMISSION, LOG_PATH + "/" + submission_id)
 
 
 def collect_manual_installed_pkgs():
@@ -208,7 +208,7 @@ def collect_user_preferences():
 
         rank = -1
 
-        raw_message = message.format((index+1), all_rec_len, pkg,
+        raw_message = message.format((index + 1), all_rec_len, pkg,
                                      pkg_description)
 
         update_prints()
@@ -220,8 +220,9 @@ def collect_user_preferences():
         for j in range(i):
             prev_pkg = all_recommendations[j]
 
-            print("[{0}/{1}] {2}, rank: {3}".format(j+1, all_rec_len, prev_pkg,
-                  user_preferences[prev_pkg]))
+            print(
+                "[{0}/{1}] {2}, rank: {3}".format(j + 1, all_rec_len, prev_pkg,
+                                                  user_preferences[prev_pkg]))
 
         while rank < 1 or rank > 4:
             try:
@@ -271,7 +272,7 @@ def check_dependencies():
     unistalled_dependencies = ''
 
     if len(unistalled_pkgs) > 0:
-        unistalled_dependencies = ''.join(str(pkg)+' '
+        unistalled_dependencies = ''.join(str(pkg) + ' '
                                           for pkg in unistalled_pkgs)
 
     return unistalled_dependencies
@@ -312,7 +313,7 @@ def initial_prints():
 
 
 def update_prints():
-    print '\n'*80
+    print '\n' * 80
     os.system('clear')
     initial_prints()
 

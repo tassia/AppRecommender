@@ -18,7 +18,7 @@ if __name__ == '__main__':
         for line in results:
             if line.startswith("Package"):
                 fields = line.split()
-                inst = int(fields[2])+int(fields[3])+int(fields[4])
+                inst = int(fields[2]) + int(fields[3]) + int(fields[4])
                 pkgs_inst[fields[1]] = inst
     sorted_by_inst = sorted(pkgs_inst.items(), key=itemgetter(1))
     for pkg, inst in sorted_by_inst:
