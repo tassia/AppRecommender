@@ -7,6 +7,9 @@ import sys
 sys.path.insert(0, '../')
 
 from data_classification import get_time_from_package, get_alternative_pkg
+from config import Config
+
+USER_DATA_DIR = Config().user_data_dir
 
 
 def get_packages_time(pkgs):
@@ -35,7 +38,7 @@ def print_package_time(pkgs_time):
         print "{0} : Modify {1}, Access {2}".format(key, value[0], value[1])
 
 
-def save_package_time(pkgs_time, file_path='pkg_data.txt'):
+def save_package_time(pkgs_time, file_path=USER_DATA_DIR + 'pkg_data.txt'):
 
     with open(file_path, 'w') as pkg_data:
 
