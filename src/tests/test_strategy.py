@@ -23,7 +23,7 @@ import unittest
 import xapian
 
 from src.strategy import (PkgMatchDecider, PkgExpandDecider,
-                        TagExpandDecider)
+                          TagExpandDecider)
 
 
 class PkgMatchDeciderTests(unittest.TestCase):

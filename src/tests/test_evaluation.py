@@ -22,7 +22,7 @@ __license__ = """
 import unittest
 
 from src.evaluation import (Accuracy, Precision, Recall, Coverage,
-                          Evaluation)
+                            Evaluation)
 from src.recommender import RecommendationResult
 
 
