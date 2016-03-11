@@ -131,9 +131,9 @@ def generate_all_terms_tfidf():
     docs = data.axi_search_pkgs(axi_index, pkgs)
 
     tags_weights = data.tfidf_weighting(axi_index, docs,
-                                        FilterTag(0), option=0)
+                                        FilterTag(0), time_context=0)
     description_weights = (data.tfidf_weighting(axi_index, docs,
-                           FilterDescription(), option=0))
+                           FilterDescription(), time_context=0))
 
     user_tfidf_weights = dict(tags_weights + description_weights)
 

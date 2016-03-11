@@ -159,32 +159,37 @@ class User:
         self.demographic_profile = DemographicProfile()(profiles_set)
 
     def content_profile(self, items_repository, content, size, valid_tags=0,
-                        option=0):
+                        time_context=0):
         """
         Get user profile for a specific type of content: packages tags,
         description or both (mixed and half-half profiles)
         """
         if content == "tag":
             profile = self.tfidf_profile(items_repository, size,
-                                         FilterTag(valid_tags), option)
+                                         FilterTag(valid_tags), time_context)
         elif content == "desc":
             profile = self.tfidf_profile(items_repository,
-                                         size, FilterDescription(), option)
+                                         size, FilterDescription(),
+                                         time_context)
         elif content == "mix":
             profile = self.tfidf_profile(items_repository, size,
                                          FilterTag_or_Description(valid_tags),
-                                         option)
+                                         time_context)
         elif content == "half":
             tag_profile = self.tfidf_profile(items_repository, size,
-                                             FilterTag(valid_tags), option)
+                                             FilterTag(valid_tags),
+                                             time_context)
             desc_profile = self.tfidf_profile(items_repository, size,
-                                              FilterDescription(), option)
+                                              FilterDescription(),
+                                              time_context)
             profile = tag_profile[:size / 2] + desc_profile[:size / 2]
         elif content == "time":
             tag_profile = self.tfidf_profile(items_repository, size,
-                                             FilterTag(valid_tags), option=1)
+                                             FilterTag(valid_tags),
+                                             time_context=1)
             desc_profile = self.tfidf_profile(items_repository, size,
-                                              FilterDescription(), option=1)
+                                              FilterDescription(),
+                                              time_context=1)
             profile = tag_profile[:size / 2] + desc_profile[:size / 2]
 
         elif content == "tag_eset":
@@ -208,7 +213,8 @@ class User:
         logging.debug("User %s profile: %s" % (content, profile))
         return profile
 
-    def tfidf_profile(self, items_repository, size, content_filter, option=0):
+    def tfidf_profile(self, items_repository, size, content_filter,
+                      time_context=0):
         """
         Return the most relevant tags for the user list of packages based on
         the sublinear tfidf weight of packages' tags.
@@ -217,7 +223,7 @@ class User:
         docs = data.axi_search_pkgs(items_repository, self.pkg_profile)
         # weights = data.tfidf_plus(items_repository,docs,content_filter)
         weights = data.tfidf_weighting(items_repository, docs, content_filter,
-                                       option=option)
+                                       time_context=time_context)
         # Eliminate duplicated stemmed term
         profile = self._eliminate_duplicated([w[0] for w in weights], size)
         return profile
@@ -269,7 +275,7 @@ class User:
                 with open(filter_list_or_file) as valid:
                     valid_pkgs = [line.strip() for line in valid]
             except IOError:
-                logging.critical("Could not open profile filter file: %" %
+                logging.critical("Could not open profile filter file: %s" %
                                  filter_list_or_file)
                 raise Error
         else:
