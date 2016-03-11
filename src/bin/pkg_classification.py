@@ -45,7 +45,7 @@ def get_pkgs_classification(percent_function, classification_function):
 
 
 def get_pkg_data(axi, pkg_name, data_type):
-    pkg_name = 'XP'+pkg_name
+    pkg_name = 'XP' + pkg_name
 
     query = xapian.Query(xapian.Query.OP_OR, [pkg_name])
     enquire = xapian.Enquire(axi)

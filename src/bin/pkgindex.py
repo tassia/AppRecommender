@@ -42,7 +42,7 @@ if __name__ == '__main__':
     pkgs_filter = cfg.pkgs_filter.lstrip(cfg.filters_dir)
     pkgindex = data.SampleAptXapianIndex(pkgs_list, xapian.Database(cfg.axi),
                                          os.path.join(cfg.base_dir,
-                                         "axi_"+pkgs_filter))
+                                         "axi_" + pkgs_filter))
     end_time = datetime.datetime.now()
     logging.info("Sample package indexing completed at %s" % end_time)
     logging.info("Number of documents (packages): %d" %

@@ -38,6 +38,7 @@ def dot_product(x, y):
 
 
 class Dissimilarity:
+
     """
     Abstraction for different measures of dissimilarity between two sets or
     vectors.
@@ -45,9 +46,11 @@ class Dissimilarity:
 
 
 class EuclidianDistance(Dissimilarity):
+
     """
     Euclidian distance between two vectors.
     """
+
     def __call__(self, x, y):
         """
         Return euclidian distance between vectors 'x' and 'y'.
@@ -57,37 +60,43 @@ class EuclidianDistance(Dissimilarity):
 
 
 class CosineDissimilarity(Dissimilarity):
+
     """
     Dissimilarity measure complementary to the cosine similarity
     which is defined by the cosine of the angle between two vectors.
     """
+
     def __call__(self, x, y):
         """
         Return complement of the cosine of angle between vectors 'x' and 'y'.
         """
-        return 1-(float(dot_product(x, y)/(norm(x)*norm(y))))
+        return 1 - (float(dot_product(x, y) / (norm(x) * norm(y))))
 
 
 class JaccardDistance(Dissimilarity):
+
     """
     Dissimilarity measure complentary to Jaccard Index which is defined by
     the quantity of common values divided by the size of the two sets union.
     """
+
     def __call__(self, x, y):
         """
         Return Jaccard Index between sets 'x' and 'y'.
         """
         common = [v for v in x if v in y]
-        return 1-(float(len(common))/(len(x)+len(y)-len(common)))
+        return 1 - (float(len(common)) / (len(x) + len(y) - len(common)))
 
 
 class DiffCoefficient(Dissimilarity):
+
     """
     Measure the difference between the two sets in terms of how many items
     should be added and removed from one set to transform it into the
     other set. Similar to edit distance, but the items positions are not
     relevant for sets.
     """
+
     def __call__(self, x, y):
         """
         Return the diff coeficient between sets 'x' and 'y'.
@@ -96,4 +105,5 @@ class DiffCoefficient(Dissimilarity):
         delete = [v for v in y if v not in x]
         common = [v for v in x if v in y]
 
-        return float((len(add)+len(delete))/(len(x)+len(y)-len(common)))
+        return float((len(add) + len(delete)) /
+                     (len(x) + len(y) - len(common)))

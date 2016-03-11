@@ -20,11 +20,9 @@ __license__ = """
 """
 
 import unittest
-import shutil
-import os
 import xapian
 
-from src.data import PopconSubmission, PopconXapianIndex, axi_search_pkg_tags
+from src.data import PopconSubmission, axi_search_pkg_tags
 from src.config import Config
 
 
@@ -57,7 +55,7 @@ class PopconSubmissionTests(unittest.TestCase):
     def test_load(self):
         with open(self.submission_path) as popcon_file:
             size = len(popcon_file.readlines())
-        self.assertEqual(len(self.submission.packages), size-2)
+        self.assertEqual(len(self.submission.packages), size - 2)
 
     def test_str(self):
         output = "\nPopularity-contest submission ID "

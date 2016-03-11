@@ -38,7 +38,7 @@ class FilterTagTests(unittest.TestCase):
             self.valid_tags = [line.strip() for line in valid_tags]
 
     def test_call_true(self):
-        self.assertTrue(FilterTag(self.valid_tags)("XT"+self.debtag))
+        self.assertTrue(FilterTag(self.valid_tags)("XT" + self.debtag))
 
     def test_call_false(self):
         self.assertFalse(FilterTag(self.valid_tags)(self.debtag))
@@ -99,7 +99,7 @@ class UserTests(unittest.TestCase):
     def test_profile_science(self):
         self.user.set_demographic_profile(set(["science"]))
         science = set(["science", "biology", "field::astronomy",
-                       "field::aviation",  "field::biology",
+                       "field::aviation", "field::biology",
                        "field::chemistry", "field::eletronics",
                        "field::finance", "field::geography",
                        "field::geology", "field::linguistics",
@@ -132,7 +132,7 @@ class UserTests(unittest.TestCase):
                         "libpng12-0"]
         libc6_deps = ["libc-bin", "libgcc1"]
 
-        for pkg in aaphoto_deps+libc6_deps:
+        for pkg in aaphoto_deps + libc6_deps:
             self.user.item_score[pkg] = 1
 
         self.assertEqual(old_pkg_profile, self.user.maximal_pkg_profile())

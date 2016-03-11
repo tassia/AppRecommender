@@ -33,9 +33,11 @@ import data
 
 
 class FilterTag(xapian.ExpandDecider):
+
     """
     Extend xapian.ExpandDecider to consider only tag terms.
     """
+
     def __init__(self, valid_tags):
         """
         Set initial parameters.
@@ -55,9 +57,11 @@ class FilterTag(xapian.ExpandDecider):
 
 
 class FilterDescription(xapian.ExpandDecider):
+
     """
     Extend xapian.ExpandDecider to consider only package description terms.
     """
+
     def __call__(self, term):
         """
         Return true if the term or its stemmed version is part of a package
@@ -67,9 +71,11 @@ class FilterDescription(xapian.ExpandDecider):
 
 
 class FilterTag_or_Description(xapian.ExpandDecider):
+
     """
     Extend xapian.ExpandDecider to consider only package description terms.
     """
+
     def __init__(self, valid_tags):
         """
         Set initial parameters.
@@ -88,6 +94,7 @@ class FilterTag_or_Description(xapian.ExpandDecider):
 
 
 class DemographicProfile(Singleton):
+
     def __init__(self):
         self.admin = set(["admin", "hardware", "mail", "protocol",
                           "network", "security", "web", "interface::web"])
@@ -96,7 +103,7 @@ class DemographicProfile(Singleton):
                             "interface::x11"])
         self.art = set(["field::arts", "sound"])
         self.science = set(["science", "biology", "field::astronomy",
-                            "field::aviation",  "field::biology",
+                            "field::aviation", "field::biology",
                             "field::chemistry", "field::eletronics",
                             "field::finance", "field::geography",
                             "field::geology", "field::linguistics",
@@ -107,16 +114,18 @@ class DemographicProfile(Singleton):
     def __call__(self, profiles_set):
         demographic_profile = set()
         for profile in profiles_set:
-            profile_str = "self."+profile
+            profile_str = "self." + profile
             demographic_profile = (demographic_profile | eval(profile_str, {},
                                                               {"self": self}))
         return demographic_profile
 
 
 class User:
+
     """
     Define a user of a recommender.
     """
+
     def __init__(self, item_score, user_id=0, arch=0, demo_profiles_set=0):
         """
         Set initial user attributes. pkg_profile gets the whole set of items,
@@ -170,13 +179,13 @@ class User:
                                              FilterTag(valid_tags), option)
             desc_profile = self.tfidf_profile(items_repository, size,
                                               FilterDescription(), option)
-            profile = tag_profile[:size/2]+desc_profile[:size/2]
+            profile = tag_profile[:size / 2] + desc_profile[:size / 2]
         elif content == "time":
             tag_profile = self.tfidf_profile(items_repository, size,
                                              FilterTag(valid_tags), option=1)
             desc_profile = self.tfidf_profile(items_repository, size,
                                               FilterDescription(), option=1)
-            profile = tag_profile[:size/2]+desc_profile[:size/2]
+            profile = tag_profile[:size / 2] + desc_profile[:size / 2]
 
         elif content == "tag_eset":
             profile = self.eset_profile(items_repository, size,
@@ -192,7 +201,7 @@ class User:
                                             FilterTag(valid_tags))
             desc_profile = self.eset_profile(items_repository, size,
                                              FilterDescription())
-            profile = tag_profile[:size/2]+desc_profile[:size/2]
+            profile = tag_profile[:size / 2] + desc_profile[:size / 2]
         else:
             logging.debug("Unknown content type %s." % content)
             raise Error
@@ -224,7 +233,7 @@ class User:
         for d in docs:
             rset_packages.add_document(d.docid)
         # Get expanded query terms (statistically good differentiators)
-        eset_tags = enquire.get_eset(size*2, rset_packages,
+        eset_tags = enquire.get_eset(size * 2, rset_packages,
                                      xapian.Enquire.INCLUDE_QUERY_TERMS,
                                      1, content_filter)
         # Eliminate duplicated stemmed term
@@ -303,6 +312,7 @@ class User:
 
 
 class RandomPopcon(User):
+
     def __init__(self, submissions_dir, arch=0, pkgs_filter=0):
         """
         Set initial parameters.
@@ -329,6 +339,7 @@ class RandomPopcon(User):
 
 
 class PopconSystem(User):
+
     def __init__(self, path, user_id=0):
         """
         Set initial parameters.
@@ -340,6 +351,7 @@ class PopconSystem(User):
 
 
 class PkgsListSystem(User):
+
     def __init__(self, pkgs_list_or_file, user_id=0):
         """
         Set initial parameters.
@@ -362,10 +374,12 @@ class PkgsListSystem(User):
 
 
 class LocalSystem(User):
+
     """
     Extend the class User to consider the packages installed on the local
     system as the set of selected itens.
     """
+
     def __init__(self):
         """
         Set initial parameters.
@@ -375,7 +389,7 @@ class LocalSystem(User):
         for line in dpkg_output.splitlines():
             pkg = line.split('\t')[0]
             item_score[pkg] = 1
-        self.user_id = "local-"+str(datetime.datetime.now())
+        self.user_id = "local-" + str(datetime.datetime.now())
         User.__init__(self, item_score)
 
     def no_auto_pkg_profile(self):
