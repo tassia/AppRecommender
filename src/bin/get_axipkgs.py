@@ -57,6 +57,7 @@ if __name__ == '__main__':
             assert False, "unhandled option"
 
     axi = xapian.Database(axi_path)
+    all_terms = set()
 
     for n in range(1, axi.get_lastdocid()):
         doc = 0
@@ -65,7 +66,15 @@ if __name__ == '__main__':
         except:
             pass
         if doc:
-            xp_terms = [t.term for t in doc.termlist()
-                        if t.term.startswith(axi_tag)]
+            xp_terms = None
+
+            for t in doc.termlist():
+                if t.term.startswith(axi_tag):
+                    xp_terms = t.term
+                    break
+
             if xp_terms:
-                print xp_terms[0].lstrip(axi_tag)
+                all_terms.add(xp_terms.lstrip(axi_tag))
+
+    for term in all_terms:
+        print term
