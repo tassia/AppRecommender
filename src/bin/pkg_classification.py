@@ -21,9 +21,8 @@ USER_DATA_DIR = Config().user_data_dir
 BASE_DIR = Config().base_dir
 XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
 
-TAGS_PATH = USER_DATA_DIR + 'tags.txt'
+DEBTAGS_PATH = USER_DATA_DIR + 'tags.txt'
 PKG_DATA_PATH = USER_DATA_DIR + 'pkg_data.txt'
-DEBTAGS_NAME_PATH = BASE_DIR + '/filters/debtags'
 
 PKGS_CLASSIFICATIONS = USER_DATA_DIR + 'pkgs_classifications.txt'
 PKGS_CLASSIFICATIONS_INDICES = (USER_DATA_DIR +
@@ -119,7 +118,7 @@ def filter_terms(pkg_terms):
 
     data_cl.generate_all_terms_tfidf()
     tfidf_weights = data_cl.user_tfidf_weights
-    tfidf_threshold = sum(tfidf_weights.values())/len(tfidf_weights)
+    tfidf_threshold = sum(tfidf_weights.values()) / len(tfidf_weights)
 
     for term in pkg_terms.copy():
         tfidf = data_cl.term_tfidf_weight_on_user(term)
@@ -159,7 +158,7 @@ def have_files():
         have = False
         scripts.append("pkg_time_list.py")
 
-    if not path.isfile(TAGS_PATH):
+    if not path.isfile(DEBTAGS_PATH):
         have = False
         scripts.append("get_axipkgs.py -t XT > {0}tags.txt"
                        .format(USER_DATA_DIR))
@@ -180,7 +179,7 @@ def main():
     pkgs = get_pkgs_classification(data_cl.linear_percent_function,
                                    sample_classification)
 
-    debtags_name = get_debtags_name(DEBTAGS_NAME_PATH)
+    debtags_name = get_debtags_name(DEBTAGS_PATH)
     terms_name = get_terms_for_all_pkgs(axi, pkgs.keys())
     filter_terms(terms_name)
     terms_name = sorted(terms_name)
