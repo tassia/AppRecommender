@@ -3,6 +3,10 @@ import numpy as np
 
 
 class BayesMatrix:
+    '''
+    This class contains the implementation of the naive bayes algorithm using
+    only matrix operations in order to perform its tasks.
+    '''
 
     @staticmethod
     def save(bayes_matrix, file_path):
@@ -16,40 +20,86 @@ class BayesMatrix:
 
         return bayes_matrix
 
+    '''
+    data:                 A matrix on the format p x a, where p is the number
+                          of packages that will be used to train the
+                          algorithm and a is the number of features that a
+                          package has.
+
+    classifications:      A matrix that holds the temporal classification
+                          labels for the packages found on the
+                          attributes' matrix. This matrix is a column one,
+                          where the number of lines represents the number of
+                          packages used to train the algorithm.
+
+    labels:               A column matrix that holds the possible labels that
+                          can be used to classify a given package.
+
+    adjacency:            A matrix in the format l x p, where l is the number
+                          of possible classifications labels. This is a binary
+                          matrix that holds which packages were classified
+                          with some given label.
+
+    histogram:            A column vector l x 1, where l is the possible
+                          classification labels. This matrix holds the values
+                          of how many packages p were classified with a
+                          given label l.
+
+    label_probability:    A column matrix that holds the individual
+                          probability for each label l for the given
+                          training data.
+
+    feature_per_label:    A l x a matrix that hold for each label, the number
+                          of times a feature a was present on the label.
+
+    prob_1:               A l x a matrix that holds the probability of a given
+                          feature a to be present in a given label l.
+
+    prob_0:               A l x a matrix that holds the probability of a given
+                          feature a to not be present in a given label l.
+
+    diag_histogram:       A diagonal matrix for the histogram one.
+
+    '''
     def __init__(self):
-        self.D = None
-        self.B = None
-        self.L = None
-        self.A = None
-        self.H = None
-        self.R = None
-        self.PH = None
-        self.PR1 = None
-        self.DIAG_H = None
+        self.data = None
+        self.classifications = None
+        self.labels = None
+        self.adjacecy = None
+        self.histogram = None
+        self.label_probability = None
+        self.feature_per_label = None
+        self.prob_1 = None
+        self.diag_histogram = None
 
-    def training(self, attribute_matrix, classifications,
+    def training(self, data_matrix, classifications,
                  order_of_classifications):
-        self.D = attribute_matrix.astype(float)
-        self.B = (self.convert_order_of_classifications_on_numbers(
-                  order_of_classifications).astype(float))
-        self.L = (self.convert_classifications_on_numbers(classifications,
-                  order_of_classifications,
-                  self.B).astype(float))
-        self.A = self.get_adjacent_matrix(self.L,
-                                          self.B.shape[0],
-                                          self.D.shape[0]).astype(float)
+        self.data = data_matrix.astype(float)
+        self.labels = (self.convert_possible_labels_to_number(
+            order_of_classifications).astype(float))
 
-        self.H = self.A.dot(np.ones((self.D.shape[0], 1)))
-        self.PH = self.H/self.D.shape[0]
+        num_packages = self.data.shape[0]
+        num_labels = self.labels.shape[0]
+        num_features = self.data.shape[1]
 
-        self.R = self.A * self.D
+        self.classifications = (self.convert_classifications_to_number(
+            classifications, order_of_classifications).astype(float))
 
-        self.DIAG_H = np.diag(np.array(self.H)[:, 0])
-        self.PR1 = np.linalg.inv(self.DIAG_H)*self.R
-        self.PR2 = 1 - self.PR1
+        self.adjacency = self.get_adjacent_matrix(num_labels,
+                                                  num_packages).astype(float)
 
-        self.PR1 = np.eye(self.PR1.shape[1], self.PR1.shape[0]) * self.PR1
-        self.PR2 = np.eye(self.PR2.shape[1], self.PR2.shape[0]) * self.PR2
+        self.histogram = self.adjacency.dot(np.ones((num_packages, 1)))
+        self.label_probability = self.histogram / num_packages
+
+        self.feature_per_label = self.adjacency * self.data
+
+        self.diag_histogram = np.diag(np.array(self.histogram)[:, 0])
+        self.prob_1 = np.linalg.inv(
+            self.diag_histogram) * self.feature_per_label
+        self.prob_0 = 1 - self.prob_1
+
+        self.prob_1 = np.eye(num_features, num_labels) * self.prob_1
+        self.prob_0 = np.eye(num_features, num_labels) * self.prob_0
 
         # v_linha = 1 - V
         # PV1 = PR1 * np.diag(np.array(V.T)[:, 0])
@@ -64,16 +114,15 @@ class BayesMatrix:
 
         # print U
 
-    def convert_order_of_classifications_on_numbers(self,
-                                                    order_of_classifications):
+    def convert_possible_labels_to_number(self, order_of_classifications):
         numbers = ""
         for i in range(len(order_of_classifications)):
             numbers += "{0};".format(i)
 
         return np.matrix(numbers[0:-1])
 
-    def convert_classifications_on_numbers(self, classifications,
-                                           order_of_classifications, B):
+    def convert_classifications_to_number(self, classifications,
+                                          order_of_classifications):
         numbers = ""
         for i in range(len(classifications)):
             number = order_of_classifications.index(classifications[i])
@@ -81,10 +130,10 @@ class BayesMatrix:
 
         return np.matrix(numbers[0:-1])
 
-    def get_adjacent_matrix(self, L, num_labels, num_packages):
+    def get_adjacent_matrix(self, num_labels, num_packages):
         adjacent_matrix = np.zeros((num_labels, num_packages))
 
-        for i in range(len(L)):
-            adjacent_matrix[L[i].item()][i] = 1
+        for i in range(len(self.classifications)):
+            adjacent_matrix[self.classifications[i].item()][i] = 1
 
         return adjacent_matrix
