@@ -196,12 +196,12 @@ def main():
         pickle.dump(pkgs_classifications, text)
 
     all_matrix = (np.matrix(pkgs_classifications.values()))
-    attribute_matrix = all_matrix[0:, 0:-1]
+    data_matrix = all_matrix[0:, 0:-1]
     classifications = all_matrix[0:, -1]
     order_of_classifications = ['H', 'B', 'M', 'G', 'EX']
 
     bayes_matrix = BayesMatrix()
-    bayes_matrix.training(attribute_matrix, classifications,
+    bayes_matrix.training(data_matrix, classifications,
                           order_of_classifications)
 
     BayesMatrix.save(bayes_matrix, MACHINE_LEARNING_TRAINING)
