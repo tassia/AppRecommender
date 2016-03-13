@@ -32,6 +32,9 @@ class BayesMatrix:
                           where the number of lines represents the number of
                           packages used to train the algorithm.
 
+    order_of_classifications:   A array with the possible classifications
+                                on crescent order
+
     labels:               A column matrix that holds the possible labels that
                           can be used to classify a given package.
 
@@ -60,6 +63,9 @@ class BayesMatrix:
 
     diag_histogram:       A diagonal matrix for the histogram one.
 
+    attribute_vector:     A vector 1 x a with the values to get a
+                          classification
+
     '''
     def __init__(self):
         self.data = None
@@ -82,6 +88,7 @@ class BayesMatrix:
         num_labels = self.labels.shape[0]
         num_features = self.data.shape[1]
 
+        self.order_of_classifications = order_of_classifications
         self.classifications = (self.convert_classifications_to_number(
             classifications, order_of_classifications).astype(float))
 
@@ -113,6 +120,29 @@ class BayesMatrix:
         # U = np.diag(np.array(PH)[:, 0]) * U
 
         # print U
+
+    def get_classification(self, attribute_vector):
+        attribute_vector_1 = attribute_vector.astype(float)
+        attribute_vector_0 = 1 - attribute_vector
+
+        label_probability_log = np.log(self.label_probability + 1)
+
+        prob_vector_1 = (self.prob_1 *
+                         np.diag(np.array(attribute_vector_1.T)[:, 0]))
+        prob_vector_0 = (self.prob_0 *
+                         np.diag(np.array(attribute_vector_0.T)[:, 0]))
+
+        prob_vector = prob_vector_1 + prob_vector_0 + 1
+        prob_vector = np.log(prob_vector).sum(axis=1)
+        prob_vector = (np.eye(self.labels.shape[0], self.data.shape[1]) *
+                       prob_vector)
+        prob_vector = (np.diag(np.array(label_probability_log)[:, 0]) *
+                       prob_vector)
+
+        line, col = np.unravel_index(prob_vector.argmax(), prob_vector.shape)
+        best_prob_index = line
+
+        return self.order_of_classifications[best_prob_index]
 
     def convert_possible_labels_to_number(self, order_of_classifications):
         numbers = ""
