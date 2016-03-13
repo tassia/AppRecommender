@@ -119,7 +119,7 @@ def get_all_terms(index, docs, content_filter, normalized_weights):
     return (terms_doc, terms_packages)
 
 
-def get_tfidf_terms_weights(terms_doc, index, terms_package, option=0):
+def get_tfidf_terms_weights(terms_doc, index, terms_package, time_context=0):
 
     # Compute sublinear tfidf for each term
     weights = {}
@@ -134,7 +134,7 @@ def get_tfidf_terms_weights(terms_doc, index, terms_package, option=0):
             tfidf = tf * idf
             weights[term.term] = tfidf
 
-            if option:
+            if time_context:
                 weight = (data_classification
                           .time_weight(term.term,
                                        terms_package[term.term]))
@@ -148,7 +148,7 @@ def get_tfidf_terms_weights(terms_doc, index, terms_package, option=0):
 
 
 def tfidf_weighting(index, docs, content_filter, normalized_weights=0,
-                    option=0):
+                    time_context=0):
     """
     Return a dictionary of terms and weights of all terms of a set of
     documents, based on the frequency of terms in the selected set (docids).
@@ -156,14 +156,15 @@ def tfidf_weighting(index, docs, content_filter, normalized_weights=0,
 
     terms_doc, terms_packages = get_all_terms(index, docs, content_filter,
                                               normalized_weights)
-    weights = get_tfidf_terms_weights(terms_doc, index, terms_packages, option)
+    weights = get_tfidf_terms_weights(terms_doc, index, terms_packages,
+                                      time_context)
 
     sorted_weights = list(reversed(sorted(weights.items(),
                                           key=operator.itemgetter(1))))
     return sorted_weights
 
 
-def tfidf_plus(index, docs, content_filter, option=0):
+def tfidf_plus(index, docs, content_filter, time_context=0):
     """
     Return a dictionary of terms and weights of all terms of a set of
     documents, based on the frequency of terms in the selected set (docids).
@@ -181,7 +182,7 @@ def tfidf_plus(index, docs, content_filter, option=0):
         else:
             normalized_weigths[d.docid] = d.weight
     return tfidf_weighting(index, docs, content_filter, normalized_weigths,
-                           option)
+                           time_context)
 
 
 class FilteredXapianIndex(xapian.WritableDatabase):

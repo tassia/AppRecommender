@@ -11,3 +11,5 @@ src/web/submissions/
 *.log
 .vagrant/
 *.swp
+apprecommender.egg-info/
+src/tests/test_data/.sample_axi/

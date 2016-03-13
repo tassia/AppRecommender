@@ -37,21 +37,23 @@ class PkgClassificationTests(unittest.TestCase):
             self.assertTrue(debtag in vim_debtags_result)
 
     def test_get_pkg_terms(self):
-        vim_terms = ['almost', 'block', 'command', 'compat', 'compil',
-                     'complet', 'contain', 'syntax', 'unix', 'version',
-                     'vi', 'vim']
+        vim_terms = ['Zalmost', 'Zblock', 'Zcommand', 'Zcompat', 'Zcompil',
+                     'Zcomplet', 'Zcontain', 'Zsyntax', 'Zunix', 'Zversion',
+                     'Zvi', 'Zvim']
 
         axi_path = "/var/lib/apt-xapian-index/index"
         axi = xapian.Database(axi_path)
 
         vim_terms_result = get_pkg_terms(axi, 'vim')
 
+        print vim_terms_result
+
         for debtag in vim_terms:
             self.assertTrue(debtag in vim_terms_result)
 
     def test_create_row_table_list(self):
         labels_name = ['devel::editor', 'implemented-in::c', 'complet',
-                       'contain', 'syntax', 'unix', 'version']
+                       'Zcontain', 'Zsyntax', 'Zunix', 'Zversion']
         pkg_elements = ['implemented-in::c', 'complet']
 
         row_list_to_assert = [0, 1, 1, 0, 0, 0, 0]
@@ -65,7 +67,7 @@ class PkgClassificationTests(unittest.TestCase):
         pkgs = {'vim': 'EX'}
         debtags_name = ['devel::editor', 'implemented-in::c',
                         'devel::interpreter', 'devel::lang:python']
-        terms_name = ['contain', 'syntax', 'python']
+        terms_name = ['Zcontain', 'Zsyntax', 'Zpython']
 
         assert_pkgs_classification = {'vim': [1, 1, 0, 0, 1, 1, 0, 'EX']}
 

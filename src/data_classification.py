@@ -16,7 +16,6 @@ pkgs_times = {}
 pkgs_time_weight = {}
 best_weight_terms = {}
 user_tfidf_weights = {}
-user_tfidf_weight_min = 1000.0
 
 
 def get_time_from_package(pkg):
@@ -119,41 +118,34 @@ def time_weight(term, term_list):
     return time_weight
 
 
-def term_tfidf_weight_on_user(term):
+def generate_all_terms_tfidf():
     global user_tfidf_weights
-    global user_tfidf_weight_min
+
+    axipath = os.path.expanduser("~/.app-recommender/axi_desktopapps/")
+    axi_index = xapian.Database(axipath)
+
+    dpkg_output = commands.getoutput('apt-mark showmanual')
+    pkgs = [pkg for pkg in dpkg_output.splitlines()
+            if not pkg.startswith('lib')]
+
+    docs = data.axi_search_pkgs(axi_index, pkgs)
+
+    tags_weights = data.tfidf_weighting(axi_index, docs,
+                                        FilterTag(0), time_context=0)
+    description_weights = (data.tfidf_weighting(axi_index, docs,
+                           FilterDescription(), time_context=0))
+
+    user_tfidf_weights = dict(tags_weights + description_weights)
+
+
+def term_tfidf_weight_on_user(term):
 
     try:
         if len(user_tfidf_weights) == 0:
-            axipath = os.path.expanduser("~/.app-recommender/axi_desktopapps/")
-            axi_index = xapian.Database(axipath)
-
-            dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
-            pkgs = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()
-                    if 'deinstall' not in pkg.split('\t')[-1]]
-
-            docs = data.axi_search_pkgs(axi_index, pkgs)
-
-            tags_weights = data.tfidf_weighting(axi_index, docs,
-                                                FilterTag(0), option=0)
-            description_weights = (data.tfidf_weighting(axi_index, docs,
-                                   FilterDescription(), option=0))
-
-            user_tfidf_weights = dict(tags_weights + description_weights)
-
-            user_tfidf_weight_min = (sum(user_tfidf_weights[item]
-                                     for item in user_tfidf_weights) /
-                                     len(user_tfidf_weights))
-            user_tfidf_weight_min = user_tfidf_weight_min / 2
-
-        if ((term not in user_tfidf_weights) or
-           (user_tfidf_weights[term] < user_tfidf_weight_min)):
-            return 0
-        else:
-            return 1
-
+            generate_all_terms_tfidf()
+        return user_tfidf_weights[term]
     except Exception, e:
-        print "ERROR: ", e
+        logging.info("ERROR: {0}".format(e))
 
 
 def print_best_weight_terms(terms_package):
