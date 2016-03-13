@@ -29,9 +29,17 @@ $ ./apprec.py -s cb
 Run "$ ./apprec.py -h" to view the recommender strategies
 
 
+Run Machine Learning Traning
+----------------------------
+
+$ cd ./src/bin
+$ ./apprec_ml_traning.py
+
+
 Prepare AppRecommender data
 ---------------------------
 
 Run the following commands:
 $ ./install_dependencies.sh
+$ cd ./src/bin
 $ ./prepare_data.sh
