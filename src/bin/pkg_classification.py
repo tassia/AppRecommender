@@ -5,7 +5,7 @@ sys.path.insert(0, '../')
 
 from config import Config
 from os import path
-from bayes_matrix import BayesMatrix
+from ml.bayes_matrix import BayesMatrix
 
 import numpy as np
 import data_classification as data_cl
