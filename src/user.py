@@ -194,6 +194,15 @@ class User:
                                               time_context=1)
             profile = tag_profile[:size / 2] + desc_profile[:size / 2]
 
+        elif content == "machine_learning":
+            tag_profile = self.tfidf_profile(items_repository, size,
+                                             FilterTag(valid_tags),
+                                             time_context=1)
+            desc_profile = self.tfidf_profile(items_repository, size,
+                                              FilterDescription(),
+                                              time_context=1)
+            profile = tag_profile[:size / 2] + desc_profile[:size / 2]
+
         elif content == "tag_eset":
             profile = self.eset_profile(items_repository, size,
                                         FilterTag(valid_tags))

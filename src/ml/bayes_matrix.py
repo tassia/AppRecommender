@@ -130,6 +130,8 @@ class BayesMatrix:
         line, col = np.unravel_index(prob_vector.argmax(), prob_vector.shape)
         best_prob_index = line
 
+        print prob_vector
+
         return self.order_of_classifications[best_prob_index]
 
     def convert_possible_labels_to_number(self, order_of_classifications):

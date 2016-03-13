@@ -25,7 +25,22 @@ import xapian
 import recommender
 import data
 import logging
+import pickle
+import numpy as np
+
+from os import path
 from error import Error
+from config import Config
+from bayes_matrix import BayesMatrix
+from bin.pkg_classification import (get_pkg_debtags, create_row_table_list,
+                                    get_pkg_terms)
+
+XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
+USER_DATA_DIR = Config().user_data_dir
+PKGS_CLASSIFICATIONS_INDICES = (USER_DATA_DIR +
+                                'pkgs_classifications_indices.txt')
+MACHINE_LEARNING_TRAINING_PATH = (USER_DATA_DIR +
+                                  'machine_learning_training.txt')
 
 
 class PkgMatchDecider(xapian.MatchDecider):
@@ -394,3 +409,52 @@ class Demographic(RecommendationStrategy):
             if "col" in self.strategy_str:
                 rec.users_repository = rec.popcon_desktopapps
         return rec.get_recommendation(user, recommendation_size)
+
+
+class MachineLearning(ContentBased):
+
+    def __init__(self, content, profile_size):
+        ContentBased.__init__(self, content, profile_size)
+        self.description = "Machine-learning"
+        self.content = content
+        self.profile_size = profile_size
+
+    def run(self, rec, user, rec_size):
+        pkgs = ContentBased.run(self, rec, user, 5)
+        pkgs = [pkg.split(':')[1][1:]
+                for pkg in str(pkgs).splitlines()[1:]]
+
+        pkgs_classifications_indices = {}
+        with open(PKGS_CLASSIFICATIONS_INDICES, 'rb') as text:
+            pkgs_classifications_indices = pickle.load(text)
+
+        bayes_matrix = BayesMatrix.load(MACHINE_LEARNING_TRAINING_PATH)
+
+        axi = xapian.Database(XAPIAN_DATABASE_PATH)
+        terms_name = pkgs_classifications_indices['terms_name']
+        debtags_name = pkgs_classifications_indices['debtags_name']
+        pkgs_classifications = {}
+
+        for pkg in pkgs:
+            print '#'*10
+            print pkg
+            pkg_terms = get_pkg_terms(axi, pkg)
+            pkg_debtags = get_pkg_debtags(axi, pkg)
+            debtags_attributes = create_row_table_list(debtags_name, pkg_debtags)
+            terms_attributes = create_row_table_list(terms_name, pkg_terms)
+            attribute_vector = terms_attributes + debtags_attributes
+
+            attribute_vector = np.matrix(attribute_vector)
+
+            print attribute_vector.shape
+
+            classification = bayes_matrix.get_classification(attribute_vector)
+            pkgs_classifications[pkg] = classification
+
+        print '='*80
+        print pkgs_classifications
+        print '='*80
+        print pkgs
+        print '='*80
+
+        return pkgs
