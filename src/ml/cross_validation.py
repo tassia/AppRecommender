@@ -1,11 +1,15 @@
 from numpy import array
 from src.evaluation import CrossValidation
+from bayes_matrix import BayesMatrix
 
 class CrossValidationMachineLearning(CrossValidation):
 
     def __init__(self, partition_proportion, rounds, rec,
                  metrics_list, result_proportion, time_pkg_labels_path):
+
         self.time_pkg_labels_path = time_pkg_labels_path
+        self.bayes_matrix = BayesMatrix()
+
         super(CrossValidationMachineLearning,
               self).__init__(partition_proportion, rounds, rec, metrics_list,
                              result_proportion)
