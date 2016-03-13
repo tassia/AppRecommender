@@ -63,8 +63,9 @@ class BayesMatrix:
 
     diag_histogram:       A diagonal matrix for the histogram one.
 
-    attribute_vector:     A vector 1 x a with the values to get a
-                          classification
+    attribute_vector:     A vector 1 x a with the values of features to get a
+                          classification for this vector based on the
+                          training
 
     '''
     def __init__(self):
@@ -107,19 +108,6 @@ class BayesMatrix:
 
         self.prob_1 = np.eye(num_features, num_labels) * self.prob_1
         self.prob_0 = np.eye(num_features, num_labels) * self.prob_0
-
-        # v_linha = 1 - V
-        # PV1 = PR1 * np.diag(np.array(V.T)[:, 0])
-        # PV2 = PR2 * np.diag(np.array(v_linha.T)[:, 0])
-
-        # PV = PV1 + PV2 + 1
-        # U = np.log(PV).sum(axis=1)
-
-        # PH = np.log(PH + 1)
-        # U = np.eye(B.shape[0], D.shape[1]) * U
-        # U = np.diag(np.array(PH)[:, 0]) * U
-
-        # print U
 
     def get_classification(self, attribute_vector):
         attribute_vector_1 = attribute_vector.astype(float)

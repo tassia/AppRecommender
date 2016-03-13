@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#s!/usr/bin/env python
 """
     config - python module for configuration options.
 """
@@ -154,6 +154,10 @@ class Config(Singleton):
         print "  knnco = collaborative through content"
         print "  knnco_eset = collaborative through content," \
               " eset recommendation"
+        print ""
+        print " [ to train machine learning ] "
+        print "  on path 'src/bin' run the script" \
+              " 'apprec_ml_traning.py'"
 
     def read_option(self, section, option):
         """
