@@ -21,7 +21,7 @@ __license__ = """
 
 import sys
 sys.path.insert(0, '../')
-import user
+import src.user as user
 import xapian
 
 repo = xapian.Database("~/.app-recommender/axi_programs")

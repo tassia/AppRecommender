@@ -20,13 +20,14 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import datetime
 import os
 import sys
-sys.path.insert(0, '../')
-import datetime
 
-from config import Config
-import data
+sys.path.insert(0, '../')
+
+from src.config import Config
+import src.data as data
 import xapian
 
 if __name__ == '__main__':

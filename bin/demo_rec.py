@@ -20,14 +20,15 @@ __license__ = """
 """
 
 import os
-import sys
-sys.path.insert(0, '../')
 import commands
 import re
 
+import sys
+sys.path.insert(0, '../')
+
 import xapian
-from debian import debtags
-from strategy import PkgMatchDecider
+from debian import debtags # ???
+from src.strategy import PkgMatchDecider
 
 DB_PATH = "/var/lib/debtags/package-tags"
 INDEX_PATH = os.path.expanduser("~/.app-recommender/debtags_index")

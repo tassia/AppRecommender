@@ -9,13 +9,12 @@ import sys
 
 from threading import Thread
 
-sys.path.insert(0, '../')
 sys.path.insert(0, '../../')
 
 from subprocess import Popen, PIPE
-from pkg_time_list import save_package_time, get_packages_time
-from data_classification import get_alternative_pkg
-from app_recommender import AppRecommender
+from src.ml.pkg_time import save_package_time, get_packages_time
+from src.data_classification import get_alternative_pkg
+from src.app_recommender import AppRecommender
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 ALL_INSTALLED_PKGS = LOG_PATH + '/all_pkgs.txt'

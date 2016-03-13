@@ -2,9 +2,10 @@
 
 import os
 import sys
-sys.path.insert(0, '../')
 
-from config import Config
+sys.path.append('..')
+
+from src.config import Config
 
 USER_DATA_DIR = Config().user_data_dir
 

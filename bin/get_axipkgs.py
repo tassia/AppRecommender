@@ -19,12 +19,11 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
 import getopt
-sys.path.insert(0, '../')
 import xapian
 import logging
 import logging.handlers
+import sys
 
 if __name__ == '__main__':
     short_options = "hdvo:p:t:"
