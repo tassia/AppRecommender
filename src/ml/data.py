@@ -54,14 +54,14 @@ class MachineLearningData():
 
         return pkgs_classifications
 
-    def get_pkgs_classification(percent_function, classification_function,
-                                labels, thresholds):
+    def get_pkgs_classification(self, percent_function,
+                                classification_function, labels, thresholds):
         pkgs = {}
         time_now = calendar.timegm(time.gmtime())
 
-        pkg_data = pkg_time.get_pkg_data()
+        pkg_data = pkg_time.get_package_data()
 
-        for name, time_values in pkg_data.iteritems:
+        for name, time_values in pkg_data.iteritems():
             modify = time_values[0]
             access = time_values[1]
 
@@ -122,7 +122,7 @@ class MachineLearningData():
 
         return pkg_terms
 
-    def filter_terms(pkg_terms):
+    def filter_terms(self, pkg_terms):
 
         data_cl.generate_all_terms_tfidf()
         tfidf_weights = data_cl.user_tfidf_weights

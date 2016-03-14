@@ -3,35 +3,30 @@
 import sys
 sys.path.insert(0, '../')
 
-from src.config import Config
+from src.ml.data import MachineLearningData
 from src.ml.bayes_matrix import BayesMatrix
 
 import numpy as np
-import src.data_classification as data_cl
-
-import time
-import calendar
-import pickle
 
 from os import makedirs
-
+from os import path
 
 
 def have_files():
     have = True
     scripts = []
 
-    if not path.exists(USER_DATA_DIR):
-        makedirs(USER_DATA_DIR)
+    if not path.exists(MachineLearningData.USER_DATA_DIR):
+        makedirs(MachineLearningData.USER_DATA_DIR)
 
-    if not path.isfile(PKG_DATA_PATH):
+    if not path.isfile(MachineLearningData.PKG_DATA_PATH):
         have = False
         scripts.append("pkg_time_list.py")
 
-    if not path.isfile(DEBTAGS_PATH):
+    if not path.isfile(MachineLearningData.DEBTAGS_PATH):
         have = False
         scripts.append("get_axipkgs.py -t XT > {0}tags.txt"
-                       .format(USER_DATA_DIR))
+                       .format(MachineLearningData.USER_DATA_DIR))
 
     if not have:
         print("Run scripts to generate important files:")
@@ -48,7 +43,7 @@ def main():
     ml_data = MachineLearningData()
     labels = ['EX', 'G', 'M', 'B', 'H']
     threshold = [85, 75, 55, 35, 10]
-    pkgs_classification = ml_data.create_data(labels, threshold)        
+    pkgs_classifications = ml_data.create_data(labels, threshold)
 
     all_matrix = (np.matrix(pkgs_classifications.values()))
     data_matrix = all_matrix[0:, 0:-1]
@@ -59,7 +54,8 @@ def main():
     bayes_matrix.training(data_matrix, classifications,
                           order_of_classifications)
 
-    BayesMatrix.save(bayes_matrix, MACHINE_LEARNING_TRAINING)
+    BayesMatrix.save(bayes_matrix,
+                     MachineLearningData.MACHINE_LEARNING_TRAINING)
 
 if __name__ == "__main__":
     main()
