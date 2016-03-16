@@ -23,7 +23,7 @@ import unittest
 from numpy import array
 
 from src.evaluation import (Accuracy, Precision, Recall, Coverage,
-                            Evaluation) 
+                            Evaluation)
 from src.recommender import RecommendationResult
 from src.ml.cross_validation import CrossValidationMachineLearning
 
@@ -66,16 +66,14 @@ class MetricsTests(unittest.TestCase):
 class CrossValidationTests(unittest.TestCase):
 
     def create_cross_validation_ml(self, partition_proportion, rounds,
-                                   metrics_list, times_pkg_labels_path):
-        rec = None
-        result_size = None
-
+                                   metrics_list, labels, thresholds):
         return CrossValidationMachineLearning(partition_proportion, rounds,
-                                              rec, metrics_list, result_size,
-                                              times_pkg_labels_path)
+                                              metrics_list,
+                                              labels, thresholds)
 
     def test_get_real_results(self):
-        cross_validation_ml = self.create_cross_validation_ml(0.1, 1, [], '')
+        cross_validation_ml = self.create_cross_validation_ml(0.1, 1, [], [],
+                                                              [])
         test_data = {'test1': [1, 0, 1, 0, 'T'], 'test2': [1, 1, 1, 0, 'F']}
 
         expected_result = array([['T'], ['F']])
