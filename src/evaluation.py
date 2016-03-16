@@ -384,6 +384,14 @@ class CrossValidation:
         self.result_proportion = result_proportion
 
     @abstractmethod
+    def display_results(self):
+        raise NotImplementedError("Method not implemented.")
+
+    @abstractmethod
+    def get_evaluation(self, predicted_result, real_result):
+        raise NotImplementedError("Method not implemented.")
+
+    @abstractmethod
     def get_model(self):
         raise NotImplementedError("Method not implemented.")
 
@@ -408,9 +416,14 @@ class CrossValidation:
             item, score = round_partition.popitem()
             cross_item_score[item] = score
 
-    @abstractmethod
     def run_metrics(self, predicted_result, real_result):
-        raise NotImplementedError("Method not implemented.")
+        logging.debug("Predicted result: %s", predicted_result)
+
+        evaluation = self.get_evaluation(predicted_result, real_result)
+
+        for metric in self.metrics_list:
+            result = evaluation.run(metric)
+            self.cross_results[metric.desc].append(result)
 
     def run(self, user):
         """
@@ -471,6 +484,14 @@ class CrossValidation:
         for metric in self.metrics_list:
             metrics_desc += "%s|" % (metric.desc)
         str += "| Round |%s\n" % metrics_desc
+        str += self.display_results()
+
+        return str
+
+
+class CrossValidationRecommender(CrossValidation):
+
+    def display_results(self):
         for r in range(self.rounds):
             metrics_result = ""
             for metric in self.metrics_list:
@@ -485,8 +506,9 @@ class CrossValidation:
         str += "|  Mean |%s\n" % (metrics_mean)
         return str
 
-
-class CrossValidationRecommender(CrossValidation):
+    def get_evaluation(self, predicted_result, real_result):
+        num_docs = self.recommender.items_repository.get_doccount()
+        return Evaluation(predicted_result, real_result, num_docs)
 
     def get_model(self, cross_item_score):
         return User(cross_item_score)
@@ -503,13 +525,3 @@ class CrossValidationRecommender(CrossValidation):
 
     def get_predicted_results(self, round_user, round_partition, result_size):
         return self.recommender.get_recommendation(round_user, result_size)
-
-    def run_metrics(self, predicted_result, real_result):
-        logging.debug("Predicted result: %s", predicted_result)
-
-        num_docs = self.recommender.items_repository.get_doccount()
-        evaluation = Evaluation(predicted_result, real_result, num_docs)
-
-        for metric in self.metrics_list:
-            result = evaluation.run(metric)
-            self.cross_results[metric.desc].append(result)

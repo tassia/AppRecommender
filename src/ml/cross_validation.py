@@ -13,11 +13,12 @@ class ConfusionMatrix():
     def __init__(self, predicted_results, real_results):
         self.predicted_results = predicted_results
         self.real_results = real_results
+        self.repository_size = len(predicted_results)
 
-        self.tp = 0
-        self.tn = 0
-        self.fp = 0
-        self.fn = 0
+        self.true_positive = 0
+        self.true_negative = 0
+        self.false_positive = 0
+        self.false_negative = 0
 
     def run(self):
         matrix_values = np.zeros(shape=(2, 2))
@@ -29,10 +30,10 @@ class ConfusionMatrix():
 
             matrix_values[row][column] += 1
 
-        self.tp = matrix_values[0][0]
-        self.tn = matrix_values[1][1]
-        self.fp = matrix_values[0][1]
-        self.fn = matrix_values[1][0]
+        self.true_positive = matrix_values[0][0]
+        self.true_negative = matrix_values[1][1]
+        self.false_positive = matrix_values[0][1]
+        self.false_negative = matrix_values[1][0]
 
 
 class Evaluation():
@@ -59,6 +60,15 @@ class Evaluation():
         self.predicted_results = predicted_results
         self.real_results = real_results
         self.possible_classifications = possible_classifications
+        self.num_data = predicted_results.shape[0]
+
+        self.classes_outputs = {}
+        self.create_classification_outputs()
+
+    def create_classification_outputs(self):
+        for classification in self.possible_classifications:
+            self.classes_outputs[classification] = (
+                self.create_confusion_matrix(classification))
 
     def create_confusion_matrix(self, classification):
         default_value = 0
@@ -71,6 +81,14 @@ class Evaluation():
                                            default_value)
 
         return ConfusionMatrix(binary_predictions, binary_real)
+
+    def run_metric(self, metric):
+        results = {}
+
+        for label, confusion_matrix in self.classes_outputs.iteritems():
+            results[label] = metric.run(self.confusion)
+
+        return results
 
 
 class CrossValidationMachineLearning(CrossValidation):
@@ -85,6 +103,26 @@ class CrossValidationMachineLearning(CrossValidation):
         super(CrossValidationMachineLearning,
               self).__init__(partition_proportion, rounds, None,
                              metrics_list, 0)
+
+    def display_results(self):
+        for r in range(self.rounds):
+            for label in self.labels:
+                str += 'Class {0}:\n'.format(str(label))
+                metrics_result = ""
+                for metric in self.metrics_list:
+                    result = self.cross_results[metric.desc][r]
+                    result = metrics_result[label]
+
+                    metrics_result += ("     %2.1f%%    |"
+                                       % (result * 100))
+                str += "|   %d   |%s\n" % (r, metrics_result)
+            metrics_mean = ""
+            for metric in self.metrics_list:
+                mean = float(sum(self.cross_results[metric.desc]) /
+                             len(self.cross_results[metric.desc]))
+                metrics_mean += "     %2.1f%%    |" % (mean * 100)
+            str += "|  Mean |%s\n" % (metrics_mean)
+        return str
 
     def get_model(self, cross_item_score):
         '''
@@ -146,15 +184,5 @@ class CrossValidationMachineLearning(CrossValidation):
         print 'result size'
         return NOT_NECESSARY
 
-    def run_metrics(self, predicted_result, real_result):
-        print 'run metrics'
-        right = 0
-        wrong = 0
-
-        for index, result in enumerate(predicted_result):
-            if result[0] == real_result[index, 0]:
-                right += 1
-            else:
-                wrong += 1
-
-        print "Right: {0}\nWrong: {1}\n\n".format(right, wrong)
+    def get_evaluation(self, predicted_result, real_result):
+        return Evaluation(predicted_result, real_result, self.labels)
