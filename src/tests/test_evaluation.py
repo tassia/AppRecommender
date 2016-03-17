@@ -20,12 +20,10 @@ __license__ = """
 """
 
 import unittest
-from numpy import array
 
 from src.evaluation import (Accuracy, Precision, Recall, Coverage,
                             Evaluation)
 from src.recommender import RecommendationResult
-from src.ml.cross_validation import CrossValidationMachineLearning
 
 
 class MetricsTests(unittest.TestCase):
@@ -61,25 +59,3 @@ class MetricsTests(unittest.TestCase):
         self.assertEqual(self.evaluation.true_positive, ['apple', 'grape'])
         self.assertEqual(self.evaluation.false_positive, ['orange'])
         self.assertEqual(self.evaluation.false_negative, ['pineaple', 'melon'])
-
-
-class CrossValidationTests(unittest.TestCase):
-
-    def create_cross_validation_ml(self, partition_proportion, rounds,
-                                   metrics_list, labels, thresholds):
-        return CrossValidationMachineLearning(partition_proportion, rounds,
-                                              metrics_list,
-                                              labels, thresholds)
-
-    def test_get_real_results(self):
-        cross_validation_ml = self.create_cross_validation_ml(0.1, 1, [], [],
-                                                              [])
-        test_data = {'test1': [1, 0, 1, 0, 'T'], 'test2': [1, 1, 1, 0, 'F']}
-
-        expected_result = array([['T'], ['F']])
-        actual_result = cross_validation_ml.get_real_results(test_data)
-
-        self.assertEquals(expected_result.shape, actual_result.shape)
-
-        for index, label in enumerate(actual_result):
-            self.assertEqual(label[0], expected_result[index, 0])
