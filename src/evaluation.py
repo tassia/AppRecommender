@@ -418,6 +418,8 @@ class CrossValidation:
             item, score = round_partition.popitem()
             cross_item_score[item] = score
 
+        return cross_item_score
+
     def run_metrics(self, predicted_result, real_result):
         logging.debug("Predicted result: %s", predicted_result)
 
@@ -456,7 +458,7 @@ class CrossValidation:
             logging.debug("Cross item-score: %s", str(cross_item_score))
 
             # round user is created with remaining items
-            round_model = self.get_model(cross_item_score)
+            round_model = self.get_model(round_partition)
 
             result_size = self.get_result_size()
             if not result_size:
@@ -464,13 +466,13 @@ class CrossValidation:
                 raise Error
 
             predicted_result = self.get_predicted_results(
-                round_model, round_partition, result_size)
+                round_model, cross_item_score, result_size)
             if not predicted_result.size:
                 logging.critical("No recommendation produced"
                                  " Abort cross-validation.")
                 raise Error
             # partition is considered the expected result
-            real_result = self.get_real_results(round_partition)
+            real_result = self.get_real_results(cross_item_score)
 
             self.run_metrics(predicted_result, real_result)
             # moving back items from round_partition to cross_item_score
