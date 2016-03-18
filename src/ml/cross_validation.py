@@ -80,13 +80,15 @@ class Evaluation():
         binary_real = create_binary_matrix(self.real_results, classification,
                                            default_value)
 
-        return ConfusionMatrix(binary_predictions, binary_real)
+        confusion_matrix = ConfusionMatrix(binary_predictions, binary_real)
+        confusion_matrix.run()
+        return confusion_matrix
 
-    def run_metric(self, metric):
+    def run(self, metric):
         results = {}
 
         for label, confusion_matrix in self.classes_outputs.iteritems():
-            results[label] = metric.run(self.confusion)
+            results[label] = metric.run(confusion_matrix)
 
         return results
 
