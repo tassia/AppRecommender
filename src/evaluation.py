@@ -387,10 +387,6 @@ class CrossValidation:
         self.result_proportion = result_proportion
 
     @abstractmethod
-    def display_results(self):
-        raise NotImplementedError("Method not implemented.")
-
-    @abstractmethod
     def get_evaluation(self, predicted_result, real_result):
         raise NotImplementedError("Method not implemented.")
 
@@ -481,19 +477,6 @@ class CrossValidation:
             cross_item_score = self.reset_cross_item_score(cross_item_score,
                                                            round_partition)
 
-    def __str__(self):
-        """
-        String representation of the object.
-        """
-        str = "\n"
-        metrics_desc = ""
-        for metric in self.metrics_list:
-            metrics_desc += "%s|" % (metric.desc)
-        str += "| Round |%s\n" % metrics_desc
-        str += self.display_results()
-
-        return str
-
 
 class CrossValidationRecommender(CrossValidation):
 
@@ -531,3 +514,26 @@ class CrossValidationRecommender(CrossValidation):
 
     def get_predicted_results(self, round_user, round_partition, result_size):
         return self.recommender.get_recommendation(round_user, result_size)
+
+    def __str__(self):
+        """
+        String representation of the object.
+        """
+        str = "\n"
+        metrics_desc = ""
+        for metric in self.metrics_list:
+            metrics_desc += "%s|" % (metric.desc)
+        str += "| Round |%s\n" % metrics_desc
+        for r in range(self.rounds):
+            metrics_result = ""
+            for metric in self.metrics_list:
+                metrics_result += ("     %2.1f%%    |" %
+                                   (self.cross_results[metric.desc][r] * 100))
+            str += "|   %d   |%s\n" % (r, metrics_result)
+        metrics_mean = ""
+        for metric in self.metrics_list:
+            mean = float(sum(self.cross_results[metric.desc]) /
+                         len(self.cross_results[metric.desc]))
+            metrics_mean += "     %2.1f%%    |" % (mean * 100)
+        str += "|  Mean |%s\n" % (metrics_mean)
+        return str
