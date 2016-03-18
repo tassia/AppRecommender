@@ -141,6 +141,6 @@ class CrossValidationTests(unittest.TestCase):
         cross_validation_ml.run_metrics(predictions, real_results)
         test_string = '  S_Accuracy  :\n\tRound 0:\n\t\tClass B: 0.8\n\t\t' \
                       'Class M: 1.0\n\t\tClass G: 0.8\n\t\t' \
-                      'Mean: 0.866666666667'
+                      'Mean: 0.866666666667\n\n'
 
         self.assertEqual(test_string, cross_validation_ml.__str__())

@@ -120,9 +120,10 @@ class CrossValidationMachineLearning(CrossValidation):
                     mean += result
                     result_str += '\t\tClass {0}: {1}\n'.format(label, result)
 
-                result_str += '\t\tMean: {0}'.format(mean / len(self.labels))
+                result_str += '\t\tMean: {0}\n\n'.format(mean / len(self.labels))
 
-            return result_str
+        return result_str
+
 
     def get_model(self, cross_item_score):
         '''
