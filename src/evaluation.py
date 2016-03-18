@@ -407,6 +407,9 @@ class CrossValidation:
     def get_real_results(self, round_partition):
         raise NotImplementedError("Method not implemented.")
 
+    def get_partition_size(self, cross_item_score):
+        return int(len(cross_item_score) * self.partition_proportion)
+
     @abstractmethod
     def get_predicted_results(self, round_user, round_partition, result_size):
         raise NotImplementedError("Method not implemented.")
@@ -433,7 +436,7 @@ class CrossValidation:
         # Extracting user profile scores from cross validation
         cross_item_score = self.get_user_score(user)
 
-        partition_size = int(len(cross_item_score) * self.partition_proportion)
+        partition_size = self.get_partition_size(cross_item_score)
 
         # main iteration
         for r in range(self.rounds):
