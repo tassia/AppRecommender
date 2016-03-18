@@ -1,8 +1,11 @@
 import unittest
-from numpy import array
+from collections import OrderedDict
+from numpy import array, matrix
+from mock import patch
 
 from src.ml.cross_validation import (ConfusionMatrix,
                                      CrossValidationMachineLearning)
+from src.evaluation import SimpleAccuracy
 
 
 class ConfusionMatrixTest(unittest.TestCase):
@@ -41,3 +44,62 @@ class CrossValidationTests(unittest.TestCase):
 
         for index, label in enumerate(actual_result):
             self.assertEqual(label[0], expected_result[index, 0])
+
+    def compare_column_matrix(self, expected_matrix, actual_matrix):
+        self.assertEquals(expected_matrix.shape, actual_matrix.shape)
+        num_itens = actual_matrix.shape[0]
+
+        for i in range(num_itens):
+            self.assertEqual(expected_matrix[i, 0], actual_matrix[i, 0])
+
+    @patch('src.ml.data.MachineLearningData.create_data')
+    def test_cross_validation_process(self, mock_create_data):
+        data_matrix = (('test1', [1, 0, 1, 0, 1, 1, 1, 1, 'G']),
+                       ('test2', [0, 1, 0, 1, 1, 1, 1, 0, 'M']),
+                       ('test3', [1, 0, 1, 0, 1, 0, 0, 1, 'B']),
+                       ('test4', [0, 0, 0, 0, 1, 1, 1, 1, 'M']),
+                       ('test5', [1, 1, 1, 1, 0, 0, 0, 1, 'G']),
+                       ('test6', [1, 1, 0, 0, 1, 1, 0, 0, 'M']),
+                       ('test7', [0, 0, 1, 0, 1, 0, 1, 1, 'B']),
+                       ('test8', [1, 1, 1, 0, 0, 0, 1, 0, 'G']),
+                       ('test9', [0, 1, 1, 0, 0, 1, 1, 1, 'B']),
+                       ('test10', [1, 1, 1, 0, 1, 0, 0, 1, 'G']))
+        data_matrix = OrderedDict(data_matrix)
+        mock_create_data.return_value = data_matrix
+
+        partition_proportion = 0.7
+        rounds = 1
+        metrics_list = [SimpleAccuracy()]
+        labels = ['B', 'M', 'G']
+        thresholds = [30, 60, 80]
+
+        cross_validation_ml = CrossValidationMachineLearning(
+            partition_proportion, rounds, metrics_list, labels, thresholds)
+
+        self.assertEquals(len(data_matrix),
+                          len(cross_validation_ml.get_user_score(None)))
+
+        bayes_model = cross_validation_ml.get_model(data_matrix)
+        data = array([[1, 0, 1, 0, 1, 1, 1, 1],
+                      [0, 1, 0, 1, 1, 1, 1, 0],
+                      [1, 0, 1, 0, 1, 0, 0, 1],
+                      [0, 0, 0, 0, 1, 1, 1, 1],
+                      [1, 1, 1, 1, 0, 0, 0, 1],
+                      [1, 1, 0, 0, 1, 1, 0, 0],
+                      [0, 0, 1, 0, 1, 0, 1, 1],
+                      [1, 1, 1, 0, 0, 0, 1, 0],
+                      [0, 1, 1, 0, 0, 1, 1, 1],
+                      [1, 1, 1, 0, 1, 0, 0, 1]])
+
+        labels_number = matrix([[0], [1], [2]])
+        classifications_numbers = matrix([[2], [1], [0], [1], [2], [1], [0],
+                                          [2], [0], [2]])
+
+        actual_labels_number = bayes_model.labels
+        actual_classifications_number = bayes_model.classifications
+        print actual_classifications_number
+
+        self.assertEquals(data.shape, bayes_model.data.shape)
+        self.compare_column_matrix(labels_number, actual_labels_number)
+        self.compare_column_matrix(classifications_numbers,
+                                   actual_classifications_number)
