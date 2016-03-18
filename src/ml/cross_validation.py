@@ -106,32 +106,29 @@ class CrossValidationMachineLearning(CrossValidation):
               self).__init__(partition_proportion, rounds, None,
                              metrics_list, 0)
 
-    def display_results(self):
-        for r in range(self.rounds):
-            for label in self.labels:
-                str += 'Class {0}:\n'.format(str(label))
-                metrics_result = ""
-                for metric in self.metrics_list:
-                    result = self.cross_results[metric.desc][r]
-                    result = metrics_result[label]
+    def __str__(self):
+        result_str = ''
+        for metric in self.metrics_list:
+            result_str += '{0}:\n'.format(metric.desc)
 
-                    metrics_result += ("     %2.1f%%    |"
-                                       % (result * 100))
-                str += "|   %d   |%s\n" % (r, metrics_result)
-            metrics_mean = ""
-            for metric in self.metrics_list:
-                mean = float(sum(self.cross_results[metric.desc]) /
-                             len(self.cross_results[metric.desc]))
-                metrics_mean += "     %2.1f%%    |" % (mean * 100)
-            str += "|  Mean |%s\n" % (metrics_mean)
-        return str
+            for r in range(self.rounds):
+                result_str += '\tRound {0}:\n'.format(r)
+
+                mean = 0
+                for label in self.labels:
+                    result = self.cross_results[metric.desc][r][label]
+                    mean += result
+                    result_str += '\t\tClass {0}: {1}\n'.format(label, result)
+
+                result_str += '\t\tMean: {0}'.format(mean / len(self.labels))
+
+            return result_str
 
     def get_model(self, cross_item_score):
         '''
         This function should get the data that will be used as training data,
         train the algorithm with this data and return the generated model
         '''
-        print 'get model'
         bayes_matrix = BayesMatrix()
 
         all_matrix = (np.matrix(cross_item_score.values()))
@@ -144,25 +141,28 @@ class CrossValidationMachineLearning(CrossValidation):
         return bayes_matrix
 
     def get_user_score(self, user):
-        print "User score"
         return self.ml_data.create_data(self.labels, self.thresholds)
 
-    def get_predicted_results(self, round_user, round_partition, result_size):
+    '''
+    :param round_user: The model created by the machine learning algorithm.
+
+    :param round_partition: The data that will be used to evaluate the
+                            machine learning algorithm.
+
+    :param result_size:     Not necessary for this context
+    '''
+    def get_predicted_results(self, round_user, round_partition,
+                              result_size=0):
         '''
         This method should generate the predictions for the packages
         received. It basically needs to used the generated model
         and use it to generate the prediction.
         '''
-        # use the round_partition data on the model representes by round_user
-        # return a column_vector that represents the predicted results for
-        # round partition
-        print 'predicted results'
 
         predicted_results = []
 
         for pkg, input_vector in round_partition.iteritems():
-            input_vector = np.matrix(str(input_vector[:-1]))
-            print input_vector.shape
+            input_vector = np.matrix(input_vector[:-1])
             predicted_results.append(
                 round_user.get_classification(input_vector))
 
@@ -173,7 +173,6 @@ class CrossValidationMachineLearning(CrossValidation):
         This method should return the real labels for the validation
         set used on the algorithm.
         '''
-        print 'real results'
         classifications = []
 
         for input_vector in round_partition.values():
@@ -183,7 +182,6 @@ class CrossValidationMachineLearning(CrossValidation):
         return create_column_matrix(classifications)
 
     def get_result_size(self):
-        print 'result size'
         return NOT_NECESSARY
 
     def get_evaluation(self, predicted_result, real_result):
