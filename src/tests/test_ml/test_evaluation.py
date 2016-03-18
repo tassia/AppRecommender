@@ -4,7 +4,8 @@ from numpy import array, matrix
 from mock import patch
 
 from src.ml.cross_validation import (ConfusionMatrix,
-                                     CrossValidationMachineLearning)
+                                     CrossValidationMachineLearning,
+                                     Evaluation)
 from src.evaluation import SimpleAccuracy
 
 
@@ -18,10 +19,33 @@ class ConfusionMatrixTest(unittest.TestCase):
         confusion_matrix.run()
 
         tp, tn, fp, fn = 1, 1, 1, 1
-        self.assertEqual(tp, confusion_matrix.true_positive)
-        self.assertEqual(tn, confusion_matrix.true_negative)
-        self.assertEqual(fp, confusion_matrix.false_positive)
-        self.assertEqual(fn, confusion_matrix.false_negative)
+        self.assertEqual(tp, confusion_matrix.true_positive_len)
+        self.assertEqual(tn, confusion_matrix.true_negative_len)
+        self.assertEqual(fp, confusion_matrix.false_positive_len)
+        self.assertEqual(fn, confusion_matrix.false_negative_len)
+
+
+class EvaluationTest(unittest.TestCase):
+
+    def create_evaluation(self, predicted_values, real_values, labels):
+        return Evaluation(predicted_values, real_values, labels)
+
+    def test_evaluation_simple_accuracy(self):
+        labels = [1, 2, 3]
+        predicted_values = array([[1], [2], [3], [2], [1]])
+        real_values = array([[1], [2], [2], [1], [3]])
+        metric = SimpleAccuracy()
+
+        evaluation = self.create_evaluation(predicted_values, real_values,
+                                            labels)
+        results = evaluation.run(metric)
+        expected_label_1 = 0.6
+        expected_label_2 = 0.6
+        expected_label_3 = 0.6
+
+        self.assertEquals(expected_label_1, results[1])
+        self.assertEquals(expected_label_2, results[2])
+        self.assertEquals(expected_label_3, results[3])
 
 
 class CrossValidationTests(unittest.TestCase):
@@ -32,6 +56,13 @@ class CrossValidationTests(unittest.TestCase):
                                               metrics_list,
                                               labels, thresholds)
 
+    def compare_column_matrix(self, expected_matrix, actual_matrix):
+        self.assertEquals(expected_matrix.shape, actual_matrix.shape)
+        num_itens = actual_matrix.shape[0]
+
+        for i in range(num_itens):
+            self.assertEqual(expected_matrix[i, 0], actual_matrix[i, 0])
+
     def test_get_real_results(self):
         cross_validation_ml = self.create_cross_validation_ml(0.1, 1, [], [],
                                                               [])
@@ -40,17 +71,7 @@ class CrossValidationTests(unittest.TestCase):
         expected_result = array([['T'], ['F']])
         actual_result = cross_validation_ml.get_real_results(test_data)
 
-        self.assertEquals(expected_result.shape, actual_result.shape)
-
-        for index, label in enumerate(actual_result):
-            self.assertEqual(label[0], expected_result[index, 0])
-
-    def compare_column_matrix(self, expected_matrix, actual_matrix):
-        self.assertEquals(expected_matrix.shape, actual_matrix.shape)
-        num_itens = actual_matrix.shape[0]
-
-        for i in range(num_itens):
-            self.assertEqual(expected_matrix[i, 0], actual_matrix[i, 0])
+        self.compare_column_matrix(expected_result, actual_result)
 
     @patch('src.ml.data.MachineLearningData.create_data')
     def test_cross_validation_process(self, mock_create_data):
@@ -94,12 +115,32 @@ class CrossValidationTests(unittest.TestCase):
         labels_number = matrix([[0], [1], [2]])
         classifications_numbers = matrix([[2], [1], [0], [1], [2], [1], [0],
                                           [2], [0], [2]])
+        histogram = array([[3], [3], [4]])
 
         actual_labels_number = bayes_model.labels
         actual_classifications_number = bayes_model.classifications
-        print actual_classifications_number
+        actual_histogram = bayes_model.histogram
 
         self.assertEquals(data.shape, bayes_model.data.shape)
         self.compare_column_matrix(labels_number, actual_labels_number)
         self.compare_column_matrix(classifications_numbers,
                                    actual_classifications_number)
+        self.compare_column_matrix(histogram, actual_histogram)
+
+        predictions = cross_validation_ml.get_predicted_results(bayes_model,
+                                                                data_matrix)
+        expected_shape = (10, 1)
+
+        self.assertEquals(expected_shape, predictions.shape)
+
+        for i in range(len(predictions)):
+            self.assertIn(predictions[i, 0], labels)
+
+        real_results = cross_validation_ml.get_real_results(data_matrix)
+
+        cross_validation_ml.run_metrics(predictions, real_results)
+        test_string = '  S_Accuracy  :\n\tRound 0:\n\t\tClass B: 0.8\n\t\t' \
+                      'Class M: 1.0\n\t\tClass G: 0.8\n\t\t' \
+                      'Mean: 0.866666666667'
+
+        self.assertEqual(test_string, cross_validation_ml.__str__())
