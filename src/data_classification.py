@@ -68,6 +68,34 @@ def linear_percent_function(modify, access, time_now):
     return percent
 
 
+def log_percent_function(modify, access, time_now):
+    modify, access = int(modify), int(access)
+
+    time_access = access - modify
+    time_actual = time_now - modify
+
+    if time_access == 0:
+        return 0.0
+
+    percent = math.log10(float(time_access) * 10.0 / float(time_actual))
+
+    return percent
+
+
+def square_percent_function(modify, access, time_now):
+    modify, access = int(modify), int(access)
+
+    time_access = access - modify
+    time_actual = time_now - modify
+
+    if time_access == 0:
+        return 0.0
+
+    percent = (float(time_access) / float(time_actual)) ** 2
+
+    return percent
+
+
 def get_pkg_time_weight(pkg):
     modify, access = get_time_from_package(pkg)
 

@@ -436,8 +436,6 @@ class MachineLearning(ContentBased):
         pkgs_classifications = {}
 
         for pkg in pkgs:
-            print '#'*10
-            print pkg
             pkg_terms = get_pkg_terms(axi, pkg)
             pkg_debtags = get_pkg_debtags(axi, pkg)
             debtags_attributes = create_row_table_list(debtags_name, pkg_debtags)
@@ -446,15 +444,7 @@ class MachineLearning(ContentBased):
 
             attribute_vector = np.matrix(attribute_vector)
 
-            print attribute_vector.shape
-
             classification = bayes_matrix.get_classification(attribute_vector)
             pkgs_classifications[pkg] = classification
-
-        print '='*80
-        print pkgs_classifications
-        print '='*80
-        print pkgs
-        print '='*80
 
         return pkgs

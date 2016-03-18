@@ -82,16 +82,19 @@ class BayesMatrix:
     def training(self, data_matrix, classifications,
                  order_of_classifications):
         self.data = data_matrix.astype(float)
+        self.order_of_classifications = order_of_classifications
+        self.used_order_of_classifications = (self.get_used_order_of_classifications(classifications, order_of_classifications))
         self.labels = (self.convert_possible_labels_to_number(
-            order_of_classifications).astype(float))
+            self.used_order_of_classifications).astype(float))
+
+
 
         num_packages = self.data.shape[0]
         num_labels = self.labels.shape[0]
         num_features = self.data.shape[1]
 
-        self.order_of_classifications = order_of_classifications
         self.classifications = (self.convert_classifications_to_number(
-            classifications, order_of_classifications).astype(float))
+            classifications, self.used_order_of_classifications).astype(float))
 
         self.adjacency = self.get_adjacent_matrix(num_labels,
                                                   num_packages).astype(float)
@@ -130,9 +133,7 @@ class BayesMatrix:
         line, col = np.unravel_index(prob_vector.argmax(), prob_vector.shape)
         best_prob_index = line
 
-        print prob_vector
-
-        return self.order_of_classifications[best_prob_index]
+        return self.used_order_of_classifications[best_prob_index]
 
     def convert_possible_labels_to_number(self, order_of_classifications):
         numbers = ""
@@ -157,3 +158,22 @@ class BayesMatrix:
             adjacent_matrix[self.classifications[i].item()][i] = 1
 
         return adjacent_matrix
+
+    def get_used_order_of_classifications(self, classifications,
+                                          order_of_classifications):
+        classifications_map = dict()
+        for name in order_of_classifications:
+            classifications_map[name] = 0
+
+        list_classifications = list(np.array(classifications).reshape(-1,))
+        for name in list_classifications:
+            classifications_map[name] += 1
+
+        used_order_of_classifications = []
+
+        for name in order_of_classifications:
+            value = classifications_map[name]
+            if value > 0:
+                used_order_of_classifications.append(name)
+
+        return used_order_of_classifications
