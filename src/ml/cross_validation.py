@@ -15,10 +15,10 @@ class ConfusionMatrix():
         self.real_results = real_results
         self.repository_size = len(predicted_results)
 
-        self.true_positive = 0
-        self.true_negative = 0
-        self.false_positive = 0
-        self.false_negative = 0
+        self.true_positive_len = 0
+        self.true_negative_len = 0
+        self.false_positive_len = 0
+        self.false_negative_len = 0
 
     def run(self):
         matrix_values = np.zeros(shape=(2, 2))
@@ -30,10 +30,10 @@ class ConfusionMatrix():
 
             matrix_values[row][column] += 1
 
-        self.true_positive = matrix_values[0][0]
-        self.true_negative = matrix_values[1][1]
-        self.false_positive = matrix_values[0][1]
-        self.false_negative = matrix_values[1][0]
+        self.true_positive_len = matrix_values[0][0]
+        self.true_negative_len = matrix_values[1][1]
+        self.false_positive_len = matrix_values[0][1]
+        self.false_negative_len = matrix_values[1][0]
 
 
 class Evaluation():
@@ -60,7 +60,7 @@ class Evaluation():
         self.predicted_results = predicted_results
         self.real_results = real_results
         self.possible_classifications = possible_classifications
-        self.num_data = predicted_results.shape[0]
+        self.repository_size = predicted_results.shape[0]
 
         self.classes_outputs = {}
         self.create_classification_outputs()

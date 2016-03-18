@@ -72,8 +72,8 @@ class SimpleAccuracy(Metric):
         Compute metric.
         """
         simple_accurary = float((evaluation.repository_size -
-                                 len(evaluation.false_positive)) -
-                                len(evaluation.false_negative))
+                                evaluation.false_positive_len) -
+                                evaluation.false_negative_len)
 
         return simple_accurary / evaluation.repository_size
 
@@ -327,6 +327,9 @@ class Evaluation:
         self.false_negative = [v[0] for v in self.real_relevant if not v[0] in
                                [w[0] for w in self.predicted_relevant]]
 
+        self.true_positive_len = len(self.true_positive)
+        self.false_positive_len = len(self.false_positive)
+        self.false_negative_len = len(self.false_negative)
         self.real_negative_len = self.repository_size - len(self.real_relevant)
         self.true_negative_len = (self.real_negative_len -
                                   len(self.false_positive))
