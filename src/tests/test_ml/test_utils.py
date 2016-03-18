@@ -11,7 +11,7 @@ class MLUtilsTest(unittest.TestCase):
         classification = 2
         default_value = 0
 
-        expected_result = array([[2], [0], [2], [0]])
+        expected_result = array([[1], [0], [1], [0]])
         actual_result = create_binary_matrix(test_matrix, classification,
                                              default_value)
 

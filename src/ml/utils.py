@@ -22,4 +22,4 @@ def create_column_matrix(matrix):
 
 
 def create_binary_matrix(original_vector, value, default_value):
-    return where(original_vector == value, value, default_value)
+    return where(original_vector == value, 1, default_value)
