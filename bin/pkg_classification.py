@@ -23,11 +23,6 @@ def have_files():
         have = False
         scripts.append("pkg_time_list.py")
 
-    if not path.isfile(MachineLearningData.DEBTAGS_PATH):
-        have = False
-        scripts.append("get_axipkgs.py -t XT > {0}tags.txt"
-                       .format(MachineLearningData.USER_DATA_DIR))
-
     if not have:
         print("Run scripts to generate important files:")
         for script in scripts:
