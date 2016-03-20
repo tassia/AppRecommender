@@ -32,8 +32,7 @@ from os import path
 from error import Error
 from config import Config
 from bayes_matrix import BayesMatrix
-from bin.pkg_classification import (get_pkg_debtags, create_row_table_list,
-                                    get_pkg_terms)
+from bin.pkg_classification import MachineLearningData
 
 XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
 USER_DATA_DIR = Config().user_data_dir
@@ -428,6 +427,7 @@ class MachineLearning(ContentBased):
         with open(PKGS_CLASSIFICATIONS_INDICES, 'rb') as text:
             pkgs_classifications_indices = pickle.load(text)
 
+        ml_data = MachineLearningData()
         bayes_matrix = BayesMatrix.load(MACHINE_LEARNING_TRAINING_PATH)
 
         axi = xapian.Database(XAPIAN_DATABASE_PATH)
@@ -436,11 +436,12 @@ class MachineLearning(ContentBased):
         pkgs_classifications = {}
 
         for pkg in pkgs:
-            pkg_terms = get_pkg_terms(axi, pkg)
-            pkg_debtags = get_pkg_debtags(axi, pkg)
-            debtags_attributes = create_row_table_list(debtags_name,
-                                                       pkg_debtags)
-            terms_attributes = create_row_table_list(terms_name, pkg_terms)
+            pkg_terms = ml_data.get_pkg_terms(axi, pkg)
+            pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
+            debtags_attributes = ml_data.create_row_table_list(debtags_name,
+                                                               pkg_debtags)
+            terms_attributes = ml_data.create_row_table_list(terms_name,
+                                                             pkg_terms)
             attribute_vector = terms_attributes + debtags_attributes
 
             attribute_vector = np.matrix(attribute_vector)

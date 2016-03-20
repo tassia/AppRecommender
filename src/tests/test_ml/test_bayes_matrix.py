@@ -38,6 +38,7 @@ class PkgClassificationTests(unittest.TestCase):
         self.bayes_matrix.label_probability = (np.matrix(
             "0.2; 0.4; 0.4").astype(float))
         self.bayes_matrix.order_of_classifications = [0, 1, 2]
+        self.bayes_matrix.used_order_of_classifications = [0, 1, 2]
         self.bayes_matrix.prob_1 = np.matrix(
             "1 0 0 1 1; 1 0 1 0.5 0.5; 0 1 1 0.5 0.5; 0 0 0 0 0;\
              0 0 0 0 0").astype(float)

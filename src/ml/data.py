@@ -19,7 +19,6 @@ class MachineLearningData():
     USER_DATA_DIR = Config().user_data_dir
     BASE_DIR = Config().base_dir
 
-    DEBTAGS_PATH = USER_DATA_DIR + 'tags.txt'
     PKG_DATA_PATH = USER_DATA_DIR + 'pkg_data.txt'
 
     PKGS_CLASSIFICATIONS = USER_DATA_DIR + 'pkgs_classifications.txt'
@@ -39,16 +38,20 @@ class MachineLearningData():
                                             sample_classification, labels,
                                             thresholds)
 
-        debtags_name = self.get_debtags_name(MachineLearningData.DEBTAGS_PATH)
         terms_name = self.get_terms_for_all_pkgs(self.axi, pkgs.keys())
+        debtags_name = self.get_debtags_for_all_pkgs(self.axi, pkgs.keys())
+
         self.filter_terms(terms_name)
         terms_name = sorted(terms_name)
+        debtags_name = sorted(debtags_name)
 
         pkgs_classifications = (
             self.get_pkgs_table_classification(self.axi, pkgs,
                                                debtags_name,
                                                terms_name))
-        pkgs_classifications_index = debtags_name + terms_name
+        pkgs_classifications_index = {}
+        pkgs_classifications_index['terms_name'] = terms_name
+        pkgs_classifications_index['debtags_name'] = debtags_name
 
         self.save_pkg_data(pkgs_classifications,
                            MachineLearningData.PKGS_CLASSIFICATIONS)
@@ -125,6 +128,13 @@ class MachineLearningData():
             pkg_terms = pkg_terms | set(self.get_pkg_terms(axi, pkg))
 
         return pkg_terms
+
+    def get_debtags_for_all_pkgs(self, axi, pkgs):
+        pkg_debtags = set()
+        for pkg in pkgs:
+            pkg_debtags = pkg_debtags | set(self.get_pkg_debtags(axi, pkg))
+
+        return pkg_debtags
 
     def filter_terms(self, pkg_terms):
 
