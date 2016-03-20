@@ -19,7 +19,7 @@ def create_pkg_data():
 def get_package_data(file_path=USER_DATA_DIR + 'pkg_data.txt'):
 
     if path.isfile(file_path):
-        pkgs_time =  {}
+        pkgs_time = {}
 
         with open(file_path, 'r') as pkg_data:
             for pkg_line in pkg_data:

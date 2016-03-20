@@ -84,4 +84,4 @@ class CrossValidationTests(unittest.TestCase):
 
         expected_result = 7
         self.assertEqual(expected_result,
-                        cross_validation.get_partition_size(cross_item_score))
+                         cross_validation.get_partition_size(cross_item_score))

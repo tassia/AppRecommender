@@ -1,4 +1,4 @@
-#s!/usr/bin/env python
+#!/usr/bin/env python
 """
     config - python module for configuration options.
 """
