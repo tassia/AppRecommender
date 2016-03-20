@@ -19,34 +19,29 @@ __license__ = """
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
 import sys
 sys.path.insert(0, '../')
 import logging
 import datetime
 
-from config import Config
-from data import FilteredPopconXapianIndex
+from src.config import Config
+from src.data import PopconXapianIndex
 
 if __name__ == '__main__':
-    base_dir = os.path.expanduser("~/.app-recommender/")
-    axi_path = os.path.join(base_dir, "axi_XD")
-    path = os.path.join(base_dir, "popcon_XD")
-    popcon_dir = os.path.join(base_dir, "popcon-entries")
-    tags_filter = os.path.join(base_dir, "filters/debtags")
-
-    # set up config for logging
     cfg = Config()
-
     begin_time = datetime.datetime.now()
     logging.info("Popcon indexing started at %s" % begin_time)
+
     # use config file or command line options
-    index = FilteredPopconXapianIndex(path, popcon_dir, axi_path, tags_filter)
+    popindex = PopconXapianIndex(cfg)
 
     end_time = datetime.datetime.now()
     logging.info("Popcon indexing completed at %s" % end_time)
     logging.info("Number of documents (submissions): %d" %
-                 index.get_doccount())
+                 popindex.get_doccount())
 
     delta = end_time - begin_time
     logging.info("Time elapsed: %d seconds." % delta.seconds)
+    if cfg.index_mode == "cluster" or cfg.index_mode == "recluster":
+        logging.info("Medoids: %d\tDispersion:%f" %
+                     (cfg.k_medoids, popindex.cluster_dispersion))

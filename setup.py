@@ -9,6 +9,6 @@ setup(
     author_email='tassia@acaia.ca',
     license='GPLv3.txt',
     packages=find_packages(),
-    setup_requires=['nose>=1.3'],
+    setup_requires=['nose>=1.3', 'mock'],
     test_suite='nose.collector',
     )

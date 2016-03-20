@@ -22,13 +22,14 @@ __license__ = """
 
 import math
 import random
-from collections import defaultdict
 import logging
 
-from user import User
-from recommender import RecommendationResult
+from abc import ABCMeta, abstractmethod
+from collections import defaultdict
 from error import Error
 from singleton import Singleton
+from recommender import RecommendationResult
+from user import User
 
 
 class Metric(Singleton):
@@ -71,8 +72,8 @@ class SimpleAccuracy(Metric):
         Compute metric.
         """
         simple_accurary = float((evaluation.repository_size -
-                                 len(evaluation.false_positive)) -
-                                len(evaluation.false_negative))
+                                evaluation.false_positive_len) -
+                                evaluation.false_negative_len)
 
         return simple_accurary / evaluation.repository_size
 
@@ -326,6 +327,9 @@ class Evaluation:
         self.false_negative = [v[0] for v in self.real_relevant if not v[0] in
                                [w[0] for w in self.predicted_relevant]]
 
+        self.true_positive_len = len(self.true_positive)
+        self.false_positive_len = len(self.false_positive)
+        self.false_negative_len = len(self.false_negative)
         self.real_negative_len = self.repository_size - len(self.real_relevant)
         self.true_negative_len = (self.real_negative_len -
                                   len(self.false_positive))
@@ -346,8 +350,23 @@ class Evaluation:
 
 class CrossValidation:
 
+    __metaclass__ = ABCMeta
+
     """
     Class designed to perform cross-validation process.
+
+    :param partition_proportion: A value that should dictates the number of
+                                 data that will be on the traning data, the
+                                 rest of data will be used as the validation
+                                 set.
+    :param rounds:               The number of rounds that cross validation
+                                 will be used on.
+    :param rec:                  The recommendation strategy used.
+    :param metrics_list:         Array of the metrics that will be used to
+                                 evaluate the algorithm.
+    :param result_proportion:    The percentage of recommendations that should
+                                 be used based on the total number of packages
+                                 available.
     """
 
     def __init__(self, partition_proportion, rounds, rec,
@@ -367,56 +386,136 @@ class CrossValidation:
         self.cross_results = defaultdict(list)
         self.result_proportion = result_proportion
 
+    @abstractmethod
+    def get_evaluation(self, predicted_result, real_result):
+        raise NotImplementedError("Method not implemented.")
+
+    @abstractmethod
+    def get_model(self):
+        raise NotImplementedError("Method not implemented.")
+
+    def get_result_size(self):
+        result_size = (self.recommender.items_repository.get_doccount() *
+                       self.result_proportion)
+        result_size = int(result_size)
+
+        logging.debug("size %d" % result_size)
+        return result_size
+
+    @abstractmethod
+    def get_real_results(self, round_partition):
+        raise NotImplementedError("Method not implemented.")
+
+    def get_partition_size(self, cross_item_score):
+        return int(len(cross_item_score) * self.partition_proportion)
+
+    @abstractmethod
+    def get_predicted_results(self, round_user, round_partition, result_size):
+        raise NotImplementedError("Method not implemented.")
+
+    def reset_cross_item_score(self, cross_item_score, round_partition):
+        while len(round_partition) > 0:
+            item, score = round_partition.popitem()
+            cross_item_score[item] = score
+
+        return cross_item_score
+
+    def run_metrics(self, predicted_result, real_result):
+        logging.debug("Predicted result: %s", predicted_result)
+
+        evaluation = self.get_evaluation(predicted_result, real_result)
+
+        for metric in self.metrics_list:
+            result = evaluation.run(metric)
+            self.cross_results[metric.desc].append(result)
+
     def run(self, user):
         """
         Perform cross-validation.
         """
+
         # Extracting user profile scores from cross validation
-        cross_item_score = {}
-        for pkg in user.pkg_profile:
-            cross_item_score[pkg] = user.item_score[pkg]
-        partition_size = int(len(cross_item_score) * self.partition_proportion)
+        cross_item_score = self.get_user_score(user)
+
+        partition_size = self.get_partition_size(cross_item_score)
+
         # main iteration
         for r in range(self.rounds):
             round_partition = {}
+
             # move items from cross_item_score to round-partition
             for j in range(partition_size):
+
                 if len(cross_item_score) > 0:
                     random_key = random.choice(cross_item_score.keys())
                 else:
                     logging.critical("Empty cross_item_score.")
                     raise Error
+
                 round_partition[random_key] = cross_item_score.pop(random_key)
+
             logging.debug("Round partition: %s", str(round_partition))
             logging.debug("Cross item-score: %s", str(cross_item_score))
+
             # round user is created with remaining items
-            round_user = User(cross_item_score)
-            result_size = (self.recommender.items_repository.get_doccount() *
-                           self.result_proportion)
-            result_size = int(result_size)
-            logging.debug("size %d" % result_size)
+            round_model = self.get_model(round_partition)
+
+            result_size = self.get_result_size()
             if not result_size:
                 logging.critical("Recommendation size is zero.")
                 raise Error
-            predicted_result = self.recommender.get_recommendation(round_user,
-                                                                   result_size)
+
+            predicted_result = self.get_predicted_results(
+                round_model, cross_item_score, result_size)
             if not predicted_result.size:
                 logging.critical("No recommendation produced"
                                  " Abort cross-validation.")
                 raise Error
             # partition is considered the expected result
-            real_result = RecommendationResult(round_partition)
-            num_docs = self.recommender.items_repository.get_doccount()
+            real_result = self.get_real_results(cross_item_score)
 
-            logging.debug("Predicted result: %s", predicted_result)
-            evaluation = Evaluation(predicted_result, real_result, num_docs)
-            for metric in self.metrics_list:
-                result = evaluation.run(metric)
-                self.cross_results[metric.desc].append(result)
+            self.run_metrics(predicted_result, real_result)
             # moving back items from round_partition to cross_item_score
-            while len(round_partition) > 0:
-                item, score = round_partition.popitem()
-                cross_item_score[item] = score
+            cross_item_score = self.reset_cross_item_score(cross_item_score,
+                                                           round_partition)
+
+
+class CrossValidationRecommender(CrossValidation):
+
+    def display_results(self):
+        for r in range(self.rounds):
+            metrics_result = ""
+            for metric in self.metrics_list:
+                metrics_result += ("     %2.1f%%    |" %
+                                   (self.cross_results[metric.desc][r] * 100))
+            str += "|   %d   |%s\n" % (r, metrics_result)
+        metrics_mean = ""
+        for metric in self.metrics_list:
+            mean = float(sum(self.cross_results[metric.desc]) /
+                         len(self.cross_results[metric.desc]))
+            metrics_mean += "     %2.1f%%    |" % (mean * 100)
+        str += "|  Mean |%s\n" % (metrics_mean)
+        return str
+
+    def get_evaluation(self, predicted_result, real_result):
+        num_docs = self.recommender.items_repository.get_doccount()
+        return Evaluation(predicted_result, real_result, num_docs)
+
+    def get_model(self, cross_item_score):
+        return User(cross_item_score)
+
+    def get_pkg_score(self, user):
+        cross_item_score = {}
+        for pkg in user.pkg_profile:
+            cross_item_score[pkg] = user.item_score[pkg]
+
+        return cross_item_score
+
+    def get_real_results(self, round_partition):
+        return RecommendationResult(round_partition)
+
+    def get_predicted_results(self, round_user, round_partition, result_size):
+        return self.recommender.get_recommendation(round_user, result_size)
 
     def __str__(self):
         """

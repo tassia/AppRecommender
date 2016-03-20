@@ -21,20 +21,21 @@ __license__ = """
 """
 
 import os
-import sys
-sys.path.insert(0, '../')
 import logging
 import datetime
+import sys
 
-from config import Config
-from evaluation import (CrossValidation, Precision, Recall,
-                        F_score, FPR, Accuracy)
-from recommender import Recommender
-from user import PopconSystem
+sys.path.insert(0, '../')
+
+from src.config import Config
+from src.evaluation import (CrossValidation, Precision, Recall,
+                            F_score, FPR, Accuracy)
+from src.recommender import Recommender
+from src.user import PopconSystem
 
 if __name__ == '__main__':
     cfg = Config()
-    rec = Recommender(cfg)
+    rec = Recommender()
     # user = LocalSystem()
     # user = RandomPopcon(cfg.popcon_dir)
     # user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,

@@ -22,7 +22,7 @@ __license__ = """
 import unittest
 import xapian
 
-from src.user import User, FilterTag, FilterDescription
+from src.user import User, LocalSystem, FilterTag, FilterDescription
 from src.config import Config
 from src.data import SampleAptXapianIndex
 
@@ -136,3 +136,15 @@ class UserTests(unittest.TestCase):
             self.user.item_score[pkg] = 1
 
         self.assertEqual(old_pkg_profile, self.user.maximal_pkg_profile())
+
+
+class LocalSystemTest(unittest.TestCase):
+
+    def setUp(self):
+        self.user = LocalSystem()
+
+    def test_get_time_score_invalid_file(self):
+        result = self.user.get_time_score('invalid_path')
+
+        self.assertFalse(result)
+        self.assertEqual(len(result), 0)

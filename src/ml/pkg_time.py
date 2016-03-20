@@ -1,15 +1,35 @@
-#!/usr/bin/python
-
 import commands
 import re
 
-import sys
-sys.path.insert(0, '../')
+from os import path
 
-from data_classification import get_time_from_package, get_alternative_pkg
-from config import Config
+from src.data_classification import get_time_from_package, get_alternative_pkg
+from src.config import Config
 
 USER_DATA_DIR = Config().user_data_dir
+
+
+def create_pkg_data():
+    manual_pkgs = get_packages_from_apt_mark()
+    pkgs_time = get_packages_time(manual_pkgs)
+    save_package_time(pkgs_time)
+    return pkgs_time
+
+
+def get_package_data(file_path=USER_DATA_DIR + 'pkg_data.txt'):
+
+    if path.isfile(file_path):
+        pkgs_time = {}
+
+        with open(file_path, 'r') as pkg_data:
+            for pkg_line in pkg_data:
+                name, modify, access = pkg_line.split(' ')
+                pkgs_time[name] = [modify, access]
+
+        return pkgs_time
+
+    else:
+        return create_pkg_data()
 
 
 def get_packages_time(pkgs):
@@ -57,18 +77,3 @@ def get_packages_from_apt_mark():
             pkgs.append(pkg)
 
     return pkgs
-
-
-def main():
-    manual_pkgs = get_packages_from_apt_mark()
-    print "Size of manual installed packages apt-mark:", len(manual_pkgs)
-
-    pkgs_time = get_packages_time(manual_pkgs)
-    print_package_time(pkgs_time)
-
-    print "\nSize of dictionary:", len(pkgs_time)
-    save_package_time(pkgs_time)
-
-
-if __name__ == "__main__":
-    main()

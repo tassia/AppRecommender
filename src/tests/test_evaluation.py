@@ -22,7 +22,7 @@ __license__ = """
 import unittest
 
 from src.evaluation import (Accuracy, Precision, Recall, Coverage,
-                            Evaluation)
+                            Evaluation, CrossValidationRecommender)
 from src.recommender import RecommendationResult
 
 
@@ -59,3 +59,29 @@ class MetricsTests(unittest.TestCase):
         self.assertEqual(self.evaluation.true_positive, ['apple', 'grape'])
         self.assertEqual(self.evaluation.false_positive, ['orange'])
         self.assertEqual(self.evaluation.false_negative, ['pineaple', 'melon'])
+
+
+class CrossValidationTests(unittest.TestCase):
+
+    def create_cross_validation(self, partition_proportion, rounds, rec,
+                                metrics_list, result_proportion):
+        return CrossValidationRecommender(partition_proportion, rounds, rec,
+                                          metrics_list, result_proportion)
+
+    def test_get_partition_size(self):
+        cross_validation = self.create_cross_validation(0.7, 1, None, [], 1)
+
+        cross_item_score = {'item1': [1, 0, 1],
+                            'item2': [1, 0, 1],
+                            'item3': [1, 0, 1],
+                            'item4': [1, 0, 1],
+                            'item5': [1, 0, 1],
+                            'item6': [1, 0, 1],
+                            'item7': [1, 0, 1],
+                            'item8': [1, 0, 1],
+                            'item9': [1, 0, 1],
+                            'item10': [1, 0, 1]}
+
+        expected_result = 7
+        self.assertEqual(expected_result,
+                         cross_validation.get_partition_size(cross_item_score))

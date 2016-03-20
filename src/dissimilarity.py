@@ -27,7 +27,7 @@ def norm(x):
     """
     Return norm of numeric vector x.
     """
-    return math.sqrt(sum([x_i**2 for x_i in x]))
+    return math.sqrt(sum([x_i ** 2 for x_i in x]))
 
 
 def dot_product(x, y):
