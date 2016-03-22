@@ -132,8 +132,7 @@ class BayesMatrix:
         prob_vector = np.log(prob_vector).sum(axis=1)
         prob_vector = (np.eye(self.labels.shape[0], self.data.shape[1]) *
                        prob_vector)
-        prob_vector = (np.diag(np.array(label_probability_log)[:, 0]) *
-                       prob_vector)
+        prob_vector = label_probability_log + prob_vector
 
         line, col = np.unravel_index(prob_vector.argmax(), prob_vector.shape)
         best_prob_index = line

@@ -22,8 +22,8 @@ class MachineLearningData():
     PKG_DATA_PATH = USER_DATA_DIR + 'pkg_data.txt'
 
     PKGS_CLASSIFICATIONS = USER_DATA_DIR + 'pkgs_classifications.txt'
-    PKGS_CLASSIFICATIONS_INDEX = (USER_DATA_DIR +
-                                  'pkgs_classifications_indices.txt')
+    MACHINE_LEARNING_TERMS = USER_DATA_DIR + 'machine_learning_terms.txt'
+    MACHINE_LEARNING_DEBTAGS = USER_DATA_DIR + 'machine_learning_debtags.txt'
     MACHINE_LEARNING_TRAINING = USER_DATA_DIR + 'machine_learning_training.txt'
 
     def __init__(self):
@@ -34,7 +34,7 @@ class MachineLearningData():
             with open(MachineLearningData.PKGS_CLASSIFICATIONS, 'rb') as pkgs:
                 return pickle.load(pkgs)
 
-        pkgs = self.get_pkgs_classification(data_cl.linear_percent_function,
+        pkgs = self.get_pkgs_classification(data_cl.square_percent_function,
                                             sample_classification, labels,
                                             thresholds)
 
@@ -49,15 +49,15 @@ class MachineLearningData():
             self.get_pkgs_table_classification(self.axi, pkgs,
                                                debtags_name,
                                                terms_name))
-        pkgs_classifications_index = {}
-        pkgs_classifications_index['terms_name'] = terms_name
-        pkgs_classifications_index['debtags_name'] = debtags_name
+
+        self.save_pkg_data(terms_name,
+                           MachineLearningData.MACHINE_LEARNING_TERMS)
+
+        self.save_pkg_data(debtags_name,
+                           MachineLearningData.MACHINE_LEARNING_DEBTAGS)
 
         self.save_pkg_data(pkgs_classifications,
                            MachineLearningData.PKGS_CLASSIFICATIONS)
-
-        self.save_pkg_data(pkgs_classifications_index,
-                           MachineLearningData.PKGS_CLASSIFICATIONS_INDEX)
 
         return pkgs_classifications
 

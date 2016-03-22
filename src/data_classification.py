@@ -91,7 +91,7 @@ def square_percent_function(modify, access, time_now):
     if time_access == 0:
         return 0.0
 
-    percent = (float(time_access) / float(time_actual)) ** 4
+    percent = (float(time_access) / float(time_actual)) ** 2
 
     return percent
 

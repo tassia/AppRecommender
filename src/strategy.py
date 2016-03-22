@@ -38,8 +38,9 @@ XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
 USER_DATA_DIR = Config().user_data_dir
 PKGS_CLASSIFICATIONS_INDICES = (USER_DATA_DIR +
                                 'pkgs_classifications_indices.txt')
-MACHINE_LEARNING_TRAINING_PATH = (USER_DATA_DIR +
-                                  'machine_learning_training.txt')
+MACHINE_LEARNING_TERMS = USER_DATA_DIR + 'machine_learning_terms.txt'
+MACHINE_LEARNING_DEBTAGS = USER_DATA_DIR + 'machine_learning_debtags.txt'
+MACHINE_LEARNING_TRAINING = USER_DATA_DIR + 'machine_learning_training.txt'
 
 
 class PkgMatchDecider(xapian.MatchDecider):
@@ -419,21 +420,24 @@ class MachineLearning(ContentBased):
         self.profile_size = profile_size
 
     def run(self, rec, user, rec_size):
-        pkgs = ContentBased.run(self, rec, user, 5)
-        pkgs = [pkg.split(':')[1][1:]
-                for pkg in str(pkgs).splitlines()[1:]]
+        terms_name = []
+        debtags_name = []
+        with open(MACHINE_LEARNING_TERMS, 'rb') as text:
+            terms_name = pickle.load(text)
+        with open(MACHINE_LEARNING_DEBTAGS, 'rb') as text:
+            debtags_name = pickle.load(text)
 
-        pkgs_classifications_indices = {}
-        with open(PKGS_CLASSIFICATIONS_INDICES, 'rb') as text:
-            pkgs_classifications_indices = pickle.load(text)
+        profile = debtags_name + terms_name
 
         ml_data = MachineLearningData()
-        bayes_matrix = BayesMatrix.load(MACHINE_LEARNING_TRAINING_PATH)
+        bayes_matrix = BayesMatrix.load(MACHINE_LEARNING_TRAINING)
 
         axi = xapian.Database(XAPIAN_DATABASE_PATH)
-        terms_name = pkgs_classifications_indices['terms_name']
-        debtags_name = pkgs_classifications_indices['debtags_name']
         pkgs_classifications = {}
+
+        pkgs = self.get_sugestion_from_profile(rec, user, profile, 200)
+        pkgs = [pkg.split(':')[1][1:]
+                for pkg in str(pkgs).splitlines()[1:]]
 
         for pkg in pkgs:
             pkg_terms = ml_data.get_pkg_terms(axi, pkg)
