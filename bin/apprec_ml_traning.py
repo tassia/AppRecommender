@@ -21,6 +21,7 @@ def main():
     os.system("./get_axipkgs.py -t XT > {0}tags.txt".format(USER_DATA_DIR))
 
     print("\n - Making machine learning traning")
+    os.system("rm {0}pkgs_classifications.txt".format(USER_DATA_DIR))
     os.system("./pkg_classification.py")
 
 if __name__ == '__main__':
