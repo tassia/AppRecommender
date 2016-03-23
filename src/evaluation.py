@@ -120,8 +120,12 @@ class Precision(Metric):
         """
         Compute metric.
         """
-        precision = float(len(evaluation.true_positive))
-        return precision / len(evaluation.predicted_relevant)
+        precision = float(evaluation.true_positive_len)
+
+        if not precision:
+            return 0.0
+
+        return precision / float(evaluation.predicted_relevant_len)
 
 
 class Recall(Metric):
@@ -315,7 +319,10 @@ class Evaluation:
         """
         self.repository_size = repository_size
         self.predicted_item_scores = predicted.item_score
+
         self.predicted_relevant = predicted.get_prediction()
+        self.predicted_relevant_len = len(self.predicted_relevant)
+
         self.real_item_scores = real.item_score
         self.real_relevant = real.get_prediction()
 

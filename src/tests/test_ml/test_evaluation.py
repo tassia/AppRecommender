@@ -6,7 +6,7 @@ from mock import patch
 from src.ml.cross_validation import (ConfusionMatrix,
                                      CrossValidationMachineLearning,
                                      Evaluation)
-from src.evaluation import SimpleAccuracy
+from src.evaluation import SimpleAccuracy, Precision
 
 
 class ConfusionMatrixTest(unittest.TestCase):
@@ -19,6 +19,18 @@ class ConfusionMatrixTest(unittest.TestCase):
         confusion_matrix.run()
 
         tp, tn, fp, fn = 1, 1, 1, 1
+        self.assertEqual(tp, confusion_matrix.true_positive_len)
+        self.assertEqual(tn, confusion_matrix.true_negative_len)
+        self.assertEqual(fp, confusion_matrix.false_positive_len)
+        self.assertEqual(fn, confusion_matrix.false_negative_len)
+
+        predicted_results = array([[1], [1], [1], [0]])
+        real_results = array([[1], [1], [0], [1]])
+
+        confusion_matrix = ConfusionMatrix(predicted_results, real_results)
+        confusion_matrix.run()
+
+        tp, tn, fp, fn = 2, 0, 1, 1
         self.assertEqual(tp, confusion_matrix.true_positive_len)
         self.assertEqual(tn, confusion_matrix.true_negative_len)
         self.assertEqual(fp, confusion_matrix.false_positive_len)
@@ -140,4 +152,46 @@ class CrossValidationTests(unittest.TestCase):
 
         cross_validation_ml.run_metrics(predictions, real_results)
 
-        simple_accuracy = cross_validation_ml.cross_results['  S_Accuracy  ']
+
+class MetricsTest(unittest.TestCase):
+
+    def test_simple_accuracy(self):
+        predicted_results = array([[1], [1], [0], [0]])
+        actual_results = array([[1], [1], [0], [1]])
+        labels = [0, 1]
+        metric = SimpleAccuracy()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0.75
+        expected_0 = 0.75
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+    def test_precision(self):
+        predicted_results = array([[1], [1], [0], [0]])
+        actual_results = array([[1], [1], [0], [1]])
+        labels = [0, 1]
+        metric = Precision()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 1
+        expected_0 = 0.5
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+        predicted_results = array([[0], [0], [0], [0]])
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0
+        expected_0 = 0.25
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
