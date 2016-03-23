@@ -160,19 +160,17 @@ class BayesMatrix:
 
     def get_used_order_of_classifications(self, classifications,
                                           order_of_classifications):
-        classifications_map = dict()
-        for name in order_of_classifications:
-            classifications_map[name] = 0
+        used_classifications = set()
+        num_possible_classifications = len(order_of_classifications)
 
-        list_classifications = list(np.array(classifications).reshape(-1,))
-        for name in list_classifications:
-            classifications_map[name] += 1
+        for name in classifications:
+            if len(used_classifications) == num_possible_classifications:
+                return order_of_classifications
 
-        used_order_of_classifications = []
+            used_classifications.add(name[0])
 
-        for name in order_of_classifications:
-            value = classifications_map[name]
-            if value > 0:
-                used_order_of_classifications.append(name)
+        for index, name in enumerate(order_of_classifications[:]):
+            if name not in used_classifications:
+                del order_of_classifications[index]
 
-        return used_order_of_classifications
+        return order_of_classifications

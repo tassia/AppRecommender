@@ -61,3 +61,31 @@ class PkgClassificationTests(unittest.TestCase):
 
         for index, label in enumerate(expected):
             self.assertEqual(label[0], actual[index, 0])
+
+    def test_get_used_order_of_classifications(self):
+        classifications = np.array(['B', 'G'])
+        order_of_classifications = ['B', 'M', 'G']
+
+        expected = ['B', 'G']
+        actual = self.bayes_matrix.get_used_order_of_classifications(
+            classifications, order_of_classifications)
+
+        self.assertEquals(expected, actual)
+
+        classifications = np.array(['M', 'M', 'B', 'G'])
+        order_of_classifications = ['B', 'M', 'G']
+
+        expected = ['B', 'M', 'G']
+        actual = self.bayes_matrix.get_used_order_of_classifications(
+            classifications, order_of_classifications)
+
+        self.assertEquals(expected, actual)
+
+        classifications = np.array(['G', 'M'])
+        order_of_classifications = ['B', 'M', 'G']
+
+        expected = ['M', 'G']
+        actual = self.bayes_matrix.get_used_order_of_classifications(
+            classifications, order_of_classifications)
+
+        self.assertEquals(expected, actual)
