@@ -83,10 +83,9 @@ class BayesMatrix:
                  order_of_classifications):
         self.data = data_matrix.astype(float)
         self.order_of_classifications = order_of_classifications
-        self.used_order_of_classifications = (self.
-                                              get_used_order_of_classifications
-                                              (classifications,
-                                               order_of_classifications))
+        self.used_order_of_classifications = (
+            self.get_used_order_of_classifications(classifications,
+                                                   order_of_classifications))
         self.labels = (self.convert_possible_labels_to_number(
             self.used_order_of_classifications).astype(float))
 
