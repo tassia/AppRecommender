@@ -20,6 +20,8 @@ class ConfusionMatrix():
         self.false_positive_len = 0
         self.false_negative_len = 0
 
+        self.predicted_relevant_len = 0
+
     def run(self):
         matrix_values = np.zeros(shape=(2, 2))
         num_classification = len(self.predicted_results)
@@ -30,10 +32,22 @@ class ConfusionMatrix():
 
             matrix_values[row][column] += 1
 
-        self.true_positive_len = matrix_values[0][0]
-        self.true_negative_len = matrix_values[1][1]
-        self.false_positive_len = matrix_values[0][1]
-        self.false_negative_len = matrix_values[1][0]
+        self.true_positive_len = matrix_values[1][1]
+        self.true_negative_len = matrix_values[0][0]
+        self.false_positive_len = matrix_values[1][0]
+        self.false_negative_len = matrix_values[0][1]
+
+        self.predicted_relevant_len = (self.true_positive_len +
+                                       self.false_positive_len)
+
+    def __str__(self):
+
+        result = 'TP: {0}\nFP: {1}'.format(self.true_positive_len,
+                                           self.false_positive_len)
+        result += '\nFN: {0}\nTN: {1}\n'.format(self.false_negative_len,
+                                                self.true_negative_len)
+
+        return result
 
 
 class Evaluation():
