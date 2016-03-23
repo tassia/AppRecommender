@@ -458,7 +458,7 @@ class MachineLearning(ContentBased):
         result = list(reversed(sorted(pkgs_classifications.items(),
                                       key=(lambda pkg:
                                            order_values[order.index(pkg[1])]))))
-        result = [pkg[0] for pkg in result]
+        result = [pkg[0] for pkg in result][0:rec_size]
 
         print '=' * 80
         print pkgs_classifications
