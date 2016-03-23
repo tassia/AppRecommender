@@ -31,8 +31,8 @@ import numpy as np
 from os import path
 from error import Error
 from config import Config
-from bayes_matrix import BayesMatrix
-from bin.pkg_classification import MachineLearningData
+from ml.bayes_matrix import BayesMatrix
+from ml.data import MachineLearningData
 
 XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
 USER_DATA_DIR = Config().user_data_dir
