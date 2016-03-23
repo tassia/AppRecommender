@@ -38,9 +38,6 @@ XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
 USER_DATA_DIR = Config().user_data_dir
 PKGS_CLASSIFICATIONS_INDICES = (USER_DATA_DIR +
                                 'pkgs_classifications_indices.txt')
-MACHINE_LEARNING_TERMS = USER_DATA_DIR + 'machine_learning_terms.txt'
-MACHINE_LEARNING_DEBTAGS = USER_DATA_DIR + 'machine_learning_debtags.txt'
-MACHINE_LEARNING_TRAINING = USER_DATA_DIR + 'machine_learning_training.txt'
 
 
 class PkgMatchDecider(xapian.MatchDecider):
@@ -422,15 +419,16 @@ class MachineLearning(ContentBased):
     def run(self, rec, user, rec_size):
         terms_name = []
         debtags_name = []
-        with open(MACHINE_LEARNING_TERMS, 'rb') as text:
+        with open(MachineLearningData.MACHINE_LEARNING_TERMS, 'rb') as text:
             terms_name = pickle.load(text)
-        with open(MACHINE_LEARNING_DEBTAGS, 'rb') as text:
+        with open(MachineLearningData.MACHINE_LEARNING_DEBTAGS, 'rb') as text:
             debtags_name = pickle.load(text)
 
         profile = debtags_name + terms_name
 
         ml_data = MachineLearningData()
-        bayes_matrix = BayesMatrix.load(MACHINE_LEARNING_TRAINING)
+        bayes_matrix = BayesMatrix.load(
+            MachineLearningData.MACHINE_LEARNING_TRAINING)
 
         axi = xapian.Database(XAPIAN_DATABASE_PATH)
         pkgs_classifications = {}
