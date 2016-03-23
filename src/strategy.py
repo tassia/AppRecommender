@@ -451,7 +451,4 @@ class MachineLearning(ContentBased):
             classification = bayes_matrix.get_classification(attribute_vector)
             pkgs_classifications[pkg] = classification
 
-        print '=' * 80
-        print pkgs_classifications
-        print '=' * 80
         return pkgs
