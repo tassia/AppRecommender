@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import time
 
 
 class BayesMatrix:
@@ -102,6 +103,10 @@ class BayesMatrix:
         self.histogram = self.adjacency.dot(np.ones((num_packages, 1)))
         self.label_probability = self.histogram / num_packages
 
+        # print "\nhistogram:"
+        # print self.histogram
+        # print ""
+
         self.feature_per_label = self.adjacency * self.data
 
         self.diag_histogram = np.diag(np.array(self.histogram)[:, 0])
@@ -113,6 +118,8 @@ class BayesMatrix:
         self.prob_0 = np.eye(num_features, num_labels) * self.prob_0
 
     def get_classification(self, attribute_vector):
+        start_time = int(round(time.time() * 1000))
+
         attribute_vector_1 = attribute_vector.astype(float)
         attribute_vector_0 = 1 - attribute_vector
 

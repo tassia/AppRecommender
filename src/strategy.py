@@ -433,9 +433,10 @@ class MachineLearning(ContentBased):
         axi = xapian.Database(XAPIAN_DATABASE_PATH)
         pkgs_classifications = {}
 
-        pkgs = self.get_sugestion_from_profile(rec, user, profile, 200)
+        pkgs_content_based = self.get_sugestion_from_profile(rec, user,
+                                                             profile, 200)
         pkgs = [pkg.split(':')[1][1:]
-                for pkg in str(pkgs).splitlines()[1:]]
+                for pkg in str(pkgs_content_based).splitlines()[1:]]
 
         for pkg in pkgs:
             pkg_terms = ml_data.get_pkg_terms(axi, pkg)
@@ -451,4 +452,15 @@ class MachineLearning(ContentBased):
             classification = bayes_matrix.get_classification(attribute_vector)
             pkgs_classifications[pkg] = classification
 
-        return pkgs
+        order = ['H', 'B', 'M', 'G', 'EX']
+        order_values = [0, 1, 2, 3, 4]
+
+        result = list(reversed(sorted(pkgs_classifications.items(),
+                                      key=(lambda pkg:
+                                           order_values[order.index(pkg[1])]))))
+        result = [pkg[0] for pkg in result]
+
+        print '=' * 80
+        print pkgs_classifications
+        print '=' * 80
+        return result

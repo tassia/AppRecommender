@@ -42,6 +42,7 @@ class MachineLearningData():
         debtags_name = self.get_debtags_for_all_pkgs(self.axi, pkgs.keys())
 
         self.filter_terms(terms_name)
+        terms_name = list(terms_name)[0:300]
         terms_name = sorted(terms_name)
         debtags_name = sorted(debtags_name)
 
@@ -137,7 +138,6 @@ class MachineLearningData():
         return pkg_debtags
 
     def filter_terms(self, pkg_terms):
-
         data_cl.generate_all_terms_tfidf()
         tfidf_weights = data_cl.user_tfidf_weights
         tfidf_threshold = sum(tfidf_weights.values()) / len(tfidf_weights)
