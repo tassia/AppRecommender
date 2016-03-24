@@ -21,6 +21,7 @@ __license__ = """
 """
 
 import os
+import re
 import xapian
 import recommender
 import data
@@ -55,7 +56,7 @@ class PkgMatchDecider(xapian.MatchDecider):
 
     def __call__(self, doc):
         """
-        True if the package is not already installed.
+        True if the package is not already installed and is not a lib or a doc.
         """
         pkg = doc.get_data()
         is_new = pkg not in self.pkgs_list
@@ -63,6 +64,10 @@ class PkgMatchDecider(xapian.MatchDecider):
             return is_new and "kde" in self.pkgs_list
         if "gnome" in pkg:
             return is_new and "gnome" in self.pkgs_list
+
+        if re.match(r'^lib.*', pkg) or re.match(r'.*doc$', pkg):
+            return False
+
         return is_new
 
 
