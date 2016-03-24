@@ -416,7 +416,7 @@ class Demographic(RecommendationStrategy):
 
 class MachineLearning(ContentBased):
 
-    def __init__(self, content, profile_size, suggestion_size=200):
+    def __init__(self, content, profile_size, suggestion_size=1000):
         ContentBased.__init__(self, content, profile_size)
         self.description = "Machine-learning"
         self.content = content
@@ -493,39 +493,38 @@ class MachineLearning(ContentBased):
         item_score = self.get_item_score(pkgs_score, pkgs_classifications)
         result = recommender.RecommendationResult(item_score, limit=rec_size)
 
-        # print '=' * 80
-        # print pkgs_classifications
-        # print '=' * 80
-
-        # sorted_result = sorted(item_score.items(), key=operator.itemgetter(1))
-        # sorted_result = list(reversed(sorted_result))
-        # sorted_result = [pkg[0] for pkg in sorted_result][0:rec_size]
-        # sorted_result = list(reversed(sorted_result))
-
-        # for pkg in sorted_result:
-        #     pkg_terms = ml_data.get_pkg_terms(axi, pkg)
-        #     pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
-
-        #     terms_match = []
-        #     for term in pkg_terms:
-        #         if term in terms_name:
-        #             terms_match.append(term)
-
-        #     debtags_match = []
-        #     for debtag in pkg_debtags:
-        #         if debtag in debtags_name:
-        #             debtags_match.append(debtag)
-
-        #     classification = pkgs_classifications[pkg]
-        #     score = order_values[order.index(classification)] + pkgs_score[pkg]
-        #     print "\n\n="
-        #     print "{0} - {1} - {2}".format(pkg, pkgs_classifications[pkg],
-        #                                    score)
-        #     print "debtags:"
-        #     print debtags_match
-        #     print "-"
-        #     print "terms:"
-        #     print terms_match
-        #     print "="
-
         return result
+
+    def display_recommended_terms(self, terms_name, debtags_name, item_score,
+                                  rec_size):
+        ml_data = MachineLearningData()
+        axi = xapian.Database(XAPIAN_DATABASE_PATH)
+
+        sorted_result = sorted(item_score.items(), key=operator.itemgetter(1))
+        sorted_result = list(reversed(sorted_result))
+        sorted_result = [pkg[0] for pkg in sorted_result][0:rec_size]
+        sorted_result = list(reversed(sorted_result))
+
+        for pkg in sorted_result:
+            pkg_terms = ml_data.get_pkg_terms(axi, pkg)
+            pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
+
+            terms_match = []
+            for term in pkg_terms:
+                if term in terms_name:
+                    terms_match.append(term)
+
+            debtags_match = []
+            for debtag in pkg_debtags:
+                if debtag in debtags_name:
+                    debtags_match.append(debtag)
+
+            print "\n\n="
+            print "{0}".format(pkg)
+            print "debtags:"
+            print debtags_match
+            print "-"
+            print "terms:"
+            print terms_match
+            print "="
+
