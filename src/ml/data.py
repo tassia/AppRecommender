@@ -152,16 +152,16 @@ class MachineLearningData():
             tfidf = data_cl.term_tfidf_weight_on_user(term)
 
             if (tfidf > tfidf_threshold and len(term) >= 4
-                and not self.term_is_in_list(term_tfidf, term)):
+               and not self.term_is_in_list(term_tfidf, term)):
                 term_tfidf[term] = tfidf
 
-        pkg_terms = sorted(term_tfidf.items(), key=lambda term: term[1])
-        pkg_terms = [term[0] for term in pkg_terms]
+        filtered_terms = sorted(term_tfidf.items(), key=lambda term: term[1])
+        filtered_terms = [term[0] for term in filtered_terms]
 
-        if pkg_terms_size < len(pkg_terms):
-            pkg_terms = pkg_terms[0:pkg_terms_size]
+        if pkg_terms_size < len(filtered_terms):
+            filtered_terms = filtered_terms[0:pkg_terms_size]
 
-        return pkg_terms
+        return filtered_terms
 
     def get_pkgs_table_classification(self, axi, pkgs, debtags_name,
                                       terms_name):

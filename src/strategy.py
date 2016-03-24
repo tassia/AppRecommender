@@ -416,13 +416,14 @@ class Demographic(RecommendationStrategy):
 
 class MachineLearning(ContentBased):
 
-    def __init__(self, content, profile_size):
+    def __init__(self, content, profile_size, suggestion_size=200):
         ContentBased.__init__(self, content, profile_size)
         self.description = "Machine-learning"
         self.content = content
         self.profile_size = profile_size
+        self.suggestion_size = suggestion_size
 
-    def run(self, rec, user, rec_size):
+    def load_terms_and_debtags(self):
         terms_name = []
         debtags_name = []
         with open(MachineLearningData.MACHINE_LEARNING_TERMS, 'rb') as text:
@@ -430,20 +431,29 @@ class MachineLearning(ContentBased):
         with open(MachineLearningData.MACHINE_LEARNING_DEBTAGS, 'rb') as text:
             debtags_name = pickle.load(text)
 
-        profile = debtags_name + terms_name
+        return terms_name, debtags_name
 
+    def get_pkgs_and_scores(self, rec, user, profile):
+        content_based = self.get_sugestion_from_profile(rec, user,
+                                                        profile,
+                                                        self.suggestion_size)
+        pkgs, pkgs_score = [], {}
+        for pkg_line in str(content_based).splitlines()[1:]:
+            pkg = pkg_line.split(':')[1][1:]
+            pkg_score = int(pkg_line.split(':')[0].strip())
+
+            pkgs.append(pkg)
+            pkgs_score[pkg] = self.suggestion_size - pkg_score
+
+        return pkgs, pkgs_score
+
+    def get_pkgs_classifications(self, pkgs, terms_name, debtags_name):
         ml_data = MachineLearningData()
         bayes_matrix = BayesMatrix.load(
             MachineLearningData.MACHINE_LEARNING_TRAINING)
-
         axi = xapian.Database(XAPIAN_DATABASE_PATH)
+
         pkgs_classifications = {}
-
-        pkgs_content_based = self.get_sugestion_from_profile(rec, user,
-                                                             profile, 200)
-        pkgs = [pkg.split(':')[1][1:]
-                for pkg in str(pkgs_content_based).splitlines()[1:]]
-
         for pkg in pkgs:
             pkg_terms = ml_data.get_pkg_terms(axi, pkg)
             pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
@@ -458,14 +468,34 @@ class MachineLearning(ContentBased):
             classification = bayes_matrix.get_classification(attribute_vector)
             pkgs_classifications[pkg] = classification
 
-        order = ['H', 'B', 'M', 'G', 'EX']
-        order_values = [0, 1, 2, 3, 4]
+        return pkgs_classifications
 
+    def get_item_score(self, pkgs_score, pkgs_classifications):
         item_score = {}
+        order = ['H', 'B', 'M', 'G', 'EX']
+        order_values = [0, 1000, 2000, 3000, 4000]
+
         for pkg, classification in pkgs_classifications.iteritems():
             item_score[pkg] = order_values[order.index(classification)]
+            item_score[pkg] += pkgs_score[pkg]
 
+        return item_score
+
+    def run(self, rec, user, rec_size):
+        terms_name, debtags_name = self.load_terms_and_debtags()
+
+        profile = debtags_name + terms_name
+        pkgs, pkgs_score = self.get_pkgs_and_scores(rec, user, profile)
+
+        pkgs_classifications = self.get_pkgs_classifications(pkgs, terms_name,
+                                                             debtags_name)
+
+        item_score = self.get_item_score(pkgs_score, pkgs_classifications)
         result = recommender.RecommendationResult(item_score, limit=rec_size)
+
+        # print '=' * 80
+        # print pkgs_classifications
+        # print '=' * 80
 
         # sorted_result = sorted(item_score.items(), key=operator.itemgetter(1))
         # sorted_result = list(reversed(sorted_result))
@@ -486,19 +516,16 @@ class MachineLearning(ContentBased):
         #         if debtag in debtags_name:
         #             debtags_match.append(debtag)
 
+        #     classification = pkgs_classifications[pkg]
+        #     score = order_values[order.index(classification)] + pkgs_score[pkg]
         #     print "\n\n="
-        #     print "{0} - {1}".format(pkg, pkgs_classifications[pkg])
+        #     print "{0} - {1} - {2}".format(pkg, pkgs_classifications[pkg],
+        #                                    score)
         #     print "debtags:"
         #     print debtags_match
         #     print "-"
         #     print "terms:"
         #     print terms_match
         #     print "="
-
-
-
-        # print '=' * 80
-        # print pkgs_classifications
-        # print '=' * 80
 
         return result
