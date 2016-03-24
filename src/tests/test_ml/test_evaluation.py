@@ -252,3 +252,18 @@ class MetricsTest(unittest.TestCase):
 
         self.assertAlmostEqual(expected_1, results[1])
         self.assertEqual(expected_0, results[0])
+
+    def test_f0_5_score(self):
+        predicted_results = array([[1], [1], [0], [1], [0], [1]])
+        actual_results = array([[1], [1], [1], [0], [1], [1]])
+        labels = [0, 1]
+        metric = F_score(0.5)
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0.71428571
+        expected_0 = 0
+
+        self.assertAlmostEqual(expected_1, results[1])
+        self.assertEqual(expected_0, results[0])
