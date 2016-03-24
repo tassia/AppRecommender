@@ -24,6 +24,7 @@ import os
 import re
 import xapian
 import recommender
+import operator
 import data
 import logging
 import pickle
@@ -465,6 +466,36 @@ class MachineLearning(ContentBased):
             item_score[pkg] = order_values[order.index(classification)]
 
         result = recommender.RecommendationResult(item_score, limit=rec_size)
+
+        # sorted_result = sorted(item_score.items(), key=operator.itemgetter(1))
+        # sorted_result = list(reversed(sorted_result))
+        # sorted_result = [pkg[0] for pkg in sorted_result][0:rec_size]
+        # sorted_result = list(reversed(sorted_result))
+
+        # for pkg in sorted_result:
+        #     pkg_terms = ml_data.get_pkg_terms(axi, pkg)
+        #     pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
+
+        #     terms_match = []
+        #     for term in pkg_terms:
+        #         if term in terms_name:
+        #             terms_match.append(term)
+
+        #     debtags_match = []
+        #     for debtag in pkg_debtags:
+        #         if debtag in debtags_name:
+        #             debtags_match.append(debtag)
+
+        #     print "\n\n="
+        #     print "{0} - {1}".format(pkg, pkgs_classifications[pkg])
+        #     print "debtags:"
+        #     print debtags_match
+        #     print "-"
+        #     print "terms:"
+        #     print terms_match
+        #     print "="
+
+
 
         # print '=' * 80
         # print pkgs_classifications

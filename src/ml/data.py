@@ -136,6 +136,12 @@ class MachineLearningData():
 
         return pkg_debtags
 
+    def term_is_in_list(self, terms_list, term):
+        is_in_list = term in terms_list
+        is_in_list |= ("Z" + term) in terms_list
+        is_in_list |= term[1:] in terms_list
+        return is_in_list
+
     def filter_terms(self, pkg_terms, pkg_terms_size):
         data_cl.generate_all_terms_tfidf()
         tfidf_weights = data_cl.user_tfidf_weights
@@ -145,13 +151,12 @@ class MachineLearningData():
         for term in pkg_terms.copy():
             tfidf = data_cl.term_tfidf_weight_on_user(term)
 
-            if tfidf <= tfidf_threshold or len(term) < 4:
-                pkg_terms.remove(term)
-            else:
+            if (tfidf > tfidf_threshold and len(term) >= 4
+                and not self.term_is_in_list(term_tfidf, term)):
                 term_tfidf[term] = tfidf
 
-        pkg_terms = sorted(pkg_terms, key=lambda term: term_tfidf[term])
-        pkg_terms = list(pkg_terms)
+        pkg_terms = sorted(term_tfidf.items(), key=lambda term: term[1])
+        pkg_terms = [term[0] for term in pkg_terms]
 
         if pkg_terms_size < len(pkg_terms):
             pkg_terms = pkg_terms[0:pkg_terms_size]

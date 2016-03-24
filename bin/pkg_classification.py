@@ -37,7 +37,7 @@ def main():
 
     ml_data = MachineLearningData()
     labels = ['EX', 'G', 'M', 'B', 'H']
-    threshold = [97, 65, 25, 10, 5]
+    threshold = [95, 65, 25, 10, 5]
     pkgs_classifications = ml_data.create_data(labels, threshold)
 
     all_matrix = (np.matrix(pkgs_classifications.values()))
