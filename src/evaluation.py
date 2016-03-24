@@ -169,7 +169,11 @@ class FPR(Metric):
         """
         Compute metric.
         """
-        return (float(len(evaluation.false_positive)) /
+
+        if not evaluation.false_positive_len:
+            return 0.0
+
+        return (float(evaluation.false_positive_len) /
                 evaluation.real_negative_len)
 
 
@@ -342,7 +346,7 @@ class Evaluation:
         self.true_positive_len = len(self.true_positive)
         self.false_positive_len = len(self.false_positive)
         self.false_negative_len = len(self.false_negative)
-        self.real_negative_len = self.repository_size - len(self.real_relevant)
+        self.real_negative_len = self.repository_size - self.real_relevant_len
         self.true_negative_len = (self.real_negative_len -
                                   len(self.false_positive))
         logging.debug("TP: %d" % len(self.true_positive))
