@@ -128,8 +128,11 @@ class CrossValidationMachineLearning(CrossValidation):
 
     def __str__(self):
         result_str = ''
+        metrics_mean = {}
+
         for metric in self.metrics_list:
             result_str += '{0}:\n'.format(metric.desc)
+            metrics_mean[metric.desc] = 0
 
             for r in range(self.rounds):
                 result_str += '\tRound {0}:\n'.format(r)
@@ -140,8 +143,19 @@ class CrossValidationMachineLearning(CrossValidation):
                     mean += result
                     result_str += '\t\tClass {0}: {1}\n'.format(label, result)
 
-                result_str += '\t\tMean: {0}\n\n'.format(mean /
-                                                         len(self.labels))
+                mean /= len(self.labels)
+                result_str += '\t\tMean: {0}\n\n'.format(mean)
+                metrics_mean[metric.desc] += mean
+
+            metrics_mean[metric.desc] /= self.rounds
+
+        result_str += '\n\n'
+        result_str += 'Average results:\n'
+        result_str += '---------------\n'
+
+        for metric in self.metrics_list:
+            result_str += '{0}: {1}\n'.format(metric.desc,
+                                              metrics_mean[metric.desc])
 
         return result_str
 
