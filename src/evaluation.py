@@ -193,15 +193,18 @@ class MCC(Metric):
         """
         Compute metric.
         """
-        VP = len(evaluation.true_positive)
-        FP = len(evaluation.false_positive)
-        FN = len(evaluation.false_negative)
+        VP = evaluation.true_positive_len
+        FP = evaluation.false_positive_len
+        FN = evaluation.false_negative_len
         VN = evaluation.true_negative_len
+
         if ((VP + FP) == 0 or (VP + FN) == 0 or
            (VN + FP) == 0 or (VN + FN) == 0):
             return 0
+
         MCC = (((VP * VN) - (FP * FN)) /
                math.sqrt((VP + FP) * (VP + FN) * (VN + FP) * (VN + FN)))
+
         return MCC
 
 
