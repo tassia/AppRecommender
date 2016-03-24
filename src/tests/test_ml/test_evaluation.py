@@ -7,7 +7,7 @@ from src.ml.cross_validation import (ConfusionMatrix,
                                      CrossValidationMachineLearning,
                                      Evaluation)
 from src.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
-                            F_score, MCC)
+                            F_score, MCC, Accuracy)
 
 
 class ConfusionMatrixTest(unittest.TestCase):
@@ -294,6 +294,20 @@ class MetricsTest(unittest.TestCase):
         results = evaluation.run(metric)
 
         expected_1, expected_0 = 0.25, 0.25
+
+        self.assertAlmostEqual(expected_1, results[1])
+        self.assertEqual(expected_0, results[0])
+
+    def test_accuracy(self):
+        predicted_results = array([[1], [1], [0], [1], [0], [1]])
+        actual_results = array([[1], [1], [1], [0], [0], [1]])
+        labels = [0, 1]
+        metric = Accuracy()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1, expected_0 = 0.625, 0.625
 
         self.assertAlmostEqual(expected_1, results[1])
         self.assertEqual(expected_0, results[0])

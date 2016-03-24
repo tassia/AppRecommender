@@ -94,11 +94,11 @@ class Accuracy(Metric):
         """
         Compute metric.
         """
-        error_1 = (float(len(evaluation.false_positive)) /
+        error_1 = (float(evaluation.false_positive_len) /
                         (evaluation.repository_size -
-                         len(evaluation.real_relevant)))
-        error_2 = (float(len(evaluation.false_negative)) /
-                   len(evaluation.real_relevant))
+                         evaluation.real_relevant_len))
+        error_2 = (float(evaluation.false_negative_len) /
+                   evaluation.real_relevant_len)
         accuracy = 1 - (float(error_1 + error_2) / 2)
         return accuracy
 
