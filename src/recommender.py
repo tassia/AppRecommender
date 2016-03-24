@@ -32,12 +32,13 @@ class RecommendationResult:
     """
     Class designed to describe a recommendation result: items and scores.
     """
-    def __init__(self, item_score, ranking=0):
+    def __init__(self, item_score, ranking=0, limit=0):
         """
         Set initial parameters.
         """
         self.item_score = item_score
         self.size = len(item_score)
+        self.limit = limit
         if ranking:
             self.ranking = ranking
 
@@ -47,7 +48,7 @@ class RecommendationResult:
         """
         # [FIXME] try alternative way to get pkgs summarys (efficiency)
         # cache = apt.Cache()
-        result = self.get_prediction()
+        result = self.get_prediction(self.limit)
         str = "\n"
         for i in range(len((list(result)))):
             # summary = cache[result[i][0]].candidate.summary
@@ -147,6 +148,9 @@ class Recommender:
             self.strategy = strategy.ContentBased("half", profile_size)
         elif strategy_str == "cbtm":
             self.strategy = strategy.ContentBased("time", profile_size)
+        elif strategy_str == "cbml":
+            self.strategy = strategy.MachineLearning("machine_learning",
+                                                     profile_size)
         elif strategy_str == "cb_eset":
             self.strategy = strategy.ContentBased("mix_eset", profile_size)
         elif strategy_str == "cbt_eset":

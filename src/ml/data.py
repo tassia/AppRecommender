@@ -19,12 +19,11 @@ class MachineLearningData():
     USER_DATA_DIR = Config().user_data_dir
     BASE_DIR = Config().base_dir
 
-    DEBTAGS_PATH = USER_DATA_DIR + 'tags.txt'
     PKG_DATA_PATH = USER_DATA_DIR + 'pkg_data.txt'
 
     PKGS_CLASSIFICATIONS = USER_DATA_DIR + 'pkgs_classifications.txt'
-    PKGS_CLASSIFICATIONS_INDEX = (USER_DATA_DIR +
-                                  'pkgs_classifications_indices.txt')
+    MACHINE_LEARNING_TERMS = USER_DATA_DIR + 'machine_learning_terms.txt'
+    MACHINE_LEARNING_DEBTAGS = USER_DATA_DIR + 'machine_learning_debtags.txt'
     MACHINE_LEARNING_TRAINING = USER_DATA_DIR + 'machine_learning_training.txt'
 
     def __init__(self):
@@ -35,26 +34,30 @@ class MachineLearningData():
             with open(MachineLearningData.PKGS_CLASSIFICATIONS, 'rb') as pkgs:
                 return pickle.load(pkgs)
 
-        pkgs = self.get_pkgs_classification(data_cl.linear_percent_function,
+        pkgs = self.get_pkgs_classification(data_cl.square_percent_function,
                                             sample_classification, labels,
                                             thresholds)
 
-        debtags_name = self.get_debtags_name(MachineLearningData.DEBTAGS_PATH)
         terms_name = self.get_terms_for_all_pkgs(self.axi, pkgs.keys())
-        self.filter_terms(terms_name)
+        debtags_name = self.get_debtags_for_all_pkgs(self.axi, pkgs.keys())
+
+        terms_name = self.filter_terms(terms_name, len(debtags_name))
         terms_name = sorted(terms_name)
+        debtags_name = sorted(debtags_name)
 
         pkgs_classifications = (
             self.get_pkgs_table_classification(self.axi, pkgs,
                                                debtags_name,
                                                terms_name))
-        pkgs_classifications_index = debtags_name + terms_name
+
+        self.save_pkg_data(terms_name,
+                           MachineLearningData.MACHINE_LEARNING_TERMS)
+
+        self.save_pkg_data(debtags_name,
+                           MachineLearningData.MACHINE_LEARNING_DEBTAGS)
 
         self.save_pkg_data(pkgs_classifications,
                            MachineLearningData.PKGS_CLASSIFICATIONS)
-
-        self.save_pkg_data(pkgs_classifications_index,
-                           MachineLearningData.PKGS_CLASSIFICATIONS_INDEX)
 
         return pkgs_classifications
 
@@ -126,17 +129,39 @@ class MachineLearningData():
 
         return pkg_terms
 
-    def filter_terms(self, pkg_terms):
+    def get_debtags_for_all_pkgs(self, axi, pkgs):
+        pkg_debtags = set()
+        for pkg in pkgs:
+            pkg_debtags = pkg_debtags | set(self.get_pkg_debtags(axi, pkg))
 
+        return pkg_debtags
+
+    def term_is_in_list(self, terms_list, term):
+        is_in_list = term in terms_list
+        is_in_list |= ("Z" + term) in terms_list
+        is_in_list |= term[1:] in terms_list
+        return is_in_list
+
+    def filter_terms(self, pkg_terms, pkg_terms_size):
         data_cl.generate_all_terms_tfidf()
         tfidf_weights = data_cl.user_tfidf_weights
         tfidf_threshold = sum(tfidf_weights.values()) / len(tfidf_weights)
 
+        term_tfidf = {}
         for term in pkg_terms.copy():
             tfidf = data_cl.term_tfidf_weight_on_user(term)
 
-            if tfidf <= tfidf_threshold:
-                pkg_terms.remove(term)
+            if (tfidf > tfidf_threshold and len(term) >= 4
+               and not self.term_is_in_list(term_tfidf, term)):
+                term_tfidf[term] = tfidf
+
+        filtered_terms = sorted(term_tfidf.items(), key=lambda term: term[1])
+        filtered_terms = [term[0] for term in filtered_terms]
+
+        if pkg_terms_size < len(filtered_terms):
+            filtered_terms = filtered_terms[0:pkg_terms_size]
+
+        return filtered_terms
 
     def get_pkgs_table_classification(self, axi, pkgs, debtags_name,
                                       terms_name):

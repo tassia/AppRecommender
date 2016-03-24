@@ -23,11 +23,6 @@ def have_files():
         have = False
         scripts.append("pkg_time_list.py")
 
-    if not path.isfile(MachineLearningData.DEBTAGS_PATH):
-        have = False
-        scripts.append("get_axipkgs.py -t XT > {0}tags.txt"
-                       .format(MachineLearningData.USER_DATA_DIR))
-
     if not have:
         print("Run scripts to generate important files:")
         for script in scripts:
@@ -42,7 +37,7 @@ def main():
 
     ml_data = MachineLearningData()
     labels = ['EX', 'G', 'M', 'B', 'H']
-    threshold = [85, 75, 55, 35, 10]
+    threshold = [95, 65, 25, 10, 5]
     pkgs_classifications = ml_data.create_data(labels, threshold)
 
     all_matrix = (np.matrix(pkgs_classifications.values()))

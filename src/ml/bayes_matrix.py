@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import time
 
 
 class BayesMatrix:
@@ -82,22 +83,29 @@ class BayesMatrix:
     def training(self, data_matrix, classifications,
                  order_of_classifications):
         self.data = data_matrix.astype(float)
+        self.order_of_classifications = order_of_classifications
+        self.used_order_of_classifications = (
+            self.get_used_order_of_classifications(classifications,
+                                                   order_of_classifications))
         self.labels = (self.convert_possible_labels_to_number(
-            order_of_classifications).astype(float))
+            self.used_order_of_classifications).astype(float))
 
         num_packages = self.data.shape[0]
         num_labels = self.labels.shape[0]
         num_features = self.data.shape[1]
 
-        self.order_of_classifications = order_of_classifications
         self.classifications = (self.convert_classifications_to_number(
-            classifications, order_of_classifications).astype(float))
+            classifications, self.used_order_of_classifications).astype(float))
 
         self.adjacency = self.get_adjacent_matrix(num_labels,
                                                   num_packages).astype(float)
 
         self.histogram = self.adjacency.dot(np.ones((num_packages, 1)))
         self.label_probability = self.histogram / num_packages
+
+        # print "\nhistogram:"
+        # print self.histogram
+        # print ""
 
         self.feature_per_label = self.adjacency * self.data
 
@@ -110,6 +118,8 @@ class BayesMatrix:
         self.prob_0 = np.eye(num_features, num_labels) * self.prob_0
 
     def get_classification(self, attribute_vector):
+        start_time = int(round(time.time() * 1000))
+
         attribute_vector_1 = attribute_vector.astype(float)
         attribute_vector_0 = 1 - attribute_vector
 
@@ -124,13 +134,12 @@ class BayesMatrix:
         prob_vector = np.log(prob_vector).sum(axis=1)
         prob_vector = (np.eye(self.labels.shape[0], self.data.shape[1]) *
                        prob_vector)
-        prob_vector = (np.diag(np.array(label_probability_log)[:, 0]) *
-                       prob_vector)
+        prob_vector = label_probability_log + prob_vector
 
         line, col = np.unravel_index(prob_vector.argmax(), prob_vector.shape)
         best_prob_index = line
 
-        return self.order_of_classifications[best_prob_index]
+        return self.used_order_of_classifications[best_prob_index]
 
     def convert_possible_labels_to_number(self, order_of_classifications):
         numbers = ""
@@ -155,3 +164,20 @@ class BayesMatrix:
             adjacent_matrix[self.classifications[i].item()][i] = 1
 
         return adjacent_matrix
+
+    def get_used_order_of_classifications(self, classifications,
+                                          order_of_classifications):
+        used_classifications = set()
+        num_possible_classifications = len(order_of_classifications)
+
+        for name in classifications:
+            if len(used_classifications) == num_possible_classifications:
+                return order_of_classifications
+
+            used_classifications.add(name[0])
+
+        for index, name in enumerate(order_of_classifications[:]):
+            if name not in used_classifications:
+                del order_of_classifications[index]
+
+        return order_of_classifications

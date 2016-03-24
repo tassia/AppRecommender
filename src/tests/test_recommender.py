@@ -24,7 +24,7 @@ import unittest
 from src.recommender import RecommendationResult, Recommender
 from src.user import User
 from src.config import Config
-from src.strategy import ContentBased
+from src.strategy import ContentBased, MachineLearning
 
 
 class RecommendationResultTests(unittest.TestCase):
@@ -62,6 +62,12 @@ class RecommenderTests(unittest.TestCase):
         self.rec.set_strategy("cbd")
         self.assertIsInstance(self.rec.strategy, ContentBased)
         self.assertEqual(self.rec.strategy.content, "desc")
+        self.rec.set_strategy("cbtm")
+        self.assertIsInstance(self.rec.strategy, ContentBased)
+        self.assertEqual(self.rec.strategy.content, "time")
+        self.rec.set_strategy("cbml")
+        self.assertIsInstance(self.rec.strategy, MachineLearning)
+        self.assertEqual(self.rec.strategy.content, "machine_learning")
         # self.rec.set_strategy("knn")
         # self.assertIsInstance(self.rec.strategy,Collaborative)
 
