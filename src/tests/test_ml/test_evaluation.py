@@ -6,7 +6,7 @@ from mock import patch
 from src.ml.cross_validation import (ConfusionMatrix,
                                      CrossValidationMachineLearning,
                                      Evaluation)
-from src.evaluation import SimpleAccuracy, Precision
+from src.evaluation import SimpleAccuracy, Precision, Recall
 
 
 class ConfusionMatrixTest(unittest.TestCase):
@@ -192,6 +192,33 @@ class MetricsTest(unittest.TestCase):
 
         expected_1 = 0
         expected_0 = 0.25
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+    def test_recall(self):
+        predicted_results = array([[1], [1], [0], [0], [1]])
+        actual_results = array([[1], [1], [0], [1], [1]])
+        labels = [0, 1]
+        metric = Recall()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0.75
+        expected_0 = 1
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+        predicted_results = array([[0], [0], [1], [0], [0]])
+        actual_results = array([[1], [1], [0], [1], [1]])
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0
+        expected_0 = 0
 
         self.assertEquals(expected_1, results[1])
         self.assertEquals(expected_0, results[0])

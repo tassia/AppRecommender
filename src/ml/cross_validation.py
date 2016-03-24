@@ -21,6 +21,7 @@ class ConfusionMatrix():
         self.false_negative_len = 0
 
         self.predicted_relevant_len = 0
+        self.real_relevant_len = 0
 
     def run(self):
         matrix_values = np.zeros(shape=(2, 2))
@@ -39,6 +40,8 @@ class ConfusionMatrix():
 
         self.predicted_relevant_len = (self.true_positive_len +
                                        self.false_positive_len)
+        self.real_relevant_len = (self.true_positive_len +
+                                  self.false_negative_len)
 
     def __str__(self):
 

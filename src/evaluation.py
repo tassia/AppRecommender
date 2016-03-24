@@ -145,8 +145,12 @@ class Recall(Metric):
         """
         Compute metric.
         """
-        recall = float(len(evaluation.true_positive))
-        return recall / len(evaluation.real_relevant)
+        recall = float(evaluation.true_positive_len)
+
+        if not recall:
+            return 0.0
+
+        return recall / evaluation.real_relevant_len
 
 
 class FPR(Metric):
@@ -325,6 +329,7 @@ class Evaluation:
 
         self.real_item_scores = real.item_score
         self.real_relevant = real.get_prediction()
+        self.real_relevant_len = len(self.real_relevant)
 
         self.true_positive = [v[0] for v in self.predicted_relevant if v[0] in
                               [w[0] for w in self.real_relevant]]
