@@ -41,8 +41,7 @@ class MachineLearningData():
         terms_name = self.get_terms_for_all_pkgs(self.axi, pkgs.keys())
         debtags_name = self.get_debtags_for_all_pkgs(self.axi, pkgs.keys())
 
-        self.filter_terms(terms_name)
-        terms_name = list(terms_name)[0:300]
+        terms_name = self.filter_terms(terms_name, len(debtags_name))
         terms_name = sorted(terms_name)
         debtags_name = sorted(debtags_name)
 
@@ -137,16 +136,27 @@ class MachineLearningData():
 
         return pkg_debtags
 
-    def filter_terms(self, pkg_terms):
+    def filter_terms(self, pkg_terms, pkg_terms_size):
         data_cl.generate_all_terms_tfidf()
         tfidf_weights = data_cl.user_tfidf_weights
         tfidf_threshold = sum(tfidf_weights.values()) / len(tfidf_weights)
 
+        term_tfidf = {}
         for term in pkg_terms.copy():
             tfidf = data_cl.term_tfidf_weight_on_user(term)
 
-            if tfidf <= tfidf_threshold:
+            if tfidf <= tfidf_threshold or len(term) < 4:
                 pkg_terms.remove(term)
+            else:
+                term_tfidf[term] = tfidf
+
+        pkg_terms = sorted(pkg_terms, key=lambda term: term_tfidf[term])
+        pkg_terms = list(pkg_terms)
+
+        if pkg_terms_size < len(pkg_terms):
+            pkg_terms = pkg_terms[0:pkg_terms_size]
+
+        return pkg_terms
 
     def get_pkgs_table_classification(self, axi, pkgs, debtags_name,
                                       terms_name):

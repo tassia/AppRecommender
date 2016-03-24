@@ -455,12 +455,14 @@ class MachineLearning(ContentBased):
         order = ['H', 'B', 'M', 'G', 'EX']
         order_values = [0, 1, 2, 3, 4]
 
-        result = list(reversed(sorted(pkgs_classifications.items(),
-                                      key=(lambda pkg:
-                                           order_values[order.index(pkg[1])]))))
-        result = [pkg[0] for pkg in result][0:rec_size]
+        item_score = {}
+        for pkg, classification in pkgs_classifications.iteritems():
+            item_score[pkg] = order_values[order.index(classification)]
 
-        print '=' * 80
-        print pkgs_classifications
-        print '=' * 80
+        result = recommender.RecommendationResult(item_score, limit=rec_size)
+
+        # print '=' * 80
+        # print pkgs_classifications
+        # print '=' * 80
+
         return result
