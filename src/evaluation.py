@@ -501,21 +501,6 @@ class CrossValidation:
 
 class CrossValidationRecommender(CrossValidation):
 
-    def display_results(self):
-        for r in range(self.rounds):
-            metrics_result = ""
-            for metric in self.metrics_list:
-                metrics_result += ("     %2.1f%%    |" %
-                                   (self.cross_results[metric.desc][r] * 100))
-            str += "|   %d   |%s\n" % (r, metrics_result)
-        metrics_mean = ""
-        for metric in self.metrics_list:
-            mean = float(sum(self.cross_results[metric.desc]) /
-                         len(self.cross_results[metric.desc]))
-            metrics_mean += "     %2.1f%%    |" % (mean * 100)
-        str += "|  Mean |%s\n" % (metrics_mean)
-        return str
-
     def get_evaluation(self, predicted_result, real_result):
         num_docs = self.recommender.items_repository.get_doccount()
         return Evaluation(predicted_result, real_result, num_docs)
