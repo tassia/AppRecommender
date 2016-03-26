@@ -453,9 +453,14 @@ class CrossValidation:
         Perform cross-validation.
         """
 
-        # Extracting user profile scores from cross validation
+        '''
+        A dictionary containing all the usefull user packages.
+        Its key is a package name, and its value is the input vector
+        associated with that package.
+        '''
         cross_item_score = self.get_user_score(user)
 
+        # The amount of data that will be used to train the algorithm
         partition_size = self.get_partition_size(cross_item_score)
 
         # main iteration
@@ -476,7 +481,7 @@ class CrossValidation:
             logging.debug("Round partition: %s", str(round_partition))
             logging.debug("Cross item-score: %s", str(cross_item_score))
 
-            # round user is created with remaining items
+            # The algorithm model created with the selected training data.
             round_model = self.get_model(round_partition)
 
             result_size = self.get_result_size()
