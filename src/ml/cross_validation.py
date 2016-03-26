@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 
 from src.evaluation import CrossValidation
 from data import MachineLearningData
@@ -121,6 +122,7 @@ class CrossValidationMachineLearning(CrossValidation):
         self.ml_data = MachineLearningData()
         self.labels = labels
         self.thresholds = thresholds
+        self.label_groups = {}
 
         super(CrossValidationMachineLearning,
               self).__init__(partition_proportion, rounds, None,
@@ -159,6 +161,17 @@ class CrossValidationMachineLearning(CrossValidation):
 
         return result_str
 
+    def create_labels_groups(self, data):
+        label_groups = {}
+        label_groups.fromkeys(self.labels)
+        label_groups = defaultdict(lambda: [], label_groups)
+
+        for input_vector in data.values():
+            label = input_vector[-1]
+            label_groups[label].append(input_vector)
+
+        return label_groups
+
     def get_model(self, cross_item_score):
         '''
         This function should get the data that will be used as training data,
@@ -176,7 +189,10 @@ class CrossValidationMachineLearning(CrossValidation):
         return bayes_matrix
 
     def get_user_score(self, user):
-        return self.ml_data.create_data(self.labels, self.thresholds)
+        user_score = self.ml_data.create_data(self.labels, self.thresholds)
+
+        self.label_groups = self.create_labels_groups(user_score)
+        return user_score
 
     '''
     :param round_user: The model created by the machine learning algorithm.

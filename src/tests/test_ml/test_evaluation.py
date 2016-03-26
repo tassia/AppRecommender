@@ -113,6 +113,14 @@ class CrossValidationTests(unittest.TestCase):
         self.assertEquals(len(data_matrix),
                           len(cross_validation_ml.get_user_score(None)))
 
+        expected_num_B = 3  # noqa
+        expected_num_G = 4  # noqa
+        expected_num_M = 3  # noqa
+
+        for label in labels:
+            self.assertEqual(eval('expected_num_{0}'.format(label)),
+                             len(cross_validation_ml.label_groups[label]))
+
         bayes_model = cross_validation_ml.get_model(data_matrix)
         data = array([[1, 0, 1, 0, 1, 1, 1, 1],
                       [0, 1, 0, 1, 1, 1, 1, 0],
