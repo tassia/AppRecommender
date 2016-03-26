@@ -120,6 +120,7 @@ class CrossValidationMachineLearning(CrossValidation):
                  metrics_list, labels, thresholds):
 
         self.ml_data = MachineLearningData()
+        self.num_data = 0
         self.labels = labels
         self.thresholds = thresholds
         self.label_groups = {}
@@ -192,6 +193,8 @@ class CrossValidationMachineLearning(CrossValidation):
         user_score = self.ml_data.create_data(self.labels, self.thresholds)
 
         self.label_groups = self.create_labels_groups(user_score)
+        self.num_data = len(user_score)
+
         return user_score
 
     '''
