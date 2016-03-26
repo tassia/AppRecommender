@@ -133,6 +133,14 @@ class CrossValidationMachineLearning(CrossValidation):
         result_str = ''
         metrics_mean = {}
 
+        result_str += 'Num data used: {0}\n'.format(self.num_data)
+
+        for label in self.labels:
+            result_str += 'Num of data marked as {0}: {1}\n'.format(
+                label, len(self.label_groups[label]))
+
+        result_str += '\n\n'
+
         for metric in self.metrics_list:
             result_str += '{0}:\n'.format(metric.desc)
             metrics_mean[metric.desc] = 0
