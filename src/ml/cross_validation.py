@@ -124,6 +124,8 @@ class CrossValidationMachineLearning(CrossValidation):
         self.labels = labels
         self.thresholds = thresholds
         self.label_groups = {}
+        self.round_label_groups = []
+        self.round_num_data = []
 
         super(CrossValidationMachineLearning,
               self).__init__(partition_proportion, rounds, None,
@@ -138,6 +140,20 @@ class CrossValidationMachineLearning(CrossValidation):
         for label in self.labels:
             result_str += 'Num of data marked as {0}: {1}\n'.format(
                 label, len(self.label_groups[label]))
+
+        result_str += '\n\n'
+
+        for r in range(self.rounds):
+            result_str += 'Round {0}:\n\n'.format(r)
+
+            result_str += 'Training data used: {0}\n'.format(
+                self.round_num_data[r])
+
+            for label in self.labels:
+                result_str += 'Data marked as {0}: {1}\n'.format(
+                    label, len(self.round_label_groups[r][label]))
+
+            result_str += '\n'
 
         result_str += '\n\n'
 
@@ -186,6 +202,11 @@ class CrossValidationMachineLearning(CrossValidation):
         This function should get the data that will be used as training data,
         train the algorithm with this data and return the generated model
         '''
+
+        self.round_num_data.append(len(cross_item_score))
+        self.round_label_groups.append(
+            self.create_labels_groups(cross_item_score))
+
         bayes_matrix = BayesMatrix()
 
         all_matrix = (np.matrix(cross_item_score.values()))
