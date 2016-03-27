@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 
 from src.evaluation import CrossValidation
 from data import MachineLearningData
@@ -20,6 +21,10 @@ class ConfusionMatrix():
         self.false_positive_len = 0
         self.false_negative_len = 0
 
+        self.predicted_relevant_len = 0
+        self.real_relevant_len = 0
+        self.real_negative_len = 0
+
     def run(self):
         matrix_values = np.zeros(shape=(2, 2))
         num_classification = len(self.predicted_results)
@@ -30,10 +35,26 @@ class ConfusionMatrix():
 
             matrix_values[row][column] += 1
 
-        self.true_positive_len = matrix_values[0][0]
-        self.true_negative_len = matrix_values[1][1]
-        self.false_positive_len = matrix_values[0][1]
-        self.false_negative_len = matrix_values[1][0]
+        self.true_positive_len = matrix_values[1][1]
+        self.true_negative_len = matrix_values[0][0]
+        self.false_positive_len = matrix_values[1][0]
+        self.false_negative_len = matrix_values[0][1]
+
+        self.predicted_relevant_len = (self.true_positive_len +
+                                       self.false_positive_len)
+        self.real_relevant_len = (self.true_positive_len +
+                                  self.false_negative_len)
+
+        self.real_negative_len = self.repository_size - self.real_relevant_len
+
+    def __str__(self):
+
+        result = 'TP: {0}\nFP: {1}'.format(self.true_positive_len,
+                                           self.false_positive_len)
+        result += '\nFN: {0}\nTN: {1}\n'.format(self.false_negative_len,
+                                                self.true_negative_len)
+
+        return result
 
 
 class Evaluation():
@@ -99,8 +120,12 @@ class CrossValidationMachineLearning(CrossValidation):
                  metrics_list, labels, thresholds):
 
         self.ml_data = MachineLearningData()
+        self.num_data = 0
         self.labels = labels
         self.thresholds = thresholds
+        self.label_groups = {}
+        self.round_label_groups = []
+        self.round_num_data = []
 
         super(CrossValidationMachineLearning,
               self).__init__(partition_proportion, rounds, None,
@@ -108,8 +133,33 @@ class CrossValidationMachineLearning(CrossValidation):
 
     def __str__(self):
         result_str = ''
+        metrics_mean = {}
+
+        result_str += 'Num data used: {0}\n'.format(self.num_data)
+
+        for label in self.labels:
+            result_str += 'Num of data marked as {0}: {1}\n'.format(
+                label, len(self.label_groups[label]))
+
+        result_str += '\n\n'
+
+        for r in range(self.rounds):
+            result_str += 'Round {0}:\n\n'.format(r)
+
+            result_str += 'Training data used: {0}\n'.format(
+                self.round_num_data[r])
+
+            for label in self.labels:
+                result_str += 'Data marked as {0}: {1}\n'.format(
+                    label, len(self.round_label_groups[r][label]))
+
+            result_str += '\n'
+
+        result_str += '\n\n'
+
         for metric in self.metrics_list:
             result_str += '{0}:\n'.format(metric.desc)
+            metrics_mean[metric.desc] = 0
 
             for r in range(self.rounds):
                 result_str += '\tRound {0}:\n'.format(r)
@@ -120,16 +170,43 @@ class CrossValidationMachineLearning(CrossValidation):
                     mean += result
                     result_str += '\t\tClass {0}: {1}\n'.format(label, result)
 
-                result_str += '\t\tMean: {0}\n\n'.format(mean /
-                                                         len(self.labels))
+                mean /= len(self.labels)
+                result_str += '\t\tMean: {0}\n\n'.format(mean)
+                metrics_mean[metric.desc] += mean
+
+            metrics_mean[metric.desc] /= self.rounds
+
+        result_str += '\n\n'
+        result_str += 'Average results:\n'
+        result_str += '---------------\n'
+
+        for metric in self.metrics_list:
+            result_str += '{0}: {1}\n'.format(metric.desc,
+                                              metrics_mean[metric.desc])
 
         return result_str
+
+    def create_labels_groups(self, data):
+        label_groups = {}
+        label_groups.fromkeys(self.labels)
+        label_groups = defaultdict(lambda: [], label_groups)
+
+        for input_vector in data.values():
+            label = input_vector[-1]
+            label_groups[label].append(input_vector)
+
+        return label_groups
 
     def get_model(self, cross_item_score):
         '''
         This function should get the data that will be used as training data,
         train the algorithm with this data and return the generated model
         '''
+
+        self.round_num_data.append(len(cross_item_score))
+        self.round_label_groups.append(
+            self.create_labels_groups(cross_item_score))
+
         bayes_matrix = BayesMatrix()
 
         all_matrix = (np.matrix(cross_item_score.values()))
@@ -142,7 +219,12 @@ class CrossValidationMachineLearning(CrossValidation):
         return bayes_matrix
 
     def get_user_score(self, user):
-        return self.ml_data.create_data(self.labels, self.thresholds)
+        user_score = self.ml_data.create_data(self.labels, self.thresholds)
+
+        self.label_groups = self.create_labels_groups(user_score)
+        self.num_data = len(user_score)
+
+        return user_score
 
     '''
     :param round_user: The model created by the machine learning algorithm.

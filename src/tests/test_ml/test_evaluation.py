@@ -6,7 +6,8 @@ from mock import patch
 from src.ml.cross_validation import (ConfusionMatrix,
                                      CrossValidationMachineLearning,
                                      Evaluation)
-from src.evaluation import SimpleAccuracy
+from src.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
+                            F_score, MCC, Accuracy)
 
 
 class ConfusionMatrixTest(unittest.TestCase):
@@ -19,6 +20,18 @@ class ConfusionMatrixTest(unittest.TestCase):
         confusion_matrix.run()
 
         tp, tn, fp, fn = 1, 1, 1, 1
+        self.assertEqual(tp, confusion_matrix.true_positive_len)
+        self.assertEqual(tn, confusion_matrix.true_negative_len)
+        self.assertEqual(fp, confusion_matrix.false_positive_len)
+        self.assertEqual(fn, confusion_matrix.false_negative_len)
+
+        predicted_results = array([[1], [1], [1], [0]])
+        real_results = array([[1], [1], [0], [1]])
+
+        confusion_matrix = ConfusionMatrix(predicted_results, real_results)
+        confusion_matrix.run()
+
+        tp, tn, fp, fn = 2, 0, 1, 1
         self.assertEqual(tp, confusion_matrix.true_positive_len)
         self.assertEqual(tn, confusion_matrix.true_negative_len)
         self.assertEqual(fp, confusion_matrix.false_positive_len)
@@ -100,6 +113,17 @@ class CrossValidationTests(unittest.TestCase):
         self.assertEquals(len(data_matrix),
                           len(cross_validation_ml.get_user_score(None)))
 
+        expected_num_B = 3  # noqa
+        expected_num_G = 4  # noqa
+        expected_num_M = 3  # noqa
+
+        for label in labels:
+            self.assertEqual(eval('expected_num_{0}'.format(label)),
+                             len(cross_validation_ml.label_groups[label]))
+
+        expected_num_data = 10
+        self.assertEqual(expected_num_data, cross_validation_ml.num_data)
+
         bayes_model = cross_validation_ml.get_model(data_matrix)
         data = array([[1, 0, 1, 0, 1, 1, 1, 1],
                       [0, 1, 0, 1, 1, 1, 1, 0],
@@ -139,8 +163,162 @@ class CrossValidationTests(unittest.TestCase):
         real_results = cross_validation_ml.get_real_results(data_matrix)
 
         cross_validation_ml.run_metrics(predictions, real_results)
-        test_string = '  S_Accuracy  :\n\tRound 0:\n\t\tClass B: 0.8\n\t\t' \
-                      'Class M: 1.0\n\t\tClass G: 0.8\n\t\t' \
-                      'Mean: 0.866666666667\n\n'
 
-        self.assertEqual(test_string, cross_validation_ml.__str__())
+
+class MetricsTest(unittest.TestCase):
+
+    def test_simple_accuracy(self):
+        predicted_results = array([[1], [1], [0], [0]])
+        actual_results = array([[1], [1], [0], [1]])
+        labels = [0, 1]
+        metric = SimpleAccuracy()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0.75
+        expected_0 = 0.75
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+    def test_precision(self):
+        predicted_results = array([[1], [1], [0], [0]])
+        actual_results = array([[1], [1], [0], [1]])
+        labels = [0, 1]
+        metric = Precision()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 1
+        expected_0 = 0.5
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+        predicted_results = array([[0], [0], [0], [0]])
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0
+        expected_0 = 0.25
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+    def test_recall(self):
+        predicted_results = array([[1], [1], [0], [0], [1]])
+        actual_results = array([[1], [1], [0], [1], [1]])
+        labels = [0, 1]
+        metric = Recall()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0.75
+        expected_0 = 1
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+        predicted_results = array([[0], [0], [1], [0], [0]])
+        actual_results = array([[1], [1], [0], [1], [1]])
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0
+        expected_0 = 0
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+    def test_fpr(self):
+        predicted_results = array([[1], [1], [0], [1], [0]])
+        actual_results = array([[0], [0], [0], [1], [0]])
+        labels = [0, 1]
+        metric = FPR()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0.5
+        expected_0 = 0
+
+        self.assertEquals(expected_1, results[1])
+        self.assertEquals(expected_0, results[0])
+
+    def test_f1_score(self):
+        predicted_results = array([[1], [1], [0], [1], [0], [1]])
+        actual_results = array([[1], [1], [1], [0], [1], [1]])
+        labels = [0, 1]
+        metric = F_score(1)
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0.6666666666666666
+        expected_0 = 0
+
+        self.assertAlmostEqual(expected_1, results[1])
+        self.assertEqual(expected_0, results[0])
+
+    def test_f0_5_score(self):
+        predicted_results = array([[1], [1], [0], [1], [0], [1]])
+        actual_results = array([[1], [1], [1], [0], [1], [1]])
+        labels = [0, 1]
+        metric = F_score(0.5)
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0.71428571
+        expected_0 = 0
+
+        self.assertAlmostEqual(expected_1, results[1])
+        self.assertEqual(expected_0, results[0])
+
+    def test_f2_score(self):
+        predicted_results = array([[1], [1], [0], [1], [0], [1]])
+        actual_results = array([[1], [1], [1], [0], [1], [1]])
+        labels = [0, 1]
+        metric = F_score(2)
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1 = 0.625
+        expected_0 = 0
+
+        self.assertAlmostEqual(expected_1, results[1])
+        self.assertEqual(expected_0, results[0])
+
+    def test_mcc_score(self):
+        predicted_results = array([[1], [1], [0], [1], [0], [1]])
+        actual_results = array([[1], [1], [1], [0], [0], [1]])
+        labels = [0, 1]
+        metric = MCC()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1, expected_0 = 0.25, 0.25
+
+        self.assertAlmostEqual(expected_1, results[1])
+        self.assertEqual(expected_0, results[0])
+
+    def test_accuracy(self):
+        predicted_results = array([[1], [1], [0], [1], [0], [1]])
+        actual_results = array([[1], [1], [1], [0], [0], [1]])
+        labels = [0, 1]
+        metric = Accuracy()
+
+        evaluation = Evaluation(predicted_results, actual_results, labels)
+        results = evaluation.run(metric)
+
+        expected_1, expected_0 = 0.625, 0.625
+
+        self.assertAlmostEqual(expected_1, results[1])
+        self.assertEqual(expected_0, results[0])

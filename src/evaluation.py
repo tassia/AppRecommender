@@ -94,11 +94,11 @@ class Accuracy(Metric):
         """
         Compute metric.
         """
-        error_1 = (float(len(evaluation.false_positive)) /
+        error_1 = (float(evaluation.false_positive_len) /
                         (evaluation.repository_size -
-                         len(evaluation.real_relevant)))
-        error_2 = (float(len(evaluation.false_negative)) /
-                   len(evaluation.real_relevant))
+                         evaluation.real_relevant_len))
+        error_2 = (float(evaluation.false_negative_len) /
+                   evaluation.real_relevant_len)
         accuracy = 1 - (float(error_1 + error_2) / 2)
         return accuracy
 
@@ -120,8 +120,12 @@ class Precision(Metric):
         """
         Compute metric.
         """
-        precision = float(len(evaluation.true_positive))
-        return precision / len(evaluation.predicted_relevant)
+        precision = float(evaluation.true_positive_len)
+
+        if not precision:
+            return 0.0
+
+        return precision / float(evaluation.predicted_relevant_len)
 
 
 class Recall(Metric):
@@ -141,8 +145,12 @@ class Recall(Metric):
         """
         Compute metric.
         """
-        recall = float(len(evaluation.true_positive))
-        return recall / len(evaluation.real_relevant)
+        recall = float(evaluation.true_positive_len)
+
+        if not recall:
+            return 0.0
+
+        return recall / evaluation.real_relevant_len
 
 
 class FPR(Metric):
@@ -161,7 +169,11 @@ class FPR(Metric):
         """
         Compute metric.
         """
-        return (float(len(evaluation.false_positive)) /
+
+        if not evaluation.false_positive_len:
+            return 0.0
+
+        return (float(evaluation.false_positive_len) /
                 evaluation.real_negative_len)
 
 
@@ -181,15 +193,18 @@ class MCC(Metric):
         """
         Compute metric.
         """
-        VP = len(evaluation.true_positive)
-        FP = len(evaluation.false_positive)
-        FN = len(evaluation.false_negative)
+        VP = evaluation.true_positive_len
+        FP = evaluation.false_positive_len
+        FN = evaluation.false_negative_len
         VN = evaluation.true_negative_len
+
         if ((VP + FP) == 0 or (VP + FN) == 0 or
            (VN + FP) == 0 or (VN + FN) == 0):
             return 0
+
         MCC = (((VP * VN) - (FP * FN)) /
                math.sqrt((VP + FP) * (VP + FN) * (VN + FP) * (VN + FN)))
+
         return MCC
 
 
@@ -315,9 +330,13 @@ class Evaluation:
         """
         self.repository_size = repository_size
         self.predicted_item_scores = predicted.item_score
+
         self.predicted_relevant = predicted.get_prediction()
+        self.predicted_relevant_len = len(self.predicted_relevant)
+
         self.real_item_scores = real.item_score
         self.real_relevant = real.get_prediction()
+        self.real_relevant_len = len(self.real_relevant)
 
         self.true_positive = [v[0] for v in self.predicted_relevant if v[0] in
                               [w[0] for w in self.real_relevant]]
@@ -330,7 +349,7 @@ class Evaluation:
         self.true_positive_len = len(self.true_positive)
         self.false_positive_len = len(self.false_positive)
         self.false_negative_len = len(self.false_negative)
-        self.real_negative_len = self.repository_size - len(self.real_relevant)
+        self.real_negative_len = self.repository_size - self.real_relevant_len
         self.true_negative_len = (self.real_negative_len -
                                   len(self.false_positive))
         logging.debug("TP: %d" % len(self.true_positive))
@@ -434,9 +453,14 @@ class CrossValidation:
         Perform cross-validation.
         """
 
-        # Extracting user profile scores from cross validation
+        '''
+        A dictionary containing all the usefull user packages.
+        Its key is a package name, and its value is the input vector
+        associated with that package.
+        '''
         cross_item_score = self.get_user_score(user)
 
+        # The amount of data that will be used to train the algorithm
         partition_size = self.get_partition_size(cross_item_score)
 
         # main iteration
@@ -457,7 +481,7 @@ class CrossValidation:
             logging.debug("Round partition: %s", str(round_partition))
             logging.debug("Cross item-score: %s", str(cross_item_score))
 
-            # round user is created with remaining items
+            # The algorithm model created with the selected training data.
             round_model = self.get_model(round_partition)
 
             result_size = self.get_result_size()
@@ -481,21 +505,6 @@ class CrossValidation:
 
 
 class CrossValidationRecommender(CrossValidation):
-
-    def display_results(self):
-        for r in range(self.rounds):
-            metrics_result = ""
-            for metric in self.metrics_list:
-                metrics_result += ("     %2.1f%%    |" %
-                                   (self.cross_results[metric.desc][r] * 100))
-            str += "|   %d   |%s\n" % (r, metrics_result)
-        metrics_mean = ""
-        for metric in self.metrics_list:
-            mean = float(sum(self.cross_results[metric.desc]) /
-                         len(self.cross_results[metric.desc]))
-            metrics_mean += "     %2.1f%%    |" % (mean * 100)
-        str += "|  Mean |%s\n" % (metrics_mean)
-        return str
 
     def get_evaluation(self, predicted_result, real_result):
         num_docs = self.recommender.items_repository.get_doccount()
