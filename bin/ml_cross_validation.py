@@ -7,12 +7,14 @@ import datetime as dt
 
 sys.path.insert(0, '../')
 
+from src.config import Config
 from src.ml.cross_validation import CrossValidationMachineLearning
 from src.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
                             F_score)
 
 
-CROSS_VALIDATION_FOLDER = 'cross_validation_data/'
+BASE_DIR = Config().base_dir
+CROSS_VALIDATION_FOLDER = BASE_DIR + '/cross_validation_data/'
 
 
 def ml_cross_validation():
@@ -36,8 +38,12 @@ def ml_cross_validation():
 
     ml_cross_validation.run(None)
 
-    with open(CROSS_VALIDATION_FOLDER + cross_validaton_file, 'w') as result:
+    cross_validation_file_path = CROSS_VALIDATION_FOLDER + cross_validaton_file
+    with open(cross_validation_file_path, 'w') as result:
         result.write(ml_cross_validation.__str__())
+
+    print ("Cross validation results saved on: %s" %
+           (cross_validation_file_path))
 
 if __name__ == '__main__':
     ml_cross_validation()
