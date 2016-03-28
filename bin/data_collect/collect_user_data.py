@@ -6,6 +6,7 @@ import os
 import logging
 import commands
 import sys
+import time
 
 from threading import Thread
 
@@ -26,6 +27,7 @@ RECOMMENDATION_PATH = LOG_PATH + '/{0}_recommendation.txt'
 USER_PREFERENCES = LOG_PATH + '/user_preferences.txt'
 POPCON_SUBMISSION = LOG_PATH + '/popcon-submission'
 PC_INFORMATIONS = LOG_PATH + '/pc_informations.txt'
+RECOMMENDATIONS_TIME = LOG_PATH + '/recommendations_time.txt'
 
 
 PKGS_DEPENDENCIES = []
@@ -175,13 +177,19 @@ def get_pkgs_of_recommendation(recommendation_size, strategy,
 def collect_user_preferences():
     recommendation_size = 20
     no_auto_pkg_profile = True
+    strategies = ['cb', 'cbt', 'cbtm']
 
     recommendations = {}
+    recommendations_time = []
 
-    recommendations['cb'] = (get_pkgs_of_recommendation(recommendation_size,
-                             'cb', no_auto_pkg_profile))
-    recommendations['cbt'] = (get_pkgs_of_recommendation(recommendation_size,
-                              'cbt', no_auto_pkg_profile))
+    for strategy in strategies:
+        first_time = int(round(time.time() * 1000))
+        recommendations[strategy] = (get_pkgs_of_recommendation(
+                                     recommendation_size,
+                                     strategy, no_auto_pkg_profile))
+        last_time = int(round(time.time() * 1000))
+        recommendations_time.append("{0}: {1}".format(strategy,
+                                                      last_time - first_time))
 
     all_recommendations = set(sum(recommendations.values(), []))
     all_recommendations = sorted(list(all_recommendations))
@@ -242,6 +250,7 @@ def collect_user_preferences():
         save_list(rec_value, RECOMMENDATION_PATH.format(rec_key))
 
     save_list(preferences_list, USER_PREFERENCES)
+    save_list(recommendations_time, RECOMMENDATIONS_TIME)
 
 
 def get_all_user_pkgs():
