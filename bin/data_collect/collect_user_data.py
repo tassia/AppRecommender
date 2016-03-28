@@ -284,8 +284,13 @@ def collect_pc_informations():
     distribution_version = commands.getoutput('lsb_release -a')
     distribution_version = distribution_version.splitlines()
 
+    processor = commands.getoutput("cat /proc/cpuinfo | grep 'model name'")
+    processor = processor.splitlines()[0].split(':')[1].strip()
+    processor = "Processor: {0}".format(processor)
+
     informations.append(linux_kernel_version)
     informations.extend(distribution_version)
+    informations.append(processor)
 
     save_list(informations, PC_INFORMATIONS)
 
