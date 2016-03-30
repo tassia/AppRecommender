@@ -17,6 +17,7 @@ from src.ml.pkg_time import save_package_time, get_packages_time
 from src.data_classification import get_alternative_pkg
 from src.app_recommender import AppRecommender
 from bin.apprec_ml_traning import train_machine_learning
+from bin.ml_cross_validation import ml_cross_validation
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 ALL_INSTALLED_PKGS = LOG_PATH + '/all_pkgs.txt'
@@ -354,15 +355,21 @@ def main():
 
     create_log_folder()
     train_machine_learning('../')
-    initial_prints()
 
-    t = Thread(target=collect_user_data)
-    t.start()
+    thread_collect_user_data = Thread(target=collect_user_data)
+    thread_collect_user_data.start()
 
+    thread_ml_cross_validation = Thread(target=ml_cross_validation,
+                                        args=[LOG_PATH + '/'])
+    thread_ml_cross_validation.start()
+
+    os.system('clear')
+    print "Preparing recommendations..."
     collect_user_preferences()
 
     print "\n\nWaiting for data collection to finish"
-    t.join()
+    thread_collect_user_data.join()
+    thread_ml_cross_validation.join()
 
 if __name__ == '__main__':
     main()
