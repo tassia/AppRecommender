@@ -325,6 +325,14 @@ def initial_prints():
     print " - popularity-contest submission"
 
 
+def user_accept_collect_data():
+    accept_message = "\nYou allow these data to be collected from your computer?" \
+                     "[y, N]: "
+    accept_input = raw_input(accept_message)
+
+    return accept_input.lower() == 'y'
+
+
 def update_prints():
     print '\n' * 80
     os.system('clear')
@@ -339,6 +347,10 @@ def main():
     # if len(unistalled_dependencies) > 0:
     #     print 'These packages need to be installed:', unistalled_dependencies
     #     return
+
+    initial_prints()
+    if not user_accept_collect_data():
+        exit(1)
 
     create_log_folder()
     train_machine_learning('../')
