@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
+import os
 import sys
-sys.path.insert(0, '../')
+
+sys.path.insert(0, "{0}/../".format(os.path.dirname(__file__)))
 
 import src.ml.pkg_time as pkg_time
 

@@ -16,6 +16,7 @@ from subprocess import Popen, PIPE
 from src.ml.pkg_time import save_package_time, get_packages_time
 from src.data_classification import get_alternative_pkg
 from src.app_recommender import AppRecommender
+from bin.apprec_ml_traning import train_machine_learning
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 ALL_INSTALLED_PKGS = LOG_PATH + '/all_pkgs.txt'
@@ -34,6 +35,7 @@ PKGS_DEPENDENCIES = []
 
 
 def create_log_folder():
+    print "Creating log folder"
     if not os.path.exists(LOG_PATH):
         os.mkdir(LOG_PATH, 0755)
 
@@ -177,7 +179,7 @@ def get_pkgs_of_recommendation(recommendation_size, strategy,
 def collect_user_preferences():
     recommendation_size = 20
     no_auto_pkg_profile = True
-    strategies = ['cb', 'cbt', 'cbtm']
+    strategies = ['cb', 'cbh', 'cbtm', 'cbml']
 
     recommendations = {}
     recommendations_time = []
@@ -314,8 +316,6 @@ def collect_user_data():
 
 
 def initial_prints():
-    print "Creating log folder"
-
     print "Data that will be collected:"
     print " - PC informations"
     print " - All user packages"
@@ -340,8 +340,9 @@ def main():
     #     print 'These packages need to be installed:', unistalled_dependencies
     #     return
 
-    initial_prints()
     create_log_folder()
+    train_machine_learning('../')
+    initial_prints()
 
     t = Thread(target=collect_user_data)
     t.start()

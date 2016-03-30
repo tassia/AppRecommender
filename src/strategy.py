@@ -416,7 +416,7 @@ class Demographic(RecommendationStrategy):
 
 class MachineLearning(ContentBased):
 
-    def __init__(self, content, profile_size, suggestion_size=1000):
+    def __init__(self, content, profile_size, suggestion_size=200):
         ContentBased.__init__(self, content, profile_size)
         self.description = "Machine-learning"
         self.content = content
@@ -527,4 +527,3 @@ class MachineLearning(ContentBased):
             print "terms:"
             print terms_match
             print "="
-
