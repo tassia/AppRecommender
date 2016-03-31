@@ -21,7 +21,6 @@ __license__ = """
 """
 
 import math
-import random
 import logging
 
 from abc import ABCMeta, abstractmethod
@@ -30,6 +29,7 @@ from error import Error
 from singleton import Singleton
 from recommender import RecommendationResult
 from user import User
+from data import split_pkg_data
 
 
 class Metric(Singleton):
@@ -465,18 +465,7 @@ class CrossValidation:
 
         # main iteration
         for r in range(self.rounds):
-            round_partition = {}
-
-            # move items from cross_item_score to round-partition
-            for j in range(partition_size):
-
-                if len(cross_item_score) > 0:
-                    random_key = random.choice(cross_item_score.keys())
-                else:
-                    logging.critical("Empty cross_item_score.")
-                    raise Error
-
-                round_partition[random_key] = cross_item_score.pop(random_key)
+            round_partition = split_pkg_data(cross_item_score, partition_size)
 
             logging.debug("Round partition: %s", str(round_partition))
             logging.debug("Cross item-score: %s", str(cross_item_score))

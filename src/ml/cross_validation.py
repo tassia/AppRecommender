@@ -2,7 +2,6 @@ import numpy as np
 from collections import defaultdict
 
 from src.evaluation import CrossValidation
-from data import MachineLearningData
 from bayes_matrix import BayesMatrix
 from utils import create_column_matrix, create_binary_matrix
 
@@ -116,11 +115,10 @@ class Evaluation():
 
 class CrossValidationMachineLearning(CrossValidation):
 
-    def __init__(self, partition_proportion, rounds,
+    def __init__(self, pkg_data, partition_proportion, rounds,
                  metrics_list, labels, thresholds):
 
-        self.ml_data = MachineLearningData()
-        self.num_data = 0
+        self.pkg_data = pkg_data
         self.labels = labels
         self.thresholds = thresholds
         self.label_groups = {}
@@ -134,8 +132,9 @@ class CrossValidationMachineLearning(CrossValidation):
     def __str__(self):
         result_str = ''
         metrics_mean = {}
+        num_data = len(self.pkg_data)
 
-        result_str += 'Num data used: {0}\n'.format(self.num_data)
+        result_str += 'Num data used: {0}\n'.format(num_data)
 
         for label in self.labels:
             result_str += 'Num of data marked as {0}: {1}\n'.format(
@@ -219,10 +218,9 @@ class CrossValidationMachineLearning(CrossValidation):
         return bayes_matrix
 
     def get_user_score(self, user):
-        user_score = self.ml_data.create_data(self.labels, self.thresholds)
+        user_score = self.pkg_data
 
         self.label_groups = self.create_labels_groups(user_score)
-        self.num_data = len(user_score)
 
         return user_score
 
