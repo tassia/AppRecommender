@@ -17,11 +17,11 @@ class FilterTag():
     def __init__(self, valid_tags=[]):
         self.valid_tags = valid_tags
 
-    def __call__(self, term):
+    def __call__(self, tag):
         if len(self.valid_tags) == 0:
             return True
 
-        return term in self.valid_tags
+        return tag in self.valid_tags
 
 
 class FilterTerms():
