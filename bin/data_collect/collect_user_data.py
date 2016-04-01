@@ -178,7 +178,7 @@ def get_pkgs_of_recommendation(recommendation_size, strategy,
 
 
 def collect_user_preferences():
-    recommendation_size = 20
+    recommendation_size = 7
     no_auto_pkg_profile = True
     strategies = ['cb', 'cbh', 'cbtm', 'cbml']
 
@@ -370,6 +370,9 @@ def main():
     print "\n\nWaiting for data collection to finish"
     thread_collect_user_data.join()
     thread_ml_cross_validation.join()
+
+    print "\n\nFinished: All files and recommendations wastrans collected"
+    print "Collect data folder: {0}".format(LOG_PATH)
 
 if __name__ == '__main__':
     main()
