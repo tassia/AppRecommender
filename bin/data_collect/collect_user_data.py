@@ -104,7 +104,8 @@ def collect_popcon_submission():
 
     save_list(submission, POPCON_SUBMISSION)
 
-    rename_file(POPCON_SUBMISSION, LOG_PATH + "/" + submission_id)
+    file_name = LOG_PATH + "/" + submission_id + ".txt"
+    rename_file(POPCON_SUBMISSION, file_name)
 
 
 def collect_manual_installed_pkgs():
@@ -178,9 +179,9 @@ def get_pkgs_of_recommendation(recommendation_size, strategy,
 
 
 def collect_user_preferences():
-    recommendation_size = 7
+    recommendation_size = 10
     no_auto_pkg_profile = True
-    strategies = ['cb', 'cbh', 'cbtm', 'cbml']
+    strategies = ['cb', 'cbtm', 'cbml']
 
     recommendations = {}
     recommendations_time = []
@@ -221,7 +222,7 @@ def collect_user_preferences():
         raw_message = message.format((index + 1), all_rec_len, pkg,
                                      pkg_description)
 
-        update_prints()
+        clear_prints()
         print "\n\nCollecting user preferences"
 
         if i > 0:
@@ -237,6 +238,10 @@ def collect_user_preferences():
         while rank < 1 or rank > 4:
             try:
                 rank = raw_input(raw_message)
+
+                if rank == 'exit':
+                    exit(2)
+
                 rank = int(rank)
             except:
                 rank = -2
@@ -334,10 +339,9 @@ def user_accept_collect_data():
     return accept_input.lower() == 'y'
 
 
-def update_prints():
+def clear_prints():
     print '\n' * 80
     os.system('clear')
-    initial_prints()
 
 
 def main():
@@ -367,7 +371,7 @@ def main():
     print "Preparing recommendations..."
     collect_user_preferences()
 
-    print "\n\nWaiting for data collection to finish"
+    print "\n\nWaiting for data collection complete"
     thread_collect_user_data.join()
     thread_ml_cross_validation.join()
 

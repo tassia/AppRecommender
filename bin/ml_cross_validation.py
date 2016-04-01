@@ -33,9 +33,8 @@ def ml_cross_validation(folder_path):
 
     ml_data = MachineLearningData()
     pkg_data = ml_data.create_data(labels, threshold)
-    num_data = len(pkg_data)
 
-    cross_validaton_file = 'cross_validation_result_{0}_{1}_{2}'.format(
+    cross_validaton_file = 'cross_validation_result_{0}_{1}_{2}.txt'.format(
         rounds, partition_size, dt.datetime.now().strftime('%Y%m%d%H%M'))
 
     ml_cross_validation = CrossValidationMachineLearning(
@@ -50,8 +49,8 @@ def ml_cross_validation(folder_path):
 
     print ml_cross_validation
 
-    print ("Cross validation results saved on: %s" %
-           (cross_validation_file_path))
 
 if __name__ == '__main__':
     ml_cross_validation(CROSS_VALIDATION_FOLDER)
+    print ("Cross validation results saved on: %s" %
+           (CROSS_VALIDATION_FOLDER))

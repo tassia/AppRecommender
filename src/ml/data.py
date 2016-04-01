@@ -78,12 +78,8 @@ class MachineLearningData():
         debtags_name = self.filter_debtags(debtags_name)
         debtags_name = sorted(debtags_name)
         terms_name = self.filter_terms(terms_name)
-        print "terms: {0}".format(len(terms_name))
         terms_name = terms_name[0:len(debtags_name)]
         terms_name = sorted(terms_name)
-
-        print "terms: {0}".format(len(terms_name))
-        print "debtags: {0}".format(len(debtags_name))
 
         pkgs_classifications = (
             self.get_pkgs_table_classification(self.axi, pkgs,
