@@ -1,11 +1,31 @@
 import numpy as np
 from collections import defaultdict
 
-from src.evaluation import CrossValidation
+from src.evaluation import CrossValidation, Metric
 from bayes_matrix import BayesMatrix
 from utils import create_column_matrix, create_binary_matrix
 
 NOT_NECESSARY = 1
+
+
+class OverallAccuracy(Metric):
+
+    '''
+    Simple comparison between generated predictions and
+    real target values.
+    '''
+
+    def __init__(self):
+        self.desc = 'Overall_Accuracy'
+
+    def run(self, evaluation):
+        predicted = evaluation.predicted_results
+        target = evaluation.real_results
+
+        overall_accuracy = np.sum(predicted == target)
+        overall_accuracy /= float(predicted.shape[0])
+
+        return overall_accuracy * 100
 
 
 class ConfusionMatrix():
@@ -124,6 +144,8 @@ class CrossValidationMachineLearning(CrossValidation):
         self.label_groups = {}
         self.round_label_groups = []
         self.round_num_data = []
+        self.evaluation = None
+        self.overall_accuracy = []
 
         super(CrossValidationMachineLearning,
               self).__init__(partition_proportion, rounds, None,
@@ -144,6 +166,8 @@ class CrossValidationMachineLearning(CrossValidation):
 
         for r in range(self.rounds):
             result_str += 'Round {0}:\n\n'.format(r)
+            result_str += 'Overall Accuracy: {0}\n'.format(
+                self.overall_accuracy[r])
 
             result_str += 'Training data used: {0}\n'.format(
                 self.round_num_data[r])
@@ -266,4 +290,12 @@ class CrossValidationMachineLearning(CrossValidation):
         return NOT_NECESSARY
 
     def get_evaluation(self, predicted_result, real_result):
-        return Evaluation(predicted_result, real_result, self.labels)
+        self.evaluation = Evaluation(predicted_result, real_result,
+                                     self.labels)
+        return self.evaluation
+
+    def run_metrics(self, predicted_result, real_result):
+        super(CrossValidationMachineLearning, self).run_metrics(
+            predicted_result, real_result)
+
+        self.overall_accuracy.append(OverallAccuracy().run(self.evaluation))

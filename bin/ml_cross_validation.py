@@ -12,7 +12,6 @@ from src.ml.cross_validation import CrossValidationMachineLearning
 from src.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
                             F_score)
 from src.ml.data import MachineLearningData
-from src.data import split_pkg_data
 
 
 BASE_DIR = Config().base_dir
@@ -36,23 +35,17 @@ def ml_cross_validation():
     pkg_data = ml_data.create_data(labels, threshold)
     num_data = len(pkg_data)
 
-    cross_validation_data = split_pkg_data(pkg_data,
-                                           int(len(pkg_data) * 0.9))
-
     cross_validaton_file = 'cross_validation_result_{0}_{1}_{2}'.format(
         rounds, partition_size, dt.datetime.now().strftime('%Y%m%d%H%M'))
 
     ml_cross_validation = CrossValidationMachineLearning(
-        cross_validation_data, partition_size, rounds, metrics_list,
+        pkg_data, partition_size, rounds, metrics_list,
         labels, threshold)
 
     ml_cross_validation.run(None)
 
     cross_validation_file_path = CROSS_VALIDATION_FOLDER + cross_validaton_file
     with open(cross_validation_file_path, 'w') as result:
-        result.write('Total data: {0}\n'.format(num_data))
-        result.write('Cross Validation data: {0}\n\n'.format(
-            len(cross_validation_data)))
         result.write(ml_cross_validation.__str__())
 
     print ml_cross_validation
