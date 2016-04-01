@@ -12,6 +12,40 @@ import time
 import xapian
 
 
+class FilterTag():
+
+    def __init__(self, valid_tags=[]):
+        self.valid_tags = valid_tags
+
+    def __call__(self, term):
+        if len(self.valid_tags) == 0:
+            return True
+
+        return term in self.valid_tags
+
+
+class FilterTerms():
+
+    def __init__(self):
+        data_cl.generate_all_terms_tfidf()
+        tfidf_weights = data_cl.user_tfidf_weights
+        self.tfidf_threshold = sum(tfidf_weights.values()) / len(tfidf_weights)
+
+    def __call__(self, term, used_terms):
+        if not (term.islower() or term.startswith("Z")):
+            return False
+
+        tfidf = data_cl.term_tfidf_weight_on_user(term)
+        return (tfidf > self.tfidf_threshold and len(term) >= 4
+                and self.term_not_used(used_terms, term))
+
+    def term_not_used(self, used_terms, term):
+        is_used = term in used_terms
+        is_used |= ("Z" + term) in used_terms
+        is_used |= term[1:] in used_terms
+        return not is_used
+
+
 class MachineLearningData():
 
     XAPIAN_DATABASE_PATH = path.expanduser(
@@ -41,9 +75,15 @@ class MachineLearningData():
         terms_name = self.get_terms_for_all_pkgs(self.axi, pkgs.keys())
         debtags_name = self.get_debtags_for_all_pkgs(self.axi, pkgs.keys())
 
-        terms_name = self.filter_terms(terms_name, len(debtags_name))
-        terms_name = sorted(terms_name)
+        debtags_name = self.filter_debtags(debtags_name)
         debtags_name = sorted(debtags_name)
+        terms_name = self.filter_terms(terms_name)
+        print "terms: {0}".format(len(terms_name))
+        terms_name = terms_name[0:len(debtags_name)]
+        terms_name = sorted(terms_name)
+
+        print "terms: {0}".format(len(terms_name))
+        print "debtags: {0}".format(len(debtags_name))
 
         pkgs_classifications = (
             self.get_pkgs_table_classification(self.axi, pkgs,
@@ -136,32 +176,32 @@ class MachineLearningData():
 
         return pkg_debtags
 
-    def term_is_in_list(self, terms_list, term):
-        is_in_list = term in terms_list
-        is_in_list |= ("Z" + term) in terms_list
-        is_in_list |= term[1:] in terms_list
-        return is_in_list
-
-    def filter_terms(self, pkg_terms, pkg_terms_size):
-        data_cl.generate_all_terms_tfidf()
-        tfidf_weights = data_cl.user_tfidf_weights
-        tfidf_threshold = sum(tfidf_weights.values()) / len(tfidf_weights)
-
+    def filter_terms(self, terms):
         term_tfidf = {}
-        for term in pkg_terms.copy():
-            tfidf = data_cl.term_tfidf_weight_on_user(term)
-
-            if (tfidf > tfidf_threshold and len(term) >= 4
-               and not self.term_is_in_list(term_tfidf, term)):
-                term_tfidf[term] = tfidf
+        filtered_terms = []
+        content_filter = FilterTerms()
+        for term in terms:
+            if content_filter(term, filtered_terms):
+                term_tfidf[term] = data_cl.term_tfidf_weight_on_user(term)
+                filtered_terms.append(term)
 
         filtered_terms = sorted(term_tfidf.items(), key=lambda term: term[1])
         filtered_terms = [term[0] for term in filtered_terms]
 
-        if pkg_terms_size < len(filtered_terms):
-            filtered_terms = filtered_terms[0:pkg_terms_size]
-
         return filtered_terms
+
+    def filter_debtags(self, debtags):
+        valid_tags = []
+        filtered_debtags = []
+        with open(path.join(Config().filters_dir, "debtags")) as tags:
+            valid_tags = [line.strip() for line in tags
+                          if not line.startswith("#")]
+        content_filter = FilterTag(valid_tags)
+        for tag in debtags:
+            if content_filter(tag):
+                filtered_debtags.append(tag)
+
+        return filtered_debtags
 
     def get_pkgs_table_classification(self, axi, pkgs, debtags_name,
                                       terms_name):
