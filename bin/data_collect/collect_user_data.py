@@ -6,6 +6,7 @@ import os
 import logging
 import commands
 import sys
+import time
 
 from threading import Thread
 
@@ -15,6 +16,8 @@ from subprocess import Popen, PIPE
 from src.ml.pkg_time import save_package_time, get_packages_time
 from src.data_classification import get_alternative_pkg
 from src.app_recommender import AppRecommender
+from bin.apprec_ml_traning import train_machine_learning
+from bin.ml_cross_validation import ml_cross_validation
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 ALL_INSTALLED_PKGS = LOG_PATH + '/all_pkgs.txt'
@@ -26,12 +29,14 @@ RECOMMENDATION_PATH = LOG_PATH + '/{0}_recommendation.txt'
 USER_PREFERENCES = LOG_PATH + '/user_preferences.txt'
 POPCON_SUBMISSION = LOG_PATH + '/popcon-submission'
 PC_INFORMATIONS = LOG_PATH + '/pc_informations.txt'
+RECOMMENDATIONS_TIME = LOG_PATH + '/recommendations_time.txt'
 
 
 PKGS_DEPENDENCIES = []
 
 
 def create_log_folder():
+    print "Creating log folder"
     if not os.path.exists(LOG_PATH):
         os.mkdir(LOG_PATH, 0755)
 
@@ -99,7 +104,8 @@ def collect_popcon_submission():
 
     save_list(submission, POPCON_SUBMISSION)
 
-    rename_file(POPCON_SUBMISSION, LOG_PATH + "/" + submission_id)
+    file_name = LOG_PATH + "/" + submission_id + ".txt"
+    rename_file(POPCON_SUBMISSION, file_name)
 
 
 def collect_manual_installed_pkgs():
@@ -173,15 +179,21 @@ def get_pkgs_of_recommendation(recommendation_size, strategy,
 
 
 def collect_user_preferences():
-    recommendation_size = 20
+    recommendation_size = 10
     no_auto_pkg_profile = True
+    strategies = ['cb', 'cbtm', 'cbml']
 
     recommendations = {}
+    recommendations_time = []
 
-    recommendations['cb'] = (get_pkgs_of_recommendation(recommendation_size,
-                             'cb', no_auto_pkg_profile))
-    recommendations['cbt'] = (get_pkgs_of_recommendation(recommendation_size,
-                              'cbt', no_auto_pkg_profile))
+    for strategy in strategies:
+        first_time = int(round(time.time() * 1000))
+        recommendations[strategy] = (get_pkgs_of_recommendation(
+                                     recommendation_size,
+                                     strategy, no_auto_pkg_profile))
+        last_time = int(round(time.time() * 1000))
+        recommendations_time.append("{0}: {1}".format(strategy,
+                                                      last_time - first_time))
 
     all_recommendations = set(sum(recommendations.values(), []))
     all_recommendations = sorted(list(all_recommendations))
@@ -210,7 +222,7 @@ def collect_user_preferences():
         raw_message = message.format((index + 1), all_rec_len, pkg,
                                      pkg_description)
 
-        update_prints()
+        clear_prints()
         print "\n\nCollecting user preferences"
 
         if i > 0:
@@ -226,6 +238,10 @@ def collect_user_preferences():
         while rank < 1 or rank > 4:
             try:
                 rank = raw_input(raw_message)
+
+                if rank == 'exit':
+                    exit(2)
+
                 rank = int(rank)
             except:
                 rank = -2
@@ -242,6 +258,7 @@ def collect_user_preferences():
         save_list(rec_value, RECOMMENDATION_PATH.format(rec_key))
 
     save_list(preferences_list, USER_PREFERENCES)
+    save_list(recommendations_time, RECOMMENDATIONS_TIME)
 
 
 def get_all_user_pkgs():
@@ -284,8 +301,13 @@ def collect_pc_informations():
     distribution_version = commands.getoutput('lsb_release -a')
     distribution_version = distribution_version.splitlines()
 
+    processor = commands.getoutput("cat /proc/cpuinfo | grep 'model name'")
+    processor = processor.splitlines()[0].split(':')[1].strip()
+    processor = "Processor: {0}".format(processor)
+
     informations.append(linux_kernel_version)
     informations.extend(distribution_version)
+    informations.append(processor)
 
     save_list(informations, PC_INFORMATIONS)
 
@@ -300,8 +322,6 @@ def collect_user_data():
 
 
 def initial_prints():
-    print "Creating log folder"
-
     print "Data that will be collected:"
     print " - PC informations"
     print " - All user packages"
@@ -311,10 +331,17 @@ def initial_prints():
     print " - popularity-contest submission"
 
 
-def update_prints():
+def user_accept_collect_data():
+    accept_message = "\nYou allow these data to be collected from your computer?" \
+                     "[y, N]: "
+    accept_input = raw_input(accept_message)
+
+    return accept_input.lower() == 'y'
+
+
+def clear_prints():
     print '\n' * 80
     os.system('clear')
-    initial_prints()
 
 
 def main():
@@ -327,15 +354,29 @@ def main():
     #     return
 
     initial_prints()
+    if not user_accept_collect_data():
+        exit(1)
+
     create_log_folder()
+    train_machine_learning('../')
 
-    t = Thread(target=collect_user_data)
-    t.start()
+    thread_collect_user_data = Thread(target=collect_user_data)
+    thread_collect_user_data.start()
 
+    thread_ml_cross_validation = Thread(target=ml_cross_validation,
+                                        args=[LOG_PATH + '/'])
+    thread_ml_cross_validation.start()
+
+    os.system('clear')
+    print "Preparing recommendations..."
     collect_user_preferences()
 
-    print "\n\nWaiting for data collection to finish"
-    t.join()
+    print "\n\nWaiting for data collection complete"
+    thread_collect_user_data.join()
+    thread_ml_cross_validation.join()
+
+    print "\n\nFinished: All files and recommendations wastrans collected"
+    print "Collect data folder: {0}".format(LOG_PATH)
 
 if __name__ == '__main__':
     main()

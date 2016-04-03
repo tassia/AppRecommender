@@ -10,19 +10,20 @@ from src.config import Config
 USER_DATA_DIR = Config().user_data_dir
 
 
-def main():
+def train_machine_learning(folder_path):
     if not os.path.exists(USER_DATA_DIR):
         os.makedirs(USER_DATA_DIR)
 
     print("\n - Generating packages time list")
-    os.system("./pkg_time_list.py")
+    os.system("{0}pkg_time_list.py".format(folder_path))
 
     print("\n - Generating debtags")
-    os.system("./get_axipkgs.py -t XT > {0}tags.txt".format(USER_DATA_DIR))
+    os.system("{0}get_axipkgs.py -t XT > {1}tags.txt".format(folder_path,
+                                                             USER_DATA_DIR))
 
     print("\n - Making machine learning traning")
     os.system("rm -f {0}pkgs_classifications.txt".format(USER_DATA_DIR))
-    os.system("./pkg_classification.py")
+    os.system("{0}pkg_classification.py".format(folder_path))
 
 if __name__ == '__main__':
-    main()
+    train_machine_learning('./')

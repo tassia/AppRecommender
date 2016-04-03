@@ -416,7 +416,7 @@ class Demographic(RecommendationStrategy):
 
 class MachineLearning(ContentBased):
 
-    def __init__(self, content, profile_size, suggestion_size=1000):
+    def __init__(self, content, profile_size, suggestion_size=200):
         ContentBased.__init__(self, content, profile_size)
         self.description = "Machine-learning"
         self.content = content
@@ -481,10 +481,16 @@ class MachineLearning(ContentBased):
 
         return item_score
 
+    def get_profile(self, terms_name, debtags_name):
+        profile = ['XT' + debtag for debtag in debtags_name]
+        profile += terms_name
+
+        return profile
+
     def run(self, rec, user, rec_size):
         terms_name, debtags_name = self.load_terms_and_debtags()
 
-        profile = debtags_name + terms_name
+        profile = self.get_profile(terms_name, debtags_name)
         pkgs, pkgs_score = self.get_pkgs_and_scores(rec, user, profile)
 
         pkgs_classifications = self.get_pkgs_classifications(pkgs, terms_name,
@@ -527,4 +533,3 @@ class MachineLearning(ContentBased):
             print "terms:"
             print terms_match
             print "="
-

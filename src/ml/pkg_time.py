@@ -1,7 +1,9 @@
-import commands
+import os
 import re
+import sys
+import commands
 
-from os import path
+sys.path.insert(0, "{0}/../..".format(os.path.dirname(__file__)))
 
 from src.data_classification import get_time_from_package, get_alternative_pkg
 from src.config import Config
@@ -18,7 +20,7 @@ def create_pkg_data():
 
 def get_package_data(file_path=USER_DATA_DIR + 'pkg_data.txt'):
 
-    if path.isfile(file_path):
+    if os.path.isfile(file_path):
         pkgs_time = {}
 
         with open(file_path, 'r') as pkg_data:
