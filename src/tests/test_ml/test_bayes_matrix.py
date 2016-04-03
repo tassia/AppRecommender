@@ -14,7 +14,7 @@ class PkgClassificationTests(unittest.TestCase):
     def test_training(self):
         data_matrix = np.matrix("1 0 1 0 1; 0 1 1 0 1; 1 0 0 1 1; 1 0 1 1 0;\
                                  0 1 1 1 0")
-        classifications = np.matrix("1; 2; 0; 1; 2")
+        classifications = np.matrix([[1], [2], [0], [1], [2]])
         order_of_classifications = [0, 1, 2]
 
         prob_1 = np.matrix("1 0 0 1 1; 1 0 1 0.5 0.5; 0 1 1 0.5 0.5; 0 0 0 0 0;\
@@ -52,7 +52,7 @@ class PkgClassificationTests(unittest.TestCase):
             1, self.bayes_matrix.get_classification(attribute_vector))
 
     def test_convert_classifications_to_numbers(self):
-        classifications = np.array(['M', 'B', 'G'])
+        classifications = np.matrix([['M'], ['B'], ['G']])
         order_of_classifications = ['B', 'M', 'G']
 
         expected = np.array([[1], [0], [2]])
@@ -63,7 +63,7 @@ class PkgClassificationTests(unittest.TestCase):
             self.assertEqual(label[0], actual[index, 0])
 
     def test_get_used_order_of_classifications(self):
-        classifications = np.array(['B', 'G'])
+        classifications = np.matrix([['B'], ['G']])
         order_of_classifications = ['B', 'M', 'G']
 
         expected = ['B', 'G']
@@ -72,7 +72,7 @@ class PkgClassificationTests(unittest.TestCase):
 
         self.assertEquals(expected, actual)
 
-        classifications = np.array(['M', 'M', 'B', 'G'])
+        classifications = np.matrix([['M'], ['M'], ['B'], ['G']])
         order_of_classifications = ['B', 'M', 'G']
 
         expected = ['B', 'M', 'G']
@@ -81,7 +81,7 @@ class PkgClassificationTests(unittest.TestCase):
 
         self.assertEquals(expected, actual)
 
-        classifications = np.array(['G', 'M'])
+        classifications = np.matrix([['M'], ['G']])
         order_of_classifications = ['B', 'M', 'G']
 
         expected = ['M', 'G']

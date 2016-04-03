@@ -1,12 +1,31 @@
 import numpy as np
 from collections import defaultdict
 
-from src.evaluation import CrossValidation
-from data import MachineLearningData
+from src.evaluation import CrossValidation, Metric
 from bayes_matrix import BayesMatrix
 from utils import create_column_matrix, create_binary_matrix
 
 NOT_NECESSARY = 1
+
+
+class OverallAccuracy(Metric):
+
+    '''
+    Simple comparison between generated predictions and
+    real target values.
+    '''
+
+    def __init__(self):
+        self.desc = 'Overall_Accuracy'
+
+    def run(self, evaluation):
+        predicted = evaluation.predicted_results
+        target = evaluation.real_results
+
+        overall_accuracy = np.sum(predicted == target)
+        overall_accuracy /= float(predicted.shape[0])
+
+        return overall_accuracy * 100
 
 
 class ConfusionMatrix():
@@ -116,16 +135,17 @@ class Evaluation():
 
 class CrossValidationMachineLearning(CrossValidation):
 
-    def __init__(self, partition_proportion, rounds,
+    def __init__(self, pkg_data, partition_proportion, rounds,
                  metrics_list, labels, thresholds):
 
-        self.ml_data = MachineLearningData()
-        self.num_data = 0
+        self.pkg_data = pkg_data
         self.labels = labels
         self.thresholds = thresholds
         self.label_groups = {}
         self.round_label_groups = []
         self.round_num_data = []
+        self.evaluation = None
+        self.overall_accuracy = []
 
         super(CrossValidationMachineLearning,
               self).__init__(partition_proportion, rounds, None,
@@ -134,8 +154,9 @@ class CrossValidationMachineLearning(CrossValidation):
     def __str__(self):
         result_str = ''
         metrics_mean = {}
+        num_data = len(self.pkg_data)
 
-        result_str += 'Num data used: {0}\n'.format(self.num_data)
+        result_str += 'Num data used: {0}\n'.format(num_data)
 
         for label in self.labels:
             result_str += 'Num of data marked as {0}: {1}\n'.format(
@@ -145,6 +166,8 @@ class CrossValidationMachineLearning(CrossValidation):
 
         for r in range(self.rounds):
             result_str += 'Round {0}:\n\n'.format(r)
+            result_str += 'Overall Accuracy: {0}\n'.format(
+                self.overall_accuracy[r])
 
             result_str += 'Training data used: {0}\n'.format(
                 self.round_num_data[r])
@@ -219,10 +242,9 @@ class CrossValidationMachineLearning(CrossValidation):
         return bayes_matrix
 
     def get_user_score(self, user):
-        user_score = self.ml_data.create_data(self.labels, self.thresholds)
+        user_score = self.pkg_data
 
         self.label_groups = self.create_labels_groups(user_score)
-        self.num_data = len(user_score)
 
         return user_score
 
@@ -268,4 +290,12 @@ class CrossValidationMachineLearning(CrossValidation):
         return NOT_NECESSARY
 
     def get_evaluation(self, predicted_result, real_result):
-        return Evaluation(predicted_result, real_result, self.labels)
+        self.evaluation = Evaluation(predicted_result, real_result,
+                                     self.labels)
+        return self.evaluation
+
+    def run_metrics(self, predicted_result, real_result):
+        super(CrossValidationMachineLearning, self).run_metrics(
+            predicted_result, real_result)
+
+        self.overall_accuracy.append(OverallAccuracy().run(self.evaluation))

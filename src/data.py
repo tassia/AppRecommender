@@ -185,6 +185,22 @@ def tfidf_plus(index, docs, content_filter, time_context=0):
                            time_context)
 
 
+def split_pkg_data(user_pkg, partition_size):
+    round_partition = {}
+
+    for i in range(partition_size):
+
+        if len(user_pkg) > 0:
+            random_key = random.choice(user_pkg.keys())
+        else:
+            logging.critical("Empty user_pkg.")
+            raise Error
+
+        round_partition[random_key] = user_pkg.pop(random_key)
+
+    return round_partition
+
+
 class FilteredXapianIndex(xapian.WritableDatabase):
 
     """

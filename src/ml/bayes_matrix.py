@@ -161,7 +161,8 @@ class BayesMatrix:
         adjacent_matrix = np.zeros((num_labels, num_packages))
 
         for i in range(len(self.classifications)):
-            adjacent_matrix[self.classifications[i].item()][i] = 1
+            index = int(self.classifications[i].item())
+            adjacent_matrix[index][i] = 1
 
         return adjacent_matrix
 
@@ -174,7 +175,7 @@ class BayesMatrix:
             if len(used_classifications) == num_possible_classifications:
                 return order_of_classifications
 
-            used_classifications.add(name[0])
+            used_classifications.add(name[0].item())
 
         for index, name in enumerate(order_of_classifications[:]):
             if name not in used_classifications:

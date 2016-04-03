@@ -11,6 +11,7 @@ from src.config import Config
 from src.ml.cross_validation import CrossValidationMachineLearning
 from src.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
                             F_score)
+from src.ml.data import MachineLearningData
 
 
 BASE_DIR = Config().base_dir
@@ -24,23 +25,30 @@ def ml_cross_validation():
     if not os.path.exists(CROSS_VALIDATION_FOLDER):
         os.mkdir(CROSS_VALIDATION_FOLDER)
 
-    partition_size = 0.7
+    partition_size = 0.8
     rounds = 5
     metrics_list = [SimpleAccuracy(), Precision(), Recall(), FPR(), F_score(1)]
     labels = ['EX', 'G', 'M', 'B', 'H']
     threshold = [95, 65, 25, 10, 5]
 
+    ml_data = MachineLearningData()
+    pkg_data = ml_data.create_data(labels, threshold)
+    num_data = len(pkg_data)
+
     cross_validaton_file = 'cross_validation_result_{0}_{1}_{2}'.format(
         rounds, partition_size, dt.datetime.now().strftime('%Y%m%d%H%M'))
 
     ml_cross_validation = CrossValidationMachineLearning(
-        partition_size, rounds, metrics_list, labels, threshold)
+        pkg_data, partition_size, rounds, metrics_list,
+        labels, threshold)
 
     ml_cross_validation.run(None)
 
     cross_validation_file_path = CROSS_VALIDATION_FOLDER + cross_validaton_file
     with open(cross_validation_file_path, 'w') as result:
         result.write(ml_cross_validation.__str__())
+
+    print ml_cross_validation
 
     print ("Cross validation results saved on: %s" %
            (cross_validation_file_path))

@@ -1,7 +1,6 @@
 import unittest
 from collections import OrderedDict
 from numpy import array, matrix
-from mock import patch
 
 from src.ml.cross_validation import (ConfusionMatrix,
                                      CrossValidationMachineLearning,
@@ -63,11 +62,12 @@ class EvaluationTest(unittest.TestCase):
 
 class CrossValidationTests(unittest.TestCase):
 
-    def create_cross_validation_ml(self, partition_proportion, rounds,
-                                   metrics_list, labels, thresholds):
-        return CrossValidationMachineLearning(partition_proportion, rounds,
-                                              metrics_list,
-                                              labels, thresholds)
+    def create_cross_validation_ml(self, pkg_data, partition_proportion,
+                                   rounds, metrics_list, labels,
+                                   thresholds):
+        return CrossValidationMachineLearning(
+            pkg_data, partition_proportion, rounds, metrics_list,
+            labels, thresholds)
 
     def compare_column_matrix(self, expected_matrix, actual_matrix):
         self.assertEquals(expected_matrix.shape, actual_matrix.shape)
@@ -77,8 +77,8 @@ class CrossValidationTests(unittest.TestCase):
             self.assertEqual(expected_matrix[i, 0], actual_matrix[i, 0])
 
     def test_get_real_results(self):
-        cross_validation_ml = self.create_cross_validation_ml(0.1, 1, [], [],
-                                                              [])
+        cross_validation_ml = self.create_cross_validation_ml(
+            None, 0.1, 1, [], [], [])
         test_data = {'test1': [1, 0, 1, 0, 'T'], 'test2': [1, 1, 1, 0, 'F']}
 
         expected_result = array([['T'], ['F']])
@@ -86,8 +86,7 @@ class CrossValidationTests(unittest.TestCase):
 
         self.compare_column_matrix(expected_result, actual_result)
 
-    @patch('src.ml.data.MachineLearningData.create_data')
-    def test_cross_validation_process(self, mock_create_data):
+    def test_cross_validation_process(self):
         data_matrix = (('test1', [1, 0, 1, 0, 1, 1, 1, 1, 'G']),
                        ('test2', [0, 1, 0, 1, 1, 1, 1, 0, 'M']),
                        ('test3', [1, 0, 1, 0, 1, 0, 0, 1, 'B']),
@@ -99,7 +98,6 @@ class CrossValidationTests(unittest.TestCase):
                        ('test9', [0, 1, 1, 0, 0, 1, 1, 1, 'B']),
                        ('test10', [1, 1, 1, 0, 1, 0, 0, 1, 'G']))
         data_matrix = OrderedDict(data_matrix)
-        mock_create_data.return_value = data_matrix
 
         partition_proportion = 0.7
         rounds = 1
@@ -108,7 +106,8 @@ class CrossValidationTests(unittest.TestCase):
         thresholds = [30, 60, 80]
 
         cross_validation_ml = CrossValidationMachineLearning(
-            partition_proportion, rounds, metrics_list, labels, thresholds)
+            data_matrix, partition_proportion, rounds, metrics_list,
+            labels, thresholds)
 
         self.assertEquals(len(data_matrix),
                           len(cross_validation_ml.get_user_score(None)))
@@ -122,7 +121,7 @@ class CrossValidationTests(unittest.TestCase):
                              len(cross_validation_ml.label_groups[label]))
 
         expected_num_data = 10
-        self.assertEqual(expected_num_data, cross_validation_ml.num_data)
+        self.assertEqual(expected_num_data, len(cross_validation_ml.pkg_data))
 
         bayes_model = cross_validation_ml.get_model(data_matrix)
         data = array([[1, 0, 1, 0, 1, 1, 1, 1],
