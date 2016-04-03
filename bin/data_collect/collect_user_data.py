@@ -252,7 +252,7 @@ def collect_user_preferences():
         user_preferences[pkg] = rank
         index += 1
 
-    preferences_list = ["{0}:{1}".format(package, user_preferences[pkg])
+    preferences_list = ["{0}:{1}".format(package, user_preferences[package])
                         for package in all_recommendations]
 
     for rec_key, rec_value in recommendations.iteritems():
