@@ -20,17 +20,21 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
-import re
-import xapian
-import recommender
-import operator
+import apt
 import data
 import logging
+import operator
+import os
 import pickle
+import re
+import recommender
+import xapian
+
 import numpy as np
 
 from os import path
+from nltk.corpus import stopwords
+
 from error import Error
 from config import Config
 from ml.bayes_matrix import BayesMatrix
@@ -424,6 +428,8 @@ class MachineLearning(ContentBased):
         self.content = content
         self.profile_size = profile_size
         self.suggestion_size = suggestion_size
+        self.cache = apt.Cache()
+        self.stop_words = set(stopwords.words('english'))
 
     def load_terms_and_debtags(self):
         terms_name = []
@@ -457,7 +463,11 @@ class MachineLearning(ContentBased):
 
         pkgs_classifications = {}
         for pkg in pkgs:
-            pkg_terms = ml_data.get_pkg_terms(axi, pkg)
+
+            if pkg not in self.cache:
+                continue
+
+            pkg_terms = ml_data.get_pkg_terms(self.cache, pkg, self.stop_words)
             pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
             debtags_attributes = ml_data.create_row_table_list(debtags_name,
                                                                pkg_debtags)
@@ -514,7 +524,7 @@ class MachineLearning(ContentBased):
         sorted_result = list(reversed(sorted_result))
 
         for pkg in sorted_result:
-            pkg_terms = ml_data.get_pkg_terms(axi, pkg)
+            pkg_terms = ml_data.get_pkg_terms(self.cache, pkg, self.stop_words)
             pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
 
             terms_match = []

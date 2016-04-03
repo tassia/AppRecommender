@@ -6,10 +6,14 @@ import src.data_classification as data_cl
 from utils import sample_classification
 import pkg_time
 
+import apt
 import calendar
 import pickle
+import re
 import time
 import xapian
+
+from nltk.corpus import stopwords
 
 
 class FilterTag():
@@ -36,8 +40,8 @@ class FilterTerms():
             return False
 
         tfidf = data_cl.term_tfidf_weight_on_user(term)
-        return (tfidf > self.tfidf_threshold and len(term) >= 4
-                and self.term_not_used(used_terms, term))
+        return (tfidf > self.tfidf_threshold and len(term) >= 4 and
+                self.term_not_used(used_terms, term))
 
     def term_not_used(self, used_terms, term):
         is_used = term in used_terms
@@ -72,7 +76,11 @@ class MachineLearningData():
                                             sample_classification, labels,
                                             thresholds)
 
-        terms_name = self.get_terms_for_all_pkgs(self.axi, pkgs.keys())
+        cache = apt.Cache()
+        stop_words = set(stopwords.words('english'))
+
+        terms_name = self.get_terms_for_all_pkgs(cache, stop_words,
+                                                 pkgs.keys())
         debtags_name = self.get_debtags_for_all_pkgs(self.axi, pkgs.keys())
 
         debtags_name = self.filter_debtags(debtags_name)
@@ -84,6 +92,7 @@ class MachineLearningData():
 
         pkgs_classifications = (
             self.get_pkgs_table_classification(self.axi, pkgs,
+                                               cache, stop_words,
                                                debtags_name,
                                                terms_name))
 
@@ -142,8 +151,19 @@ class MachineLearningData():
     def get_pkg_debtags(self, axi, pkg_name):
         return self.get_pkg_data(axi, pkg_name, 'XT')
 
-    def get_pkg_terms(self, axi, pkg_name):
-        return self.get_pkg_data(axi, pkg_name, 'term')
+    def get_pkg_terms(self, cache, pkg_name, stop_words=None):
+        description = cache[pkg_name].versions[0].description.strip()
+
+        # Remove any other character that is not a letter
+        description = re.sub('[^a-zA-Z]', ' ', description)
+        description = description.lower()
+        description = description.split()
+
+        if stop_words:
+            description = [word for word in description
+                           if word not in stop_words]
+
+        return description
 
     def get_debtags_name(self, file_path):
         with open(file_path, 'r') as text:
@@ -159,10 +179,11 @@ class MachineLearningData():
 
         return row_list
 
-    def get_terms_for_all_pkgs(self, axi, pkgs):
+    def get_terms_for_all_pkgs(self, cache, stop_words, pkgs):
         pkg_terms = set()
         for pkg in pkgs:
-            pkg_terms = pkg_terms | set(self.get_pkg_terms(axi, pkg))
+            pkg_terms = pkg_terms | set(self.get_pkg_terms(cache, pkg,
+                                                           stop_words))
 
         return pkg_terms
 
@@ -200,8 +221,8 @@ class MachineLearningData():
 
         return filtered_debtags
 
-    def get_pkgs_table_classification(self, axi, pkgs, debtags_name,
-                                      terms_name):
+    def get_pkgs_table_classification(self, axi, pkgs, cache, stop_words,
+                                      debtags_name, terms_name):
         pkgs_classification = {}
 
         for key, value in pkgs.iteritems():
@@ -212,7 +233,7 @@ class MachineLearningData():
             debtags = self.create_row_table_list(debtags_name, debtags)
             pkgs_classification[key].extend(debtags)
 
-            terms = self.get_pkg_terms(axi, key)
+            terms = self.get_pkg_terms(cache, key, stop_words)
             terms = self.create_row_table_list(list(terms_name), terms)
             pkgs_classification[key].extend(terms)
 

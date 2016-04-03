@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+import apt
 import unittest
 import xapian
+
+from nltk.corpus import stopwords
 
 from src.ml.data import MachineLearningData
 
@@ -12,6 +15,8 @@ class PkgClassificationTests(unittest.TestCase):
 
     def setUp(self):
         self.ml_data = MachineLearningData()
+        self.cache = apt.Cache()
+        self.stop_words = set(stopwords.words('english'))
 
     def test_sample_classification(self):
 
@@ -40,16 +45,19 @@ class PkgClassificationTests(unittest.TestCase):
             self.assertTrue(debtag in vim_debtags_result)
 
     def test_get_pkg_terms(self):
-        vim_terms = ['Zalmost', 'Zblock', 'Zcommand', 'Zcompat', 'Zcompil',
-                     'Zcomplet', 'Zcontain', 'Zsyntax', 'Zunix', 'Zversion',
-                     'Zvi', 'Zvim']
+        vim_terms = [u'vim', u'almost', u'compatible', u'version', u'unix',
+                     u'editor', u'vi', u'many', u'new', u'features', u'added',
+                     u'multi', u'level', u'undo', u'syntax', u'highlighting',
+                     u'command', u'line', u'history', u'line', u'help',
+                     u'filename', u'completion', u'block', u'operations',
+                     u'folding', u'unicode', u'support', u'etc', u'package',
+                     u'contains', u'version', u'vim', u'compiled', u'rather',
+                     u'standard', u'set', u'features', u'package', u'provide',
+                     u'gui', u'version', u'vim', u'see',
+                     u'vim', u'packages', u'need', u'less']
 
-        axi_path = "/var/lib/apt-xapian-index/index"
-        axi = xapian.Database(axi_path)
-
-        vim_terms_result = self.ml_data.get_pkg_terms(axi, 'vim')
-
-        print vim_terms_result
+        vim_terms_result = self.ml_data.get_pkg_terms(self.cache, 'vim',
+                                                      self.stop_words)
 
         for debtag in vim_terms:
             self.assertTrue(debtag in vim_terms_result)
@@ -71,11 +79,11 @@ class PkgClassificationTests(unittest.TestCase):
         pkgs = {'vim': 'EX'}
         debtags_name = ['devel::editor', 'implemented-in::c',
                         'devel::interpreter', 'devel::lang:python']
-        terms_name = ['Zcontain', 'Zsyntax', 'Zpython']
+        terms_name = ['contain', 'syntax', 'python']
 
-        assert_pkgs_classification = {'vim': [1, 1, 0, 0, 1, 1, 0, 'EX']}
+        assert_pkgs_classification = {'vim': [1, 1, 0, 0, 0, 1, 0, 'EX']}
 
         pkgs_classification = self.ml_data.get_pkgs_table_classification(
-            axi, pkgs, debtags_name, terms_name)
+            axi, pkgs, self.cache, self.stop_words, debtags_name, terms_name)
 
         self.assertEqual(assert_pkgs_classification, pkgs_classification)
