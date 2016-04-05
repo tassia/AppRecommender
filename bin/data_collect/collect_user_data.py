@@ -2,9 +2,10 @@
 
 import apt
 import binascii
-import os
-import logging
 import commands
+import datetime as dt
+import logging
+import os
 import sys
 import time
 
@@ -12,15 +13,17 @@ sys.path.insert(0, '../../')
 
 from threading import Thread
 
-from subprocess import Popen, PIPE
-from src.data import get_user_installed_pkgs
-from src.ml.pkg_time import save_package_time, get_packages_time
-from src.data_classification import get_alternative_pkg
-from src.app_recommender import AppRecommender
 from bin.apprec_ml_traning import train_machine_learning
 from bin.ml_cross_validation import ml_cross_validation
+from src.app_recommender import AppRecommender
+from src.data import get_user_installed_pkgs
+from src.data_classification import get_alternative_pkg
+from src.ml.pkg_time import save_package_time, get_packages_time
+from subprocess import Popen, PIPE
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
+SUFIX = dt.datetime.now().strftime('%Y%m%d%H%M')
+LOG_PATH += SUFIX
 ALL_INSTALLED_PKGS = LOG_PATH + '/all_pkgs.txt'
 MANUAL_INSTALLED_PKGS_PATH = LOG_PATH + '/manual_installed_pkgs.txt'
 PKGS_TIME_PATH = LOG_PATH + '/pkgs_time.txt'
@@ -315,7 +318,7 @@ def collect_user_data():
 
 def initial_prints():
     print "Data that will be collected:"
-    print " - PC informations"
+    print " - PC informations: Processor used and both linux and distro version"
     print " - All user packages"
     print " - Manual installed packages"
     print " - Packages modify and access time"
