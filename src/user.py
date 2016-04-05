@@ -136,6 +136,7 @@ class User:
         """
         self.item_score = item_score
         self.pkg_profile = self.items()
+        self.installed_pkgs = data.get_user_installed_pkgs()
         self.arch = arch
 
         if user_id:

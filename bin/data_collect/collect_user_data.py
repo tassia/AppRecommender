@@ -8,11 +8,12 @@ import commands
 import sys
 import time
 
-from threading import Thread
-
 sys.path.insert(0, '../../')
 
+from threading import Thread
+
 from subprocess import Popen, PIPE
+from src.data import get_user_installed_pkgs
 from src.ml.pkg_time import save_package_time, get_packages_time
 from src.data_classification import get_alternative_pkg
 from src.app_recommender import AppRecommender
@@ -119,7 +120,7 @@ def collect_manual_installed_pkgs():
 
 def collect_all_user_pkgs():
     if create_file(ALL_INSTALLED_PKGS):
-        packages = get_all_user_pkgs()
+        packages = get_user_installed_pkgs()
         save_list(packages, ALL_INSTALLED_PKGS)
 
 
@@ -181,7 +182,7 @@ def get_pkgs_of_recommendation(recommendation_size, strategy,
 def collect_user_preferences():
     recommendation_size = 10
     no_auto_pkg_profile = True
-    strategies = ['cb', 'cbtm', 'cbml']
+    strategies = ['cbh', 'cbtm', 'cbml']
 
     recommendations = {}
     recommendations_time = []
@@ -261,20 +262,11 @@ def collect_user_preferences():
     save_list(recommendations_time, RECOMMENDATIONS_TIME)
 
 
-def get_all_user_pkgs():
-    dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
-
-    packages = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()
-                if 'deinstall' not in pkg.split('\t')[-1]]
-
-    return packages
-
-
 def get_uninstalled_dependencies():
     user_pkgs = []
     unistalled_pkgs = []
 
-    user_pkgs = get_all_user_pkgs()
+    user_pkgs = get_user_installed_pkgs()
 
     for pkg in PKGS_DEPENDENCIES:
         if pkg not in user_pkgs:

@@ -35,6 +35,7 @@ import simplejson as json
 import socket
 import math
 import data_classification
+import commands
 
 from error import Error
 from config import Config
@@ -87,6 +88,17 @@ def print_index(index):
                        for posting in index.postlist(term.term)])
         output += "\n---"
     return output
+
+
+def get_user_installed_pkgs():
+    dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
+
+    packages = [pkg.split('\t')[0] for pkg in dpkg_output.splitlines()
+                if 'deinstall' not in pkg.split('\t')[-1]]
+
+    packages = set(packages)
+
+    return packages
 
 
 def get_all_terms(index, docs, content_filter, normalized_weights):

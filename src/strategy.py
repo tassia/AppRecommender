@@ -141,7 +141,7 @@ class ContentBased(RecommendationStrategy):
         # Retrieve matching packages
         try:
             mset = enquire.get_mset(0, recommendation_size, None,
-                                    PkgMatchDecider(user.items()))
+                                    PkgMatchDecider(user.installed_pkgs))
         except xapian.DatabaseError as error:
             logging.critical("Content-based strategy: " + error.get_msg())
 
