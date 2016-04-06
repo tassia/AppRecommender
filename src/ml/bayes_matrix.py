@@ -1,6 +1,5 @@
 import pickle
 import numpy as np
-import time
 
 
 class BayesMatrix:
@@ -118,8 +117,6 @@ class BayesMatrix:
         self.prob_0 = np.eye(num_features, num_labels) * self.prob_0
 
     def get_classification(self, attribute_vector):
-        start_time = int(round(time.time() * 1000))
-
         attribute_vector_1 = attribute_vector.astype(float)
         attribute_vector_0 = 1 - attribute_vector
 
@@ -177,8 +174,9 @@ class BayesMatrix:
 
             used_classifications.add(name[0].item())
 
-        for index, name in enumerate(order_of_classifications[:]):
+        for name in order_of_classifications[:]:
             if name not in used_classifications:
+                index = order_of_classifications.index(name)
                 del order_of_classifications[index]
 
         return order_of_classifications
