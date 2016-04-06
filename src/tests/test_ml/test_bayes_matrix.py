@@ -88,4 +88,11 @@ class PkgClassificationTests(unittest.TestCase):
         actual = self.bayes_matrix.get_used_order_of_classifications(
             classifications, order_of_classifications)
 
+        classifications = np.matrix([['B'], ['D'], ['F']])
+        order_of_classifications = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+
+        expected = ['B', 'D', 'F']
+        actual = self.bayes_matrix.get_used_order_of_classifications(
+            classifications, order_of_classifications)
+
         self.assertEquals(expected, actual)
