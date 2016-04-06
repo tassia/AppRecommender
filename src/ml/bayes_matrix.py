@@ -55,11 +55,8 @@ class BayesMatrix:
     feature_per_label:    A l x a matrix that hold for each label, the number
                           of times a feature a was present on the label.
 
-    prob_1:               A l x a matrix that holds the probability of a given
+    prob:               A l x a matrix that holds the probability of a given
                           feature a to be present in a given label l.
-
-    prob_0:               A l x a matrix that holds the probability of a given
-                          feature a to not be present in a given label l.
 
     diag_histogram:       A diagonal matrix for the histogram one.
 
@@ -76,7 +73,7 @@ class BayesMatrix:
         self.histogram = None
         self.label_probability = None
         self.feature_per_label = None
-        self.prob_1 = None
+        self.prob = None
         self.diag_histogram = None
 
     def training(self, data_matrix, classifications,
@@ -91,7 +88,6 @@ class BayesMatrix:
 
         num_packages = self.data.shape[0]
         num_labels = self.labels.shape[0]
-        num_features = self.data.shape[1]
 
         self.classifications = (self.convert_classifications_to_number(
             classifications, self.used_order_of_classifications).astype(float))
@@ -109,29 +105,21 @@ class BayesMatrix:
         self.feature_per_label = self.adjacency * self.data
 
         self.diag_histogram = np.diag(np.array(self.histogram)[:, 0])
-        self.prob_1 = np.linalg.inv(
+        self.prob = np.linalg.inv(
             self.diag_histogram) * self.feature_per_label
-        self.prob_0 = 1 - self.prob_1
-
-        self.prob_1 = np.eye(num_features, num_labels) * self.prob_1
-        self.prob_0 = np.eye(num_features, num_labels) * self.prob_0
 
     def get_classification(self, attribute_vector):
-        attribute_vector_1 = attribute_vector.astype(float)
-        attribute_vector_0 = 1 - attribute_vector
-
+        attribute_vector = attribute_vector.astype(float)
+        prob_vector = self.prob.copy()
         label_probability_log = np.log(self.label_probability + 1)
 
-        prob_vector_1 = (self.prob_1 *
-                         np.diag(np.array(attribute_vector_1.T)[:, 0]))
-        prob_vector_0 = (self.prob_0 *
-                         np.diag(np.array(attribute_vector_0.T)[:, 0]))
+        indexes_one = np.where(attribute_vector == 1.0)[1]
+        indexes_zero = np.where(attribute_vector == 0.0)[1]
+        prob_vector[:, indexes_one] = 1 + prob_vector[:, indexes_one]
+        prob_vector[:, indexes_zero] = 2 - prob_vector[:, indexes_zero]
 
-        prob_vector = prob_vector_1 + prob_vector_0 + 1
         prob_vector = np.log(prob_vector)
-        prob_vector = prob_vector * np.ones((prob_vector.shape[0], 1))
-        prob_vector = (np.eye(self.labels.shape[0], self.data.shape[1]) *
-                       prob_vector)
+        prob_vector = prob_vector * np.ones((prob_vector.shape[1], 1))
         prob_vector = label_probability_log + prob_vector
 
         line, col = np.unravel_index(prob_vector.argmax(), prob_vector.shape)
