@@ -20,6 +20,7 @@ from src.data import get_user_installed_pkgs
 from src.data_classification import get_alternative_pkg
 from src.ml.pkg_time import save_package_time, get_packages_time
 from subprocess import Popen, PIPE
+from src.ml.data import MachineLearningData
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 SUFIX = dt.datetime.now().strftime('%Y%m%d%H%M')
@@ -354,6 +355,7 @@ def main():
 
     create_log_folder()
     train_machine_learning('../')
+    os.system("cp {} {}".format(MachineLearningData.PKGS_CLASSIFICATIONS, LOG_PATH))
 
     collect_data = Process(target=collect_user_data)
     cross_validation = Process(
