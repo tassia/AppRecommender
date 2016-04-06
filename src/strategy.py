@@ -61,6 +61,8 @@ class PkgMatchDecider(xapian.MatchDecider):
         """
         pkg = doc.get_data()
         is_new = pkg not in self.pkgs_list
+        is_new = is_new and ':' not in pkg
+
         if "kde" in pkg:
             return is_new and "kde" in self.pkgs_list
         if "gnome" in pkg:
