@@ -128,7 +128,8 @@ class BayesMatrix:
                          np.diag(np.array(attribute_vector_0.T)[:, 0]))
 
         prob_vector = prob_vector_1 + prob_vector_0 + 1
-        prob_vector = np.log(prob_vector).sum(axis=1)
+        prob_vector = np.log(prob_vector)
+        prob_vector = prob_vector * np.ones((prob_vector.shape[0], 1))
         prob_vector = (np.eye(self.labels.shape[0], self.data.shape[1]) *
                        prob_vector)
         prob_vector = label_probability_log + prob_vector
