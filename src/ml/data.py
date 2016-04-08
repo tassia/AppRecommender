@@ -78,7 +78,8 @@ class MachineLearningData():
         debtags_name = self.filter_debtags(debtags_name)
         debtags_name = sorted(debtags_name)
         terms_name = self.filter_terms(terms_name)
-        terms_name = terms_name[0:len(debtags_name)]
+        if len(debtags_name) > 0:
+            terms_name = terms_name[0:len(debtags_name)]
         terms_name = sorted(terms_name)
 
         pkgs_classifications = (
