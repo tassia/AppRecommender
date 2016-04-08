@@ -47,10 +47,11 @@ def ml_cross_validation(folder_path):
     with open(cross_validation_file_path, 'w') as result:
         result.write(ml_cross_validation.__str__())
 
-    print ml_cross_validation
+    return ml_cross_validation
+
 
 
 if __name__ == '__main__':
-    ml_cross_validation(CROSS_VALIDATION_FOLDER)
+    print ml_cross_validation(CROSS_VALIDATION_FOLDER)
     print ("Cross validation results saved on: %s" %
            (CROSS_VALIDATION_FOLDER))

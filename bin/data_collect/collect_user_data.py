@@ -11,7 +11,7 @@ import time
 
 sys.path.insert(0, '../../')
 
-from threading import Thread
+from multiprocessing import Process
 
 from bin.apprec_ml_traning import train_machine_learning
 from bin.ml_cross_validation import ml_cross_validation
@@ -318,7 +318,7 @@ def collect_user_data():
 
 def initial_prints():
     print "Data that will be collected:"
-    print " - PC informations: Processor used and both linux and distro version"
+    print " - PC informations: Processor used, both linux and distro version"
     print " - All user packages"
     print " - Manual installed packages"
     print " - Packages modify and access time"
@@ -327,8 +327,8 @@ def initial_prints():
 
 
 def user_accept_collect_data():
-    accept_message = "\nYou allow these data to be collected from your computer?" \
-                     "[y, N]: "
+    accept_message = "\nYou allow this data to be collected from your" \
+                     "computer? [y, N]: "
     accept_input = raw_input(accept_message)
 
     return accept_input.lower() == 'y'
@@ -355,22 +355,21 @@ def main():
     create_log_folder()
     train_machine_learning('../')
 
-    thread_collect_user_data = Thread(target=collect_user_data)
-    thread_collect_user_data.start()
-
-    thread_ml_cross_validation = Thread(target=ml_cross_validation,
-                                        args=[LOG_PATH + '/'])
-    thread_ml_cross_validation.start()
+    collect_data = Process(target=collect_user_data)
+    cross_validation = Process(
+        target=ml_cross_validation, args=(LOG_PATH + '/', ))
+    collect_data.start()
+    cross_validation.start()
 
     os.system('clear')
     print "Preparing recommendations..."
     collect_user_preferences()
 
     print "\n\nWaiting for data collection complete"
-    thread_collect_user_data.join()
-    thread_ml_cross_validation.join()
+    collect_data.join()
+    cross_validation.join()
 
-    print "\n\nFinished: All files and recommendations wastrans collected"
+    print "\n\nFinished: All files and recommendations were collected"
     print "Collect data folder: {0}".format(LOG_PATH)
 
 if __name__ == '__main__':
