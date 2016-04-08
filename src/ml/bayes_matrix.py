@@ -113,8 +113,9 @@ class BayesMatrix:
         prob_vector = self.prob.copy()
         label_probability_log = np.log(self.label_probability + 1)
 
-        indexes_one = np.where(attribute_vector == 1.0)[1]
-        indexes_zero = np.where(attribute_vector == 0.0)[1]
+        indexes_one = np.matrix(np.where(attribute_vector == 1.0)[1]).tolist()[0]
+        indexes_zero = np.matrix(np.where(attribute_vector == 0.0)[1]).tolist()[0]
+
         prob_vector[:, indexes_one] = 1 + prob_vector[:, indexes_one]
         prob_vector[:, indexes_zero] = 2 - prob_vector[:, indexes_zero]
 
