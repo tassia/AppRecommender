@@ -191,7 +191,12 @@ def collect_user_preferences():
     recommendations = {}
     recommendations_time = []
 
-    for strategy in strategies:
+    percent_message = "Preparing recommendations...\n"
+    percent_message += "[{}%]"
+
+    os.system('clear')
+    print percent_message.format(0.0)
+    for index, strategy in enumerate(strategies):
         first_time = int(round(time.time() * 1000))
         recommendations[strategy] = (get_pkgs_of_recommendation(
                                      recommendation_size,
@@ -199,6 +204,10 @@ def collect_user_preferences():
         last_time = int(round(time.time() * 1000))
         recommendations_time.append("{0}: {1}".format(strategy,
                                                       last_time - first_time))
+        percent = (index + 1.0) * 100.0 / len(strategies)
+        os.system('clear')
+        print percent_message.format(percent)
+
 
     all_recommendations = set(sum(recommendations.values(), []))
     all_recommendations = sorted(list(all_recommendations))
