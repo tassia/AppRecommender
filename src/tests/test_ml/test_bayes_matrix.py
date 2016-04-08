@@ -17,17 +17,14 @@ class PkgClassificationTests(unittest.TestCase):
         classifications = np.matrix([[1], [2], [0], [1], [2]])
         order_of_classifications = [0, 1, 2]
 
-        prob_1 = np.matrix("1 0 0 1 1; 1 0 1 0.5 0.5; 0 1 1 0.5 0.5; 0 0 0 0 0;\
-                           0 0 0 0 0").astype(float)
-        prob_0 = np.matrix("0 1 1 0 0; 0 1 0 0.5 0.5; 1 0 0 0.5 0.5; 0 0 0 0 0;\
-                           0 0 0 0 0").astype(float)
+        prob = np.matrix("1 0 0 1 1; 1 0 1 0.5 0.5; 0 1 1 0.5 0.5").astype(
+            float)
 
         self.bayes_matrix = BayesMatrix()
         self.bayes_matrix.training(data_matrix, classifications,
                                    order_of_classifications)
 
-        self.assertTrue(np.allclose(prob_1, self.bayes_matrix.prob_1))
-        self.assertTrue(np.allclose(prob_0, self.bayes_matrix.prob_0))
+        self.assertTrue(np.allclose(prob, self.bayes_matrix.prob))
 
     def test_get_classification(self):
         self.bayes_matrix = BayesMatrix()
@@ -39,12 +36,8 @@ class PkgClassificationTests(unittest.TestCase):
             "0.2; 0.4; 0.4").astype(float))
         self.bayes_matrix.order_of_classifications = [0, 1, 2]
         self.bayes_matrix.used_order_of_classifications = [0, 1, 2]
-        self.bayes_matrix.prob_1 = np.matrix(
-            "1 0 0 1 1; 1 0 1 0.5 0.5; 0 1 1 0.5 0.5; 0 0 0 0 0;\
-             0 0 0 0 0").astype(float)
-        self.bayes_matrix.prob_0 = np.matrix(
-            "0 1 1 0 0; 0 1 0 0.5 0.5; 1 0 0 0.5 0.5; 0 0 0 0 0;\
-             0 0 0 0 0").astype(float)
+        self.bayes_matrix.prob = np.matrix(
+            "1 0 0 1 1; 1 0 1 0.5 0.5; 0 1 1 0.5 0.5").astype(float)
 
         attribute_vector = np.matrix("1 0 1 1 0")
 
