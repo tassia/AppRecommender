@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-import os
 import commands
+import getopt
+import os
+import sys
 
 
 def load_user_preferences(folder_path):
@@ -54,6 +56,24 @@ def print_strategies_score(strategies_score):
     print '\n'
 
 
+def get_folder_path():
+    if len(sys.argv) < 2:
+        print "Usage: load_user_data.py [folder_path]"
+        exit(1)
+
+    folder_path = sys.argv[1]
+    folder_path = os.path.expanduser(folder_path)
+    if not folder_path.endswith('/'):
+        folder_path += '/'
+
+    if not os.path.exists(folder_path):
+        print "Usage: load_user_data.py [folder_path]"
+        print "Folder not exists"
+        exit(1)
+
+    return folder_path
+
+
 def main(folder_path):
     strategies = load_strategies(folder_path)
     user_preferences = load_user_preferences(folder_path)
@@ -63,6 +83,5 @@ def main(folder_path):
 
 
 if __name__ == '__main__':
-    folder_path = '~/app_recommender_log201604081638/'
-    folder_path = os.path.expanduser(folder_path)
+    folder_path = get_folder_path()
     main(folder_path)
