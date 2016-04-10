@@ -4,6 +4,8 @@ import commands
 import getopt
 import os
 import sys
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def load_user_preferences(folder_path):
@@ -45,17 +47,6 @@ def get_strategies_score(strategies, user_preferences):
     return strategies_score
 
 
-def print_strategies_score(strategies_score):
-    classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
-
-    for strategy, score in strategies_score.iteritems():
-        print "\nStrategy: {}".format(strategy)
-
-        for classification in classifications:
-            print "  {}: {}".format(classification, score[classification])
-    print '\n'
-
-
 def get_folder_path():
     if len(sys.argv) < 2:
         print "Usage: load_user_data.py [folder_path]"
@@ -74,12 +65,62 @@ def get_folder_path():
     return folder_path
 
 
+def print_strategies_score(strategies_score):
+    classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
+
+    for strategy, score in strategies_score.iteritems():
+        print "\nStrategy: {}".format(strategy)
+
+        for classification in classifications:
+            print "  {}: {}".format(classification, score[classification])
+    print '\n'
+
+
+def autolabel(ax, rects):
+    for rect in rects:
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                '%d' % int(height),
+                ha='center', va='bottom')
+
+
+def plot_strategies_score(strategies_score):
+    color = {'Bad': 'red', 'Redundant': 'orange', 'Useful': 'yellow', 'Useful Surprise': 'green'}
+    classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
+
+    groups_number = len(strategies_score)
+    std = [1] * groups_number
+    ind = np.arange(groups_number)
+    width = 0.2
+
+    rects = []
+    fig, ax = plt.subplots()
+    for index, classification in enumerate(classifications):
+        values = []
+        for _, score in strategies_score.iteritems():
+            values.append(score[classification])
+        rects.append(ax.bar(ind + (width * index), values, width, color=color[classification], yerr=std))
+
+    ax.set_ylabel('Amount')
+    ax.set_title('Amount by classification')
+    ax.set_xticks(ind + width)
+    ax.set_xticklabels(strategies_score.keys())
+
+    ax.legend([r[0] for r in rects], classifications)
+
+
+    for rect in rects:
+        autolabel(ax, rect)
+
+    plt.show()
+
 def main(folder_path):
     strategies = load_strategies(folder_path)
     user_preferences = load_user_preferences(folder_path)
     strategies_score = get_strategies_score(strategies, user_preferences)
 
     print_strategies_score(strategies_score)
+    plot_strategies_score(strategies_score)
 
 
 if __name__ == '__main__':
