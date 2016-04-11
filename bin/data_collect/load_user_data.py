@@ -2,10 +2,12 @@
 
 import commands
 import getopt
+import matplotlib.pyplot as plt
+import numpy as np
 import os
 import sys
-import numpy as np
-import matplotlib.pyplot as plt
+
+from collections import Counter
 
 
 def load_user_preferences(folder_path):
@@ -125,4 +127,29 @@ def main(folder_path):
 
 if __name__ == '__main__':
     folder_path = get_folder_path()
-    main(folder_path)
+
+    all_files = commands.getoutput("ls {}".format(folder_path)).splitlines()
+    all_files = [f for f in all_files if f.startswith('app_recommender_log')]
+    all_files = ["{}{}/".format(folder_path, f) for f in all_files]
+
+    all_strategies_score = []
+    for f in all_files:
+        strategies = load_strategies(f)
+        user_preferences = load_user_preferences(f)
+        strategies_score = get_strategies_score(strategies, user_preferences)
+
+        all_strategies_score.append(strategies_score)
+
+    strategies = set()
+    for strategies_score in all_strategies_score:
+        strategies |= set(strategies_score.keys())
+
+    sum_strategies_score = {}
+    for strategy in strategies:
+        strategies_counter = [Counter(strategies_score[strategy]) for strategies_score in all_strategies_score]
+        sum_strategies_score[strategy] = sum(strategies_counter, Counter())
+
+    plot_strategies_score(sum_strategies_score)
+
+
+    # main(folder_path)
