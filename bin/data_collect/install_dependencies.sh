@@ -1,1 +1,3 @@
-sudo apt-get install apt-xapian-index python-xapian python-cluster python-simplejson -y
+sudo apt-get install python-xapian python-cluster python-simplejson python-numpy apt-xapian-index -y
+
+sudo update-apt-xapian-index
