@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import commands
-import getopt
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -16,7 +15,8 @@ def load_user_preferences(folder_path):
     user_preferences = {}
     with open(preferences_file, 'rb') as text:
         lines = [line.strip() for line in text]
-        user_preferences = dict([(element.split(':')[0], int(element.split(':')[1])) for element in lines])
+        user_preferences = dict([(line.split(':')[0], int(line.split(':')[1]))
+                                for line in lines])
 
     return user_preferences
 
@@ -28,7 +28,8 @@ def load_strategies(folder_path):
     strategies = {}
     strategy_names = [f.split('_')[0] for f in files]
     for strategy in strategy_names:
-        strategy_file = "{}{}_{}".format(folder_path, strategy, 'recommendation.txt')
+        strategy_file = "{}{}_{}".format(folder_path, strategy,
+                                         'recommendation.txt')
         with open(strategy_file, 'rb') as text:
             strategies[strategy] = [line.strip() for line in text]
 
@@ -36,11 +37,13 @@ def load_strategies(folder_path):
 
 
 def get_strategies_score(strategies, user_preferences):
-    classifications = {1: 'Bad', 2: 'Redundant', 3: 'Useful', 4: 'Useful Surprise'}
+    classifications = {1: 'Bad', 2: 'Redundant', 3: 'Useful',
+                       4: 'Useful Surprise'}
 
     strategies_score = {}
     for strategy, pkgs in strategies.iteritems():
-        strategies_score[strategy] = {'Bad': 0, 'Redundant': 0, 'Useful': 0, 'Useful Surprise': 0}
+        strategies_score[strategy] = {'Bad': 0, 'Redundant': 0, 'Useful': 0,
+                                      'Useful Surprise': 0}
 
         for pkg in pkgs:
             classification = classifications[user_preferences[pkg]]
@@ -81,17 +84,18 @@ def print_strategies_score(strategies_score):
 def autolabel(ax, rects):
     for rect in rects:
         height = rect.get_height()
-        ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                '%d' % int(height),
+        ax.text(rect.get_x() + rect.get_width() / 2.,
+                1.05 * height, '%d' % int(height),
                 ha='center', va='bottom')
 
 
 def plot_strategies_score(strategies_score):
-    color = {'Bad': 'red', 'Redundant': 'orange', 'Useful': 'yellow', 'Useful Surprise': 'green'}
+    colors = {'Bad': 'red', 'Redundant': 'orange', 'Useful': 'yellow',
+              'Useful Surprise': 'green'}
     classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
 
     groups_number = len(strategies_score)
-    std = [1] * groups_number
+    std = [3] * groups_number
     ind = np.arange(groups_number)
     width = 0.2
 
@@ -101,7 +105,8 @@ def plot_strategies_score(strategies_score):
         values = []
         for _, score in strategies_score.iteritems():
             values.append(score[classification])
-        rects.append(ax.bar(ind + (width * index), values, width, color=color[classification], yerr=std))
+        rects.append(ax.bar(ind + (width * index), values, width,
+                     color=colors[classification], yerr=std))
 
     ax.set_ylabel('Amount')
     ax.set_title('Amount by classification')
@@ -110,46 +115,62 @@ def plot_strategies_score(strategies_score):
 
     ax.legend([r[0] for r in rects], classifications)
 
-
     for rect in rects:
         autolabel(ax, rect)
 
     plt.show()
 
-def main(folder_path):
-    strategies = load_strategies(folder_path)
-    user_preferences = load_user_preferences(folder_path)
-    strategies_score = get_strategies_score(strategies, user_preferences)
 
-    print_strategies_score(strategies_score)
-    plot_strategies_score(strategies_score)
+def get_all_folders_path(folder_path):
+    folders_path = commands.getoutput("ls {}".format(folder_path)).splitlines()
+    folders_path = [folder for folder in folders_path
+                    if folder.startswith('app_recommender_log')]
+    folders_path = ["{}{}/".format(folder_path, folder)
+                    for folder in folders_path]
+
+    return folders_path
 
 
-if __name__ == '__main__':
-    folder_path = get_folder_path()
-
-    all_files = commands.getoutput("ls {}".format(folder_path)).splitlines()
-    all_files = [f for f in all_files if f.startswith('app_recommender_log')]
-    all_files = ["{}{}/".format(folder_path, f) for f in all_files]
-
+def get_all_strategies_score(all_folders_path):
     all_strategies_score = []
-    for f in all_files:
-        strategies = load_strategies(f)
-        user_preferences = load_user_preferences(f)
+    for folder_path in all_folders_path:
+        strategies = load_strategies(folder_path)
+        user_preferences = load_user_preferences(folder_path)
         strategies_score = get_strategies_score(strategies, user_preferences)
 
         all_strategies_score.append(strategies_score)
 
+    return all_strategies_score
+
+
+def get_all_strategies(all_strategies_score):
     strategies = set()
     for strategies_score in all_strategies_score:
         strategies |= set(strategies_score.keys())
 
+    return strategies
+
+
+def get_sum_of_strategies_score(all_strategies_score, strategies):
     sum_strategies_score = {}
     for strategy in strategies:
-        strategies_counter = [Counter(strategies_score[strategy]) for strategies_score in all_strategies_score]
+        strategies_counter = [Counter(strategies_score[strategy])
+                              for strategies_score in all_strategies_score]
         sum_strategies_score[strategy] = sum(strategies_counter, Counter())
+
+    return sum_strategies_score
+
+
+def main():
+    folder_path = get_folder_path()
+    all_folders_path = get_all_folders_path(folder_path)
+    all_strategies_score = get_all_strategies_score(all_folders_path)
+    strategies = get_all_strategies(all_strategies_score)
+    sum_strategies_score = get_sum_of_strategies_score(all_strategies_score,
+                                                       strategies)
 
     plot_strategies_score(sum_strategies_score)
 
 
-    # main(folder_path)
+if __name__ == '__main__':
+    main()
