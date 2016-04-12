@@ -3,10 +3,9 @@
 import commands
 import matplotlib.pyplot as plt
 import numpy as np
-import os
-import sys
 
 from collections import Counter
+from load_data import get_folder_path, get_all_folders_path
 
 
 def load_user_preferences(folder_path):
@@ -50,24 +49,6 @@ def get_strategies_score(strategies, user_preferences):
             strategies_score[strategy][classification] += 1
 
     return strategies_score
-
-
-def get_folder_path():
-    if len(sys.argv) < 2:
-        print "Usage: load_user_data.py [folder_path]"
-        exit(1)
-
-    folder_path = sys.argv[1]
-    folder_path = os.path.expanduser(folder_path)
-    if not folder_path.endswith('/'):
-        folder_path += '/'
-
-    if not os.path.exists(folder_path):
-        print "Usage: load_user_data.py [folder_path]"
-        print "Folder not exists"
-        exit(1)
-
-    return folder_path
 
 
 def print_strategies_score(strategies_score):
@@ -119,16 +100,6 @@ def plot_strategies_score(strategies_score):
         autolabel(ax, rect)
 
     plt.show()
-
-
-def get_all_folders_path(folder_path):
-    folders_path = commands.getoutput("ls {}".format(folder_path)).splitlines()
-    folders_path = [folder for folder in folders_path
-                    if folder.startswith('app_recommender_log')]
-    folders_path = ["{}{}/".format(folder_path, folder)
-                    for folder in folders_path]
-
-    return folders_path
 
 
 def get_all_strategies_score(all_folders_path):
