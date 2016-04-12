@@ -226,9 +226,10 @@ def collect_user_preferences():
 
     message_error = "\nPlease use digits 1-4 to rank a package: "
 
+    apt_cache = apt.Cache()
     for i in range(len(all_recommendations)):
         pkg = all_recommendations[i]
-        pkg_description = apt.Cache()[pkg].versions[0].description
+        pkg_description = apt_cache[pkg].versions[0].description
 
         rank = -1
 
