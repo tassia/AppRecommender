@@ -76,8 +76,8 @@ if __name__ == '__main__':
                 xp_terms = xp_terms.lstrip(axi_tag)
                 if xp_terms.startswith('M'):
                     xp_terms = xp_terms.lstrip('M')
-                else:
-                    all_terms.add(xp_terms.lstrip(axi_tag))
+
+                all_terms.add(xp_terms.lstrip(axi_tag))
 
     for term in all_terms:
         print term
