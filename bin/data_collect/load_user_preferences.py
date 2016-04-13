@@ -66,7 +66,7 @@ def autolabel(ax, rects):
     for rect in rects:
         height = rect.get_height()
         ax.text(rect.get_x() + rect.get_width() / 2.,
-                1.05 * height, '%d' % int(height),
+                1.02 * height, '%d' % int(height),
                 ha='center', va='bottom')
 
 
@@ -76,7 +76,6 @@ def plot_strategies_score(strategies_score):
     classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
 
     groups_number = len(strategies_score)
-    std = [3] * groups_number
     ind = np.arange(groups_number)
     width = 0.2
 
@@ -87,7 +86,7 @@ def plot_strategies_score(strategies_score):
         for _, score in strategies_score.iteritems():
             values.append(score[classification])
         rects.append(ax.bar(ind + (width * index), values, width,
-                     color=colors[classification], yerr=std))
+                     color=colors[classification]))
 
     ax.set_ylabel('Amount')
     ax.set_title('Amount by classification')
@@ -99,6 +98,7 @@ def plot_strategies_score(strategies_score):
     for rect in rects:
         autolabel(ax, rect)
 
+    plt.yticks(np.arange(0.0, 50.0, 5.0))
     plt.show()
 
 

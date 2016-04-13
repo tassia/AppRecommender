@@ -49,10 +49,9 @@ def plt_cross_validation_averages(metrics_values):
     plt.bar(ind, values_plot, width=width)
     plt.xticks(ind + width / 2, metrics_plot)
     plt.yticks(np.arange(0.0, 1.1, 0.1))
-    plt.grid(axis='y', linestyle='-')
 
     for a, b in zip(ind, values_plot):
-        plt.text(a, b, str(b)[0:5])
+        plt.text(a + 0.17, b + 0.02, str(b)[0:5], ha='center')
 
     fig.autofmt_xdate()
 
