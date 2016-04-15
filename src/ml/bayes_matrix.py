@@ -79,7 +79,7 @@ class BayesMatrix:
     def training(self, data_matrix, classifications,
                  order_of_classifications):
         self.data = data_matrix.astype(float)
-        self.order_of_classifications = order_of_classifications
+        order_of_classifications = order_of_classifications[:]
         self.used_order_of_classifications = (
             self.get_used_order_of_classifications(classifications,
                                                    order_of_classifications))
@@ -113,8 +113,10 @@ class BayesMatrix:
         prob_vector = self.prob.copy()
         label_probability_log = np.log(self.label_probability + 1)
 
-        indexes_one = np.matrix(np.where(attribute_vector == 1.0)[1]).tolist()[0]
-        indexes_zero = np.matrix(np.where(attribute_vector == 0.0)[1]).tolist()[0]
+        indexes_one = np.matrix(np.where(attribute_vector == 1.0)[1])
+        indexes_one = indexes_one.tolist()[0]
+        indexes_zero = np.matrix(np.where(attribute_vector == 0.0)[1])
+        indexes_zero = indexes_zero.tolist()[0]
 
         prob_vector[:, indexes_one] = 1 + prob_vector[:, indexes_one]
         prob_vector[:, indexes_zero] = 2 - prob_vector[:, indexes_zero]

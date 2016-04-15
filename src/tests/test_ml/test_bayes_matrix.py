@@ -96,3 +96,24 @@ class PkgClassificationTests(unittest.TestCase):
             classifications, order_of_classifications)
 
         self.assertEquals(expected, actual)
+
+        classifications = np.matrix([['B'], ['D'], ['F']])
+        order_of_classifications = ['A', 'B', 'C', 'D', 'E', 'F']
+
+        expected = ['B', 'D', 'F']
+        actual = self.bayes_matrix.get_used_order_of_classifications(
+            classifications, order_of_classifications)
+
+        self.assertEquals(expected, actual)
+
+    def test_dont_change_labels_when_run_training(self):
+        data_matrix = np.matrix("1 0 1 0 1; 0 1 1 0 1; 1 0 0 1 1; 1 0 1 1 0")
+        classifications = np.matrix([[1], [2], [1], [2]])
+        labels = [0, 1, 2]
+
+        self.bayes_matrix = BayesMatrix()
+        self.bayes_matrix.training(data_matrix, classifications,
+                                   labels)
+
+        expected_labels = [0, 1, 2]
+        self.assertEquals(expected_labels, labels)
