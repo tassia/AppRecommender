@@ -62,15 +62,15 @@ def print_strategies_score(strategies_score):
     print '\n'
 
 
-def autolabel(ax, rects):
+def autolabel(ax, rects, string_format):
     for rect in rects:
         height = rect.get_height()
         ax.text(rect.get_x() + rect.get_width() / 2.,
-                1.02 * height, '%d' % int(height),
+                1.02 * height, string_format % height,
                 ha='center', va='bottom')
 
 
-def plot_strategies_score(strategies_score):
+def plot_strategies_score(strategies_score, title, ylabel, plot_min, plot_max, plot_step, string_format='%d'):
     colors = {'Bad': 'red', 'Redundant': 'orange', 'Useful': 'yellow',
               'Useful Surprise': 'green'}
     classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
@@ -88,17 +88,17 @@ def plot_strategies_score(strategies_score):
         rects.append(ax.bar(ind + (width * index), values, width,
                      color=colors[classification]))
 
-    ax.set_ylabel('Amount')
-    ax.set_title('Amount by classification')
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
     ax.set_xticks(ind + width)
     ax.set_xticklabels(strategies_score.keys())
 
     ax.legend([r[0] for r in rects], classifications)
 
     for rect in rects:
-        autolabel(ax, rect)
+        autolabel(ax, rect, string_format)
 
-    plt.yticks(np.arange(0.0, 50.0, 5.0))
+    plt.yticks(np.arange(plot_min, plot_max, plot_step))
     plt.show()
 
 
@@ -132,6 +132,20 @@ def get_sum_of_strategies_score(all_strategies_score, strategies):
     return sum_strategies_score
 
 
+def get_averages_of_strategies_score(all_strategies_score, strategies):
+    strategies_score = get_sum_of_strategies_score(all_strategies_score, strategies)
+
+    for strategy, classifications in strategies_score.iteritems():
+        sum_values = sum(classifications.values())
+        sum_values = float(sum_values)
+
+        for classification, value in classifications.iteritems():
+            classifications[classification] = value / sum_values
+            classifications[classification] *= 100
+
+    return strategies_score
+
+
 def main():
     folder_path = get_folder_path()
     all_folders_path = get_all_folders_path(folder_path)
@@ -139,8 +153,10 @@ def main():
     strategies = get_all_strategies(all_strategies_score)
     sum_strategies_score = get_sum_of_strategies_score(all_strategies_score,
                                                        strategies)
+    averages_strategies_score = get_averages_of_strategies_score(all_strategies_score, strategies)
 
-    plot_strategies_score(sum_strategies_score)
+    plot_strategies_score(sum_strategies_score, 'Amount by classification', 'Amount', 0.0, 55.0, 5.0)
+    plot_strategies_score(averages_strategies_score, 'Percentage by Amount', 'Percentage', 0.0, 100.0, 5.0, '%.2f%%')
 
 
 if __name__ == '__main__':
