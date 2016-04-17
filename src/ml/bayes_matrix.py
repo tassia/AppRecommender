@@ -98,10 +98,6 @@ class BayesMatrix:
         self.histogram = self.adjacency.dot(np.ones((num_packages, 1)))
         self.label_probability = self.histogram / num_packages
 
-        # print "\nhistogram:"
-        # print self.histogram
-        # print ""
-
         self.feature_per_label = self.adjacency * self.data
 
         self.diag_histogram = np.diag(np.array(self.histogram)[:, 0])

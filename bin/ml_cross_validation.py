@@ -22,24 +22,24 @@ CROSS_VALIDATION_FOLDER = BASE_DIR + '/cross_validation_data/'
 
 
 def get_strategy(ml_strategy_str, pkg_data, partition_size, rounds,
-                 metrics_list, labels, threshold):
+                 metrics_list, labels):
     if ml_strategy_str == 'bow':
         return CrossValidationBOW(
             pkg_data, partition_size, rounds, metrics_list,
-            labels, threshold)
+            labels)
     else:
         return CrossValidationBVA(
             pkg_data, partition_size, rounds, metrics_list,
-            labels, threshold)
+            labels)
 
 
-def get_pkg_data(ml_strategy_str, ml_data, labels, threshold):
+def get_pkg_data(ml_strategy_str, ml_data, labels):
     if ml_strategy_str == 'bow':
         path = BagOfWords.BAG_OF_WORDS_PKGS_CLASSIFICATION
         with open(path, 'ra') as pkgs_classification:
             return pickle.load(pkgs_classification)
     else:
-        return ml_data.create_data(labels, threshold)
+        return ml_data.create_data(labels)
 
 
 def ml_cross_validation(folder_path, ml_strategy_str):
@@ -52,14 +52,13 @@ def ml_cross_validation(folder_path, ml_strategy_str):
     partition_size = 0.8
     rounds = 5
     metrics_list = [SimpleAccuracy(), Precision(), Recall(), FPR(), F_score(1)]
-    labels = ['EX', 'G', 'M', 'B', 'H']
-    threshold = [95, 65, 25, 10, 5]
+    labels = ['RU', 'U', 'NU']
 
     ml_data = MachineLearningData()
-    pkg_data = get_pkg_data(ml_strategy_str, ml_data, labels, threshold)
+    pkg_data = get_pkg_data(ml_strategy_str, ml_data, labels)
     ml_cross_validation = get_strategy(
         ml_strategy_str, pkg_data, partition_size, rounds,
-        metrics_list, labels, threshold)
+        metrics_list, labels)
 
     cross_validaton_file = 'cross_validation_result_{0}_{1}_{2}.txt'.format(
         rounds, partition_size, dt.datetime.now().strftime('%Y%m%d%H%M'))

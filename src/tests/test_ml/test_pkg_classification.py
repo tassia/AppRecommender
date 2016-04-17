@@ -6,25 +6,12 @@ import xapian
 
 from src.ml.data import MachineLearningData
 
-from src.ml.utils import sample_classification
-
 
 class PkgClassificationTests(unittest.TestCase):
 
     def setUp(self):
         self.ml_data = MachineLearningData()
         self.cache = apt.Cache()
-
-    def test_sample_classification(self):
-
-        labels = ['EX', 'G', 'M', 'B', 'H']
-        threshold = [85, 75, 55, 35, 10]
-
-        self.assertEqual('EX', sample_classification(86, labels, threshold))
-        self.assertEqual('G', sample_classification(78, labels, threshold))
-        self.assertEqual('M', sample_classification(65, labels, threshold))
-        self.assertEqual('B', sample_classification(42, labels, threshold))
-        self.assertEqual('H', sample_classification(12, labels, threshold))
 
     def test_get_pkg_debtags(self):
         vim_debtags = ['devel::editor', 'implemented-in::c',

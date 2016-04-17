@@ -3,7 +3,6 @@ from os import path
 from src.config import Config
 import src.data_classification as data_cl
 
-from utils import sample_classification
 import pkg_time
 
 import apt
@@ -69,10 +68,9 @@ class MachineLearningData():
         self.axi = xapian.Database(MachineLearningData.XAPIAN_DATABASE_PATH)
         self.stemmer = SnowballStemmer('english')
 
-    def create_data(self, labels, thresholds):
+    def create_data(self, labels):
         pkgs = self.get_pkgs_classification(data_cl.square_percent_function,
-                                            sample_classification, labels,
-                                            thresholds)
+                                            labels)
 
         cache = apt.Cache()
 
@@ -102,9 +100,9 @@ class MachineLearningData():
 
         return pkgs_classifications
 
-    def get_pkgs_classification(self, percent_function,
-                                classification_function, labels, thresholds):
-        pkgs = {}
+    def get_pkgs_classification(self, percent_function, labels):
+        pkgs_percent = {}
+        pkgs_classification = {}
         time_now = calendar.timegm(time.gmtime())
 
         pkg_data = pkg_time.get_package_data()
@@ -113,12 +111,24 @@ class MachineLearningData():
             modify = time_values[0]
             access = time_values[1]
 
-            percent = percent_function(modify, access, time_now)
+            pkgs_percent[name] = percent_function(modify, access, time_now)
 
-            pkgs[name] = classification_function(percent * 100, labels,
-                                                 thresholds)
+        pkgs = pkgs_percent.keys()
+        pkgs = sorted(pkgs, key=lambda pkg: pkgs_percent[pkg])
 
-        return pkgs
+        size = len(pkgs) / len(labels)
+        for index, label in enumerate(labels):
+            index_begin = size * index
+            index_end = index_begin + size
+            classifications = dict.fromkeys(pkgs[index_begin:index_end], label)
+            pkgs_classification.update(classifications)
+
+        index_begin = size * len(labels)
+        if index_begin < len(labels):
+            classifications = dict.fromkeys(pkgs[index_begin], label[-1])
+            pkgs_classification.update(classifications)
+
+        return pkgs_classification
 
     def get_pkg_data(self, axi, pkg_name, data_type):
         pkg_name = 'XP' + pkg_name

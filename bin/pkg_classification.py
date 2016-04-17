@@ -39,8 +39,7 @@ def main():
 
     ml_data = MachineLearningData()
     labels = ['RU', 'U', 'NU']
-    threshold = [80, 70, 50]
-    pkgs_classifications = ml_data.create_data(labels, threshold)
+    pkgs_classifications = ml_data.create_data(labels)
 
     all_matrix = (np.matrix(pkgs_classifications.values()))
     data_matrix = all_matrix[0:, 0:-1]
