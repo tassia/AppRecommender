@@ -8,12 +8,13 @@ import pkg_time
 
 import apt
 import calendar
+import nltk
 import pickle
 import re
 import time
 import xapian
 
-from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
 
 
 class FilterTag():
@@ -66,6 +67,7 @@ class MachineLearningData():
 
     def __init__(self):
         self.axi = xapian.Database(MachineLearningData.XAPIAN_DATABASE_PATH)
+        self.stemmer = SnowballStemmer('english')
 
     def create_data(self, labels, thresholds):
         if path.isfile(MachineLearningData.PKGS_CLASSIFICATIONS):
@@ -77,10 +79,8 @@ class MachineLearningData():
                                             thresholds)
 
         cache = apt.Cache()
-        stop_words = set(stopwords.words('english'))
 
-        terms_name = self.get_terms_for_all_pkgs(cache, stop_words,
-                                                 pkgs.keys())
+        terms_name = self.get_terms_for_all_pkgs(cache, pkgs.keys())
         debtags_name = self.get_debtags_for_all_pkgs(self.axi, pkgs.keys())
 
         debtags_name = self.filter_debtags(debtags_name)
@@ -92,8 +92,7 @@ class MachineLearningData():
 
         pkgs_classifications = (
             self.get_pkgs_table_classification(self.axi, pkgs,
-                                               cache, stop_words,
-                                               debtags_name,
+                                               cache, debtags_name,
                                                terms_name))
 
         self.save_pkg_data(terms_name,
@@ -151,19 +150,19 @@ class MachineLearningData():
     def get_pkg_debtags(self, axi, pkg_name):
         return self.get_pkg_data(axi, pkg_name, 'XT')
 
-    def get_pkg_terms(self, cache, pkg_name, stop_words=None):
+    def get_pkg_terms(self, cache, pkg_name):
         description = cache[pkg_name].versions[0].description.strip()
 
-        # Remove any other character that is not a letter
-        description = re.sub('[^a-zA-Z]', ' ', description)
-        description = description.lower()
-        description = description.split()
+        tokens = [word for sent in nltk.sent_tokenize(description) for word in
+                  nltk.word_tokenize(sent)]
+        filtered_tokens = []
 
-        if stop_words:
-            description = [word for word in description
-                           if word not in stop_words]
+        for token in tokens:
+            if re.search('[a-zA-Z]', token):
+                filtered_tokens.append(token)
+        stems = [self.stemmer.stem(t) for t in filtered_tokens]
 
-        return description
+        return stems
 
     def get_debtags_name(self, file_path):
         with open(file_path, 'r') as text:
@@ -179,11 +178,10 @@ class MachineLearningData():
 
         return row_list
 
-    def get_terms_for_all_pkgs(self, cache, stop_words, pkgs):
+    def get_terms_for_all_pkgs(self, cache, pkgs):
         pkg_terms = set()
         for pkg in pkgs:
-            pkg_terms = pkg_terms | set(self.get_pkg_terms(cache, pkg,
-                                                           stop_words))
+            pkg_terms = pkg_terms | set(self.get_pkg_terms(cache, pkg))
 
         return pkg_terms
 
@@ -221,7 +219,7 @@ class MachineLearningData():
 
         return filtered_debtags
 
-    def get_pkgs_table_classification(self, axi, pkgs, cache, stop_words,
+    def get_pkgs_table_classification(self, axi, pkgs, cache,
                                       debtags_name, terms_name):
         pkgs_classification = {}
 
@@ -233,7 +231,7 @@ class MachineLearningData():
             debtags = self.create_row_table_list(debtags_name, debtags)
             pkgs_classification[key].extend(debtags)
 
-            terms = self.get_pkg_terms(cache, key, stop_words)
+            terms = self.get_pkg_terms(cache, key)
             terms = self.create_row_table_list(list(terms_name), terms)
             pkgs_classification[key].extend(terms)
 

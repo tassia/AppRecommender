@@ -4,8 +4,6 @@ import apt
 import unittest
 import xapian
 
-from nltk.corpus import stopwords
-
 from src.ml.data import MachineLearningData
 
 from src.ml.utils import sample_classification
@@ -16,7 +14,6 @@ class PkgClassificationTests(unittest.TestCase):
     def setUp(self):
         self.ml_data = MachineLearningData()
         self.cache = apt.Cache()
-        self.stop_words = set(stopwords.words('english'))
 
     def test_sample_classification(self):
 
@@ -45,22 +42,22 @@ class PkgClassificationTests(unittest.TestCase):
             self.assertTrue(debtag in vim_debtags_result)
 
     def test_get_pkg_terms(self):
-        vim_terms = [u'vim', u'almost', u'compatible', u'version', u'unix',
-                     u'editor', u'vi', u'many', u'new', u'features', u'added',
-                     u'multi', u'level', u'undo', u'syntax', u'highlighting',
-                     u'command', u'line', u'history', u'line', u'help',
-                     u'filename', u'completion', u'block', u'operations',
-                     u'folding', u'unicode', u'support', u'etc', u'package',
-                     u'contains', u'version', u'vim', u'compiled', u'rather',
-                     u'standard', u'set', u'features', u'package', u'provide',
-                     u'gui', u'version', u'vim', u'see',
-                     u'vim', u'packages', u'need', u'less']
+        vim_terms = [u'vim', u'is', u'an', u'almost', u'compat', u'version',
+                     u'of', u'the', u'unix', u'editor', u'vi', u'mani', u'new',
+                     u'featur', u'have', u'been', u'ad', u'multi', u'level',
+                     u'undo', u'syntax', u'highlight', u'command', u'line',
+                     u'histori', u'on-lin', u'help', u'filenam', u'complet',
+                     u'block', u'oper', u'fold', u'unicod', u'support', u'etc',
+                     u'this', u'packag', u'contain', u'a', u'version', u'of',
+                     u'vim', u'compil', u'with', u'a', u'rather', u'standard',
+                     u'set', u'of', u'featur', u'this', u'packag', u'doe',
+                     u'not', u'provid', u'a', u'gui', u'version', u'of',
+                     u'vim', u'see', u'the', u'other', u'vim-*', u'packag',
+                     u'if', u'you', u'need', u'more', u'or', u'less']
+        vim_terms_result = self.ml_data.get_pkg_terms(self.cache, 'vim')
 
-        vim_terms_result = self.ml_data.get_pkg_terms(self.cache, 'vim',
-                                                      self.stop_words)
-
-        for debtag in vim_terms:
-            self.assertTrue(debtag in vim_terms_result)
+        for term in vim_terms:
+            self.assertTrue(term in vim_terms_result)
 
     def test_create_row_table_list(self):
         labels_name = ['devel::editor', 'implemented-in::c', 'complet',
@@ -81,9 +78,9 @@ class PkgClassificationTests(unittest.TestCase):
                         'devel::interpreter', 'devel::lang:python']
         terms_name = ['contain', 'syntax', 'python']
 
-        assert_pkgs_classification = {'vim': [1, 1, 0, 0, 0, 1, 0, 'EX']}
+        assert_pkgs_classification = {'vim': [1, 1, 0, 0, 1, 1, 0, 'EX']}
 
         pkgs_classification = self.ml_data.get_pkgs_table_classification(
-            axi, pkgs, self.cache, self.stop_words, debtags_name, terms_name)
+            axi, pkgs, self.cache, debtags_name, terms_name)
 
         self.assertEqual(assert_pkgs_classification, pkgs_classification)
