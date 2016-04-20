@@ -164,6 +164,9 @@ class MachineLearningData():
 
         return stems
 
+    def get_pkg_section(self, cache, pkg_name):
+        return cache[pkg_name].section
+
     def get_debtags_name(self, file_path):
         with open(file_path, 'r') as text:
             debtags_name = [debtag.strip() for debtag in text]
