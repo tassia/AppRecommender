@@ -61,7 +61,7 @@ class PkgClassificationTests(unittest.TestCase):
 
     def test_create_row_table_list(self):
         labels_name = ['devel::editor', 'implemented-in::c', 'complet',
-                       'Zcontain', 'Zsyntax', 'Zunix', 'Zversion']
+                       'contain', 'syntax', 'unix', 'version']
         pkg_elements = ['implemented-in::c', 'complet']
 
         row_list_to_assert = [0, 1, 1, 0, 0, 0, 0]
