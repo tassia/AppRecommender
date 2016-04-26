@@ -52,7 +52,8 @@ class BagOfWords():
         return ml_data.get_pkg_terms(cache, pkg)
 
     def get_pkg_debtags(self, pkg, axi, ml_data):
-        return ml_data.get_pkg_debtags(axi, pkg)
+        return map(lambda x: x.replace('::', '_'),
+                   ml_data.get_pkg_debtags(axi, pkg))
 
     def get_pkg_section(self, pkg, cache, ml_data):
         return ml_data.get_pkg_section(cache, pkg)
