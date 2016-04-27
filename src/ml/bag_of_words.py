@@ -49,6 +49,21 @@ class BagOfWords():
 
         return description
 
+    def classify_pkg(self, pkg, axi, cache, ml_data):
+        pkg_data = self.create_pkg_data(pkg, axi, cache, ml_data)
+        pkg_feature = self.vectorizer.transform([pkg_data])
+
+        label = self.classifier.predict(pkg_feature.toarray())
+
+        return label[0]
+
+    def create_pkg_data(self, pkg, axi, cache, ml_data):
+        description = self.get_pkg_description(pkg, cache, ml_data)
+        debtags = self.get_pkg_debtags(pkg, axi, ml_data)
+        section = self.get_pkg_section(pkg, cache, ml_data)
+
+        return ' '.join(self.combine_pkg_info(description, debtags, section))
+
     def get_pkgs_classification(self, pkgs_list):
         pkgs_classification = []
 
@@ -86,12 +101,8 @@ class BagOfWords():
         pkgs_classification = []
 
         for pkg in pkg_list:
-            description = self.get_pkg_description(pkg, cache, ml_data)
-            debtags = self.get_pkg_debtags(pkg, axi, ml_data)
-            section = self.get_pkg_section(pkg, cache, ml_data)
-
-            pkg_data = self.combine_pkg_info(description, debtags, section)
-            pkgs_description.append(' '.join(pkg_data))
+            pkg_data = self.create_pkg_data(pkg, axi, cache, ml_data)
+            pkgs_description.append(pkg_data)
 
         pkgs_classification = self.get_pkgs_classification(pkg_list)
 
