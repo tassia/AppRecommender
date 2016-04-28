@@ -150,11 +150,15 @@ class MachineLearningData():
     def get_pkg_debtags(self, axi, pkg_name):
         return self.get_pkg_data(axi, pkg_name, 'XT')
 
-    def get_pkg_terms(self, cache, pkg_name):
+    def get_pkg_terms(self, cache, pkg_name, stop_words=None):
         description = cache[pkg_name].versions[0].description.strip()
 
         tokens = [word for sent in nltk.sent_tokenize(description) for word in
                   nltk.word_tokenize(sent)]
+
+        if stop_words is not None:
+            tokens = [word for word in tokens if word not in stop_words]
+
         filtered_tokens = []
 
         for token in tokens:
