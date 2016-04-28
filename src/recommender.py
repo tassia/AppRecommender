@@ -149,8 +149,8 @@ class Recommender:
         elif strategy_str == "cbtm":
             self.strategy = strategy.ContentBased("time", profile_size)
         elif strategy_str == "cbml":
-            self.strategy = strategy.MachineLearning("machine_learning",
-                                                     profile_size)
+            self.strategy = strategy.MachineLearningBVA("machine_learning",
+                                                        profile_size)
         elif strategy_str == "cb_eset":
             self.strategy = strategy.ContentBased("mix_eset", profile_size)
         elif strategy_str == "cbt_eset":

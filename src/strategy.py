@@ -32,6 +32,7 @@ import xapian
 
 import numpy as np
 
+from abc import ABCMeta, abstractmethod
 from os import path
 from nltk.corpus import stopwords
 
@@ -117,7 +118,7 @@ class TagExpandDecider(xapian.ExpandDecider):
         return term.startswith("XT")
 
 
-class RecommendationStrategy:
+class RecommendationStrategy(object):
 
     """
     Base class for recommendation strategies.
@@ -422,96 +423,16 @@ class Demographic(RecommendationStrategy):
 
 class MachineLearning(ContentBased):
 
+    __metaclass__ = ABCMeta
+
     def __init__(self, content, profile_size, suggestion_size=200):
         ContentBased.__init__(self, content, profile_size)
-        self.description = "Machine-learning"
         self.content = content
+        self.description = 'Machine-learning'
         self.profile_size = profile_size
         self.suggestion_size = suggestion_size
         self.cache = apt.Cache()
         self.stop_words = set(stopwords.words('english'))
-
-    def load_terms_and_debtags(self):
-        terms_name = []
-        debtags_name = []
-        with open(MachineLearningData.MACHINE_LEARNING_TERMS, 'rb') as text:
-            terms_name = pickle.load(text)
-        with open(MachineLearningData.MACHINE_LEARNING_DEBTAGS, 'rb') as text:
-            debtags_name = pickle.load(text)
-
-        return terms_name, debtags_name
-
-    def get_pkgs_and_scores(self, rec, user, profile):
-        content_based = self.get_sugestion_from_profile(rec, user,
-                                                        profile,
-                                                        self.suggestion_size)
-        pkgs, pkgs_score = [], {}
-        for pkg_line in str(content_based).splitlines()[1:]:
-            pkg = pkg_line.split(':')[1][1:]
-            pkg_score = int(pkg_line.split(':')[0].strip())
-
-            pkgs.append(pkg)
-            pkgs_score[pkg] = self.suggestion_size - pkg_score
-
-        return pkgs, pkgs_score
-
-    def get_pkgs_classifications(self, pkgs, terms_name, debtags_name):
-        ml_data = MachineLearningData()
-        bayes_matrix = BayesMatrix.load(
-            MachineLearningData.MACHINE_LEARNING_TRAINING)
-        axi = xapian.Database(XAPIAN_DATABASE_PATH)
-
-        pkgs_classifications = {}
-        for pkg in pkgs:
-
-            if pkg not in self.cache:
-                continue
-
-            pkg_terms = ml_data.get_pkg_terms(self.cache, pkg, self.stop_words)
-            pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
-            debtags_attributes = ml_data.create_row_table_list(debtags_name,
-                                                               pkg_debtags)
-            terms_attributes = ml_data.create_row_table_list(terms_name,
-                                                             pkg_terms)
-            attribute_vector = terms_attributes + debtags_attributes
-
-            attribute_vector = np.matrix(attribute_vector)
-
-            classification = bayes_matrix.get_classification(attribute_vector)
-            pkgs_classifications[pkg] = classification
-
-        return pkgs_classifications
-
-    def get_item_score(self, pkgs_score, pkgs_classifications):
-        item_score = {}
-        order = ['H', 'B', 'M', 'G', 'EX']
-        order_values = [0, 1000, 2000, 3000, 4000]
-
-        for pkg, classification in pkgs_classifications.iteritems():
-            item_score[pkg] = order_values[order.index(classification)]
-            item_score[pkg] += pkgs_score[pkg]
-
-        return item_score
-
-    def get_profile(self, terms_name, debtags_name):
-        profile = ['XT' + debtag for debtag in debtags_name]
-        profile += terms_name
-
-        return profile
-
-    def run(self, rec, user, rec_size):
-        terms_name, debtags_name = self.load_terms_and_debtags()
-
-        profile = self.get_profile(terms_name, debtags_name)
-        pkgs, pkgs_score = self.get_pkgs_and_scores(rec, user, profile)
-
-        pkgs_classifications = self.get_pkgs_classifications(pkgs, terms_name,
-                                                             debtags_name)
-
-        item_score = self.get_item_score(pkgs_score, pkgs_classifications)
-        result = recommender.RecommendationResult(item_score, limit=rec_size)
-
-        return result
 
     def display_recommended_terms(self, terms_name, debtags_name, item_score,
                                   rec_size):
@@ -545,3 +466,137 @@ class MachineLearning(ContentBased):
             print "terms:"
             print terms_match
             print "="
+
+    def get_item_score(self, pkgs_score, pkgs_classifications):
+        item_score = {}
+        order = ['H', 'B', 'M', 'G', 'EX']
+        order_values = [0, 1000, 2000, 3000, 4000]
+
+        for pkg, classification in pkgs_classifications.iteritems():
+            item_score[pkg] = order_values[order.index(classification)]
+            item_score[pkg] += pkgs_score[pkg]
+
+        return item_score
+
+    def get_pkgs_and_scores(self, rec, user, profile):
+        content_based = self.get_sugestion_from_profile(rec, user,
+                                                        profile,
+                                                        self.suggestion_size)
+        pkgs, pkgs_score = [], {}
+        for pkg_line in str(content_based).splitlines()[1:]:
+            pkg = pkg_line.split(':')[1][1:]
+            pkg_score = int(pkg_line.split(':')[0].strip())
+
+            pkgs.append(pkg)
+            pkgs_score[pkg] = self.suggestion_size - pkg_score
+
+        return pkgs, pkgs_score
+
+    def get_pkgs_classifications(self, pkgs, terms_name, debtags_name):
+        ml_strategy = self.get_ml_strategy()
+        pkgs_classifications = {}
+
+        for pkg in pkgs:
+
+            if pkg not in self.cache:
+                continue
+
+            attribute_vector = self.prepare_pkg_data(
+                pkg, terms_name, debtags_name)
+
+            classification = self.get_pkg_classification(
+                ml_strategy, attribute_vector)
+            pkgs_classifications[pkg] = classification
+
+        return pkgs_classifications
+
+    def get_profile(self, terms_name, debtags_name):
+        profile = ['XT' + debtag for debtag in debtags_name]
+        profile += terms_name
+
+        return profile
+
+    def load_terms_and_debtags(self):
+        terms_name = []
+        debtags_name = []
+
+        terms_path = self.get_terms_path()
+        debtags_path = self.get_debtags_path()
+
+        with open(terms_path, 'rb') as terms:
+            terms_name = pickle.load(terms)
+        with open(debtags_path, 'rb') as debtags:
+            debtags_name = pickle.load(debtags)
+
+        return terms_name, debtags_name
+
+    @abstractmethod
+    def get_debtags_path(self):
+        raise NotImplementedError("Method not implemented.")
+
+    @abstractmethod
+    def get_ml_strategy(self):
+        raise NotImplementedError("Method not implemented.")
+
+    @abstractmethod
+    def get_pkg_classification(self, ml_strategy, attribute_vector):
+        raise NotImplementedError("Method not implemented.")
+
+    @abstractmethod
+    def get_terms_path(self):
+        raise NotImplementedError("Method not implemented.")
+
+    @abstractmethod
+    def prepare_pkg_data(self, pkg, terms_name, debtags_name):
+        raise NotImplementedError("Method not implemented.")
+
+    def run(self, rec, user, rec_size):
+        terms_name, debtags_name = self.load_terms_and_debtags()
+
+        profile = self.get_profile(terms_name, debtags_name)
+        pkgs, pkgs_score = self.get_pkgs_and_scores(rec, user, profile)
+
+        pkgs_classifications = self.get_pkgs_classifications(pkgs, terms_name,
+                                                             debtags_name)
+
+        item_score = self.get_item_score(pkgs_score, pkgs_classifications)
+        result = recommender.RecommendationResult(item_score, limit=rec_size)
+
+        return result
+
+
+class MachineLearningBVA(MachineLearning):
+
+    def __init__(self, content, profile_size, suggestion_size=200):
+        super(MachineLearningBVA, self).__init__(
+            content, profile_size, suggestion_size)
+        self.description = "Machine-learning-binary-vector-approach"
+
+    def get_debtags_path(self):
+        return MachineLearningData.MACHINE_LEARNING_DEBTAGS
+
+    def get_ml_strategy(self):
+        return BayesMatrix.load(
+            MachineLearningData.MACHINE_LEARNING_TRAINING)
+
+    def get_pkg_classification(self, ml_strategy, attribute_vector):
+        return ml_strategy.get_classification(attribute_vector)
+
+    def get_terms_path(self):
+        return MachineLearningData.MACHINE_LEARNING_TERMS
+
+    def prepare_pkg_data(self, pkg, terms_name, debtags_name):
+        ml_data = MachineLearningData()
+        axi = xapian.Database(XAPIAN_DATABASE_PATH)
+
+        pkg_terms = ml_data.get_pkg_terms(self.cache, pkg, self.stop_words)
+        pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
+        debtags_attributes = ml_data.create_row_table_list(
+            debtags_name, pkg_debtags)
+        terms_attributes = ml_data.create_row_table_list(
+            terms_name, pkg_terms)
+        attribute_vector = terms_attributes + debtags_attributes
+
+        attribute_vector = np.matrix(attribute_vector)
+
+        return attribute_vector
