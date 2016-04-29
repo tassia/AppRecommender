@@ -62,46 +62,6 @@ def print_strategies_score(strategies_score):
     print '\n'
 
 
-def autolabel(ax, rects, string_format):
-    for rect in rects:
-        height = rect.get_height()
-        ax.text(rect.get_x() + rect.get_width() / 2.,
-                1.02 * height, string_format % height,
-                ha='center', va='bottom')
-
-
-def plot_strategies_score(strategies_score, title, ylabel, plot_min, plot_max, plot_step, string_format='%d'):
-    colors = {'Bad': 'red', 'Redundant': 'orange', 'Useful': 'yellow',
-              'Useful Surprise': 'green'}
-    classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
-
-    groups_number = len(strategies_score)
-    ind = np.arange(groups_number)
-    width = 0.2
-
-    rects = []
-    fig, ax = plt.subplots()
-    for index, classification in enumerate(classifications):
-        values = []
-        for _, score in strategies_score.iteritems():
-            values.append(score[classification])
-        rects.append(ax.bar(ind + (width * index), values, width,
-                     color=colors[classification]))
-
-    ax.set_ylabel(ylabel)
-    ax.set_title(title)
-    ax.set_xticks(ind + width)
-    ax.set_xticklabels(strategies_score.keys())
-
-    ax.legend([r[0] for r in rects], classifications)
-
-    for rect in rects:
-        autolabel(ax, rect, string_format)
-
-    plt.yticks(np.arange(plot_min, plot_max, plot_step))
-    plt.show()
-
-
 def get_all_strategies_score(all_folders_path):
     all_strategies_score = []
     for folder_path in all_folders_path:
@@ -114,49 +74,31 @@ def get_all_strategies_score(all_folders_path):
     return all_strategies_score
 
 
-def get_all_strategies(all_strategies_score):
-    strategies = set()
+def get_csv(all_strategies_score):
+    rows = []
+    rows.append('Strategy;Bad;Redundant;Useful;Useful Surprise')
+    classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
+
     for strategies_score in all_strategies_score:
-        strategies |= set(strategies_score.keys())
+        for strategy, scores in strategies_score.iteritems():
+            row = [strategy]
+            for classification in classifications:
+                row.append(scores[classification])
 
-    return strategies
+            row = ';'.join(str(element) for element in row)
+            rows.append(row)
 
-
-def get_sum_of_strategies_score(all_strategies_score, strategies):
-    sum_strategies_score = {}
-    for strategy in strategies:
-        strategies_counter = [Counter(strategies_score[strategy])
-                              for strategies_score in all_strategies_score]
-        sum_strategies_score[strategy] = sum(strategies_counter, Counter())
-
-    return sum_strategies_score
-
-
-def get_averages_of_strategies_score(all_strategies_score, strategies):
-    strategies_score = get_sum_of_strategies_score(all_strategies_score, strategies)
-
-    for strategy, classifications in strategies_score.iteritems():
-        sum_values = sum(classifications.values())
-        sum_values = float(sum_values)
-
-        for classification, value in classifications.iteritems():
-            classifications[classification] = value / sum_values
-            classifications[classification] *= 100
-
-    return strategies_score
+    return rows
 
 
 def main():
     folder_path = get_folder_path()
     all_folders_path = get_all_folders_path(folder_path)
     all_strategies_score = get_all_strategies_score(all_folders_path)
-    strategies = get_all_strategies(all_strategies_score)
-    sum_strategies_score = get_sum_of_strategies_score(all_strategies_score,
-                                                       strategies)
-    averages_strategies_score = get_averages_of_strategies_score(all_strategies_score, strategies)
 
-    plot_strategies_score(sum_strategies_score, 'Amount by classification', 'Amount', 0.0, 55.0, 5.0)
-    plot_strategies_score(averages_strategies_score, 'Percentage by Amount', 'Percentage', 0.0, 100.0, 5.0, '%.2f%%')
+    csv_rows = get_csv(all_strategies_score)
+    for row in csv_rows:
+        print row
 
 
 if __name__ == '__main__':
