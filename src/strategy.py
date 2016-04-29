@@ -433,6 +433,8 @@ class MachineLearning(ContentBased):
         self.suggestion_size = suggestion_size
         self.cache = apt.Cache()
         self.stop_words = set(stopwords.words('english'))
+        self.ml_data = MachineLearningData()
+        self.axi = xapian.Database(XAPIAN_DATABASE_PATH)
 
     def display_recommended_terms(self, terms_name, debtags_name, item_score,
                                   rec_size):
