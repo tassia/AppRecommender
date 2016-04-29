@@ -38,6 +38,7 @@ from nltk.corpus import stopwords
 
 from error import Error
 from config import Config
+from ml.bag_of_words import BagOfWords
 from ml.bayes_matrix import BayesMatrix
 from ml.data import MachineLearningData
 
@@ -497,6 +498,11 @@ class MachineLearning(ContentBased):
     def get_pkgs_classifications(self, pkgs, terms_name, debtags_name):
         ml_strategy = self.get_ml_strategy()
         pkgs_classifications = {}
+        kwargs = {}
+
+        kwargs['terms_name'] = terms_name
+        kwargs['debtags_name'] = debtags_name
+        kwargs['ml_strategy'] = ml_strategy
 
         for pkg in pkgs:
 
@@ -504,7 +510,7 @@ class MachineLearning(ContentBased):
                 continue
 
             attribute_vector = self.prepare_pkg_data(
-                pkg, terms_name, debtags_name)
+                pkg, **kwargs)
 
             classification = self.get_pkg_classification(
                 ml_strategy, attribute_vector)
@@ -549,7 +555,7 @@ class MachineLearning(ContentBased):
         raise NotImplementedError("Method not implemented.")
 
     @abstractmethod
-    def prepare_pkg_data(self, pkg, terms_name, debtags_name):
+    def prepare_pkg_data(self, pkg, **kwargs):
         raise NotImplementedError("Method not implemented.")
 
     def run(self, rec, user, rec_size):
@@ -587,18 +593,48 @@ class MachineLearningBVA(MachineLearning):
     def get_terms_path(self):
         return MachineLearningData.MACHINE_LEARNING_TERMS
 
-    def prepare_pkg_data(self, pkg, terms_name, debtags_name):
-        ml_data = MachineLearningData()
-        axi = xapian.Database(XAPIAN_DATABASE_PATH)
+    def prepare_pkg_data(self, pkg, **kwargs):
 
-        pkg_terms = ml_data.get_pkg_terms(self.cache, pkg, self.stop_words)
-        pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
-        debtags_attributes = ml_data.create_row_table_list(
+        terms_name = kwargs['terms_name']
+        debtags_name = kwargs['debtags_name']
+
+        pkg_terms = self.ml_data.get_pkg_terms(
+            self.cache, pkg, self.stop_words)
+        pkg_debtags = self.ml_data.get_pkg_debtags(self.axi, pkg)
+        debtags_attributes = self.ml_data.create_row_table_list(
             debtags_name, pkg_debtags)
-        terms_attributes = ml_data.create_row_table_list(
+        terms_attributes = self.ml_data.create_row_table_list(
             terms_name, pkg_terms)
         attribute_vector = terms_attributes + debtags_attributes
 
         attribute_vector = np.matrix(attribute_vector)
 
+        return attribute_vector
+
+
+class MachineLearningBOW(MachineLearning):
+
+    def __init__(self, content, profile_size, suggestion_size=200):
+        super(MachineLearningBOW, self).__init__(
+            content, profile_size, suggestion_size)
+        self.description = "Machine-learning-bag-of-words"
+
+    def get_debtags_path(self):
+        return BagOfWords.BAG_OF_WORDS_DEBTAGS
+
+    def get_ml_strategy(self):
+        return BagOfWords.load(
+            BagOfWords.BAG_OF_WORDS_MODEL)
+
+    def get_pkg_classification(self, ml_strategy, attribute_vector):
+        return ml_strategy.classify_pkg(attribute_vector)
+
+    def get_terms_path(self):
+        return BagOfWords.BAG_OF_WORDS_TERMS
+
+    def prepare_pkg_data(self, pkg, **kwargs):
+        ml_strategy = kwargs['ml_strategy']
+
+        attribute_vector = ml_strategy.create_pkg_data(
+            pkg, self.axi, self.cache, self.ml_data)
         return attribute_vector
