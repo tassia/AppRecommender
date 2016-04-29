@@ -13,6 +13,8 @@ FILES_FOLDER = os.getcwd()
 POST_INVOKE_PATH = FILES_FOLDER + "/post_invoke.py"
 PRE_INSTALL_PKGS_PATH = FILES_FOLDER + "/pre_install_pkgs.py"
 
+INSTALLED_PKGS_FILE = APT_FOLDER + "/installed_pkgs.txt"
+
 
 def main():
     post_invoke = 'DPkg::Post-Invoke {"python %s";};' % POST_INVOKE_PATH
