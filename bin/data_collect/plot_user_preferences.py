@@ -8,6 +8,7 @@ import sys
 
 from load_data import get_csv_file_path, get_lines_from_csv_file
 
+
 def autolabel(ax, rects, string_format):
     for rect in rects:
         height = rect.get_height()
@@ -45,6 +46,7 @@ def plot_strategies_score(strategies_score, classifications, title, ylabel,
 
     plt.yticks(np.arange(plot_min, plot_max, plot_step))
     plt.show()
+
 
 def get_csv_file_path():
     usage_message = "Usage: {} [csv_file_path]".format(sys.argv[0])

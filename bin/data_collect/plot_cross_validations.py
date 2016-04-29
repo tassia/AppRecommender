@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import os
-import sys
-import commands
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -36,7 +33,6 @@ def load_csv_file(csv_file_path):
 
     metrics = [metric for metric in lines[0]]
     values = [map(float, line) for line in lines[1:]]
-    metrics_values = dict((metric, 0) for metric in metrics)
 
     return values, metrics
 

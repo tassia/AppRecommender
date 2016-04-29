@@ -50,6 +50,7 @@ def get_csv_file_path():
 
     return csv_file_path
 
+
 def get_lines_from_csv_file(csv_file_path):
     with open(csv_file_path, 'rb') as text:
         lines = [line.strip() for line in text]
