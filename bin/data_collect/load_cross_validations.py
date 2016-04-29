@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import commands
-import matplotlib.pyplot as plt
-import numpy as np
 
 from load_data import get_folder_path, get_all_folders_path
 
@@ -36,26 +34,20 @@ def get_metrics_values(files_path):
     return metrics_values
 
 
-def plt_cross_validation_averages(metrics_values):
-    values_plot = []
-    metrics_plot = []
-    for metric, values in metrics_values.iteritems():
-        metrics_plot.append(metric)
-        values_plot.append(sum(values) / len(values))
+def convert_to_csv(metrics_values):
+    rows = []
+    metrics = ';'.join(metrics_values.keys())
+    rows.append(metrics)
 
-    fig = plt.figure()
-    width = .35
-    ind = np.arange(len(values_plot))
-    plt.bar(ind, values_plot, width=width)
-    plt.xticks(ind + width / 2, metrics_plot)
-    plt.yticks(np.arange(0.0, 1.1, 0.1))
+    for index in range(len(metrics_values.values()[0])):
+        row = []
+        for metric in metrics_values.keys():
+            row.append(metrics_values[metric][index])
 
-    for a, b in zip(ind, values_plot):
-        plt.text(a + 0.17, b + 0.02, str(b)[0:5], ha='center')
+        row = ';'.join(str(element) for element in row)
+        rows.append(row)
 
-    fig.autofmt_xdate()
-
-    plt.show()
+    return rows
 
 
 def main():
@@ -63,7 +55,10 @@ def main():
     all_folders_path = get_all_folders_path(folder_path)
     files_path = get_cross_validations_path(all_folders_path)
     metrics_values = get_metrics_values(files_path)
-    plt_cross_validation_averages(metrics_values)
+    csv_rows = convert_to_csv(metrics_values)
+
+    for row in csv_rows:
+        print row
 
 
 if __name__ == '__main__':
