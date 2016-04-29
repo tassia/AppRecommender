@@ -4,8 +4,10 @@ import sys
 
 
 def get_folder_path():
+    usage_message = "Usage: {} [folder_path]".format(sys.argv[0])
+
     if len(sys.argv) < 2:
-        print "Usage: load_user_data.py [folder_path]"
+        print usage_message
         exit(1)
 
     folder_path = sys.argv[1]
@@ -14,7 +16,7 @@ def get_folder_path():
         folder_path += '/'
 
     if not os.path.exists(folder_path):
-        print "Usage: load_user_data.py [folder_path]"
+        print usage_message
         print "Folder not exists"
         exit(1)
 
