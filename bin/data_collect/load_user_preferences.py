@@ -74,7 +74,7 @@ def get_all_strategies_score(all_folders_path):
     return all_strategies_score
 
 
-def get_csv(all_strategies_score):
+def convert_to_csv(all_strategies_score):
     rows = []
     rows.append('Strategy;Bad;Redundant;Useful;Useful Surprise')
     classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
@@ -96,7 +96,7 @@ def main():
     all_folders_path = get_all_folders_path(folder_path)
     all_strategies_score = get_all_strategies_score(all_folders_path)
 
-    csv_rows = get_csv(all_strategies_score)
+    csv_rows = convert_to_csv(all_strategies_score)
     for row in csv_rows:
         print row
 
