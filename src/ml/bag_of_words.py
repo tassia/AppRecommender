@@ -16,6 +16,8 @@ class BagOfWords():
     BAG_OF_WORDS_MODEL = BAG_OF_WORDS_DIR + 'bag_of_words_model.pickle'
     BAG_OF_WORDS_TERMS = BAG_OF_WORDS_DIR + 'bag_of_words_terms.pickle'
     BAG_OF_WORDS_DEBTAGS = BAG_OF_WORDS_DIR + 'bag_of_words_debtags.pickle'
+    BAG_OF_WORDS_PKGS_CLASSIFICATION = BAG_OF_WORDS_DIR + \
+        'bow_pkgs_classification.pickle'
 
     MODEL_ALREADY_CREATED = 1
     CREATED_MODEL = 0
@@ -113,6 +115,19 @@ class BagOfWords():
         with open(path, 'wa') as feature_file:
             pickle.dump(features, feature_file)
 
+    def save_pkgs_features(self, path, pkgs_list, features_array,
+                           pkg_classification):
+        pkgs_classification = {}
+
+        for index, pkg in enumerate(pkgs_list):
+            value = features_array[index, :].tolist()
+            value.append(pkg_classification[index])
+
+            pkgs_classification[pkg] = value
+
+        with open(path, 'wa') as bow_pkgs_classification:
+            pickle.dump(pkgs_classification, bow_pkgs_classification)
+
     def train_model(self, pkgs_list, axi):
         cache = Cache()
         ml_data = MachineLearningData()
@@ -120,6 +135,7 @@ class BagOfWords():
         pkgs_description, pkg_classification = self.prepare_data(
             pkgs_list, axi, cache, ml_data)
         pkg_features = self.vectorizer.fit_transform(pkgs_description)
+        features_array = pkg_features.toarray()
 
         terms, debtags = self.get_used_terms_and_debtags(
             self.vectorizer.get_feature_names())
@@ -128,6 +144,10 @@ class BagOfWords():
         self.save_features(debtags, BagOfWords.BAG_OF_WORDS_DEBTAGS)
 
         self.classifier = GaussianNB()
-        self.classifier.fit(pkg_features.toarray(), pkg_classification)
+        self.classifier.fit(features_array, pkg_classification)
+
+        path = BagOfWords.BAG_OF_WORDS_PKGS_CLASSIFICATION
+        self.save_pkgs_features(
+            path, pkgs_list, features_array, pkg_classification)
 
         return BagOfWords.CREATED_MODEL
