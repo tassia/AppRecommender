@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
-import commands
 import matplotlib.pyplot as plt
 import numpy as np
-
-from collections import Counter
-from load_data import get_folder_path, get_all_folders_path
 
 import os
 import sys
@@ -19,7 +15,8 @@ def autolabel(ax, rects, string_format):
                 ha='center', va='bottom')
 
 
-def plot_strategies_score(strategies_score, classifications, title, ylabel, plot_min, plot_max, plot_step, string_format='%d'):
+def plot_strategies_score(strategies_score, classifications, title, ylabel,
+                          plot_min, plot_max, plot_step, string_format='%d'):
     colors = ['red', 'orange', 'yellow', 'green']
 
     groups_number = len(strategies_score)
@@ -98,8 +95,9 @@ def main():
     scores, classifications = load_csv_file(csv_file_path)
     sum_scores = get_sum_of_scores(scores)
 
-
-    plot_strategies_score(sum_scores, classifications, 'Amount by classification', 'Amount', 0.0, 55.0, 5.0)
+    plot_strategies_score(sum_scores, classifications,
+                          'Amount by classification', 'Amount', 0.0, 55.0,
+                          5.0)
 
 
 if __name__ == '__main__':
