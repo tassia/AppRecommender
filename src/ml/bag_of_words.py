@@ -49,10 +49,8 @@ class BagOfWords():
 
         return description
 
-    def classify_pkg(self, pkg, axi, cache, ml_data):
-        pkg_data = self.create_pkg_data(pkg, axi, cache, ml_data)
-        pkg_feature = self.vectorizer.transform([pkg_data])
-
+    def classify_pkg(self, attribute_vector):
+        pkg_feature = self.vectorizer.transform([attribute_vector])
         label = self.classifier.predict(pkg_feature.toarray())
 
         return label[0]
