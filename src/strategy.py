@@ -439,17 +439,15 @@ class MachineLearning(ContentBased):
 
     def display_recommended_terms(self, terms_name, debtags_name, item_score,
                                   rec_size):
-        ml_data = MachineLearningData()
-        axi = xapian.Database(XAPIAN_DATABASE_PATH)
-
         sorted_result = sorted(item_score.items(), key=operator.itemgetter(1))
         sorted_result = list(reversed(sorted_result))
         sorted_result = [pkg[0] for pkg in sorted_result][0:rec_size]
         sorted_result = list(reversed(sorted_result))
 
         for pkg in sorted_result:
-            pkg_terms = ml_data.get_pkg_terms(self.cache, pkg, self.stop_words)
-            pkg_debtags = ml_data.get_pkg_debtags(axi, pkg)
+            pkg_terms = self.ml_data.get_pkg_terms(self.cache, pkg,
+                                                   self.stop_words)
+            pkg_debtags = self.ml_data.get_pkg_debtags(self.axi, pkg)
 
             terms_match = []
             for term in pkg_terms:
