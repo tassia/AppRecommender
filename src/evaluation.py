@@ -432,6 +432,10 @@ class CrossValidation:
     def get_predicted_results(self, round_user, round_partition, result_size):
         raise NotImplementedError("Method not implemented.")
 
+    @abstractmethod
+    def get_user_score(self, user):
+        raise NotImplementedError("Method not implemented.")
+
     def reset_cross_item_score(self, cross_item_score, round_partition):
         while len(round_partition) > 0:
             item, score = round_partition.popitem()
@@ -514,6 +518,14 @@ class CrossValidationRecommender(CrossValidation):
 
     def get_predicted_results(self, round_user, round_partition, result_size):
         return self.recommender.get_recommendation(round_user, result_size)
+
+    def get_user_score(user):
+        cross_item_score = {}
+
+        for pkg in user.pkg_profile:
+            cross_item_score[pkg] = user.item_score[pkg]
+
+        return cross_item_score
 
     def __str__(self):
         """
