@@ -38,7 +38,7 @@ class BagOfWords():
         self.vectorizer = TfidfVectorizer(
             max_df=0.8,
             max_features=5000,
-            min_df=3,
+            min_df=5,
             stop_words='english',
             use_idf=True)
 
@@ -51,9 +51,14 @@ class BagOfWords():
 
         return description
 
-    def classify_pkg(self, attribute_vector):
-        pkg_feature = self.vectorizer.transform([attribute_vector])
-        label = self.classifier.predict(pkg_feature.toarray())
+    def classify_pkg(self, attribute_vector, transform=True):
+        if transform:
+            pkg_feature = self.vectorizer.transform([attribute_vector])
+            pkg_feature = pkg_feature.toarray()
+        else:
+            pkg_feature = attribute_vector
+
+        label = self.classifier.predict(pkg_feature)
 
         return label[0]
 
@@ -128,7 +133,7 @@ class BagOfWords():
         with open(path, 'wa') as bow_pkgs_classification:
             pickle.dump(pkgs_classification, bow_pkgs_classification)
 
-    def train_model(self, pkgs_list, axi):
+    def train_model(self, pkgs_list, axi, save_files=True):
         cache = Cache()
         ml_data = MachineLearningData()
 
@@ -140,14 +145,15 @@ class BagOfWords():
         terms, debtags = self.get_used_terms_and_debtags(
             self.vectorizer.get_feature_names())
 
-        self.save_features(terms, BagOfWords.BAG_OF_WORDS_TERMS)
-        self.save_features(debtags, BagOfWords.BAG_OF_WORDS_DEBTAGS)
-
         self.classifier = GaussianNB()
         self.classifier.fit(features_array, pkg_classification)
 
         path = BagOfWords.BAG_OF_WORDS_PKGS_CLASSIFICATION
-        self.save_pkgs_features(
-            path, pkgs_list, features_array, pkg_classification)
+
+        if save_files:
+            self.save_features(terms, BagOfWords.BAG_OF_WORDS_TERMS)
+            self.save_features(debtags, BagOfWords.BAG_OF_WORDS_DEBTAGS)
+            self.save_pkgs_features(
+                path, pkgs_list, features_array, pkg_classification)
 
         return BagOfWords.CREATED_MODEL

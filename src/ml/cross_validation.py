@@ -1,7 +1,13 @@
 import numpy as np
+import xapian
+
+from abc import ABCMeta
 from collections import defaultdict
 
 from src.evaluation import CrossValidation, Metric
+from src.strategy import XAPIAN_DATABASE_PATH
+
+from bag_of_words import BagOfWords
 from bayes_matrix import BayesMatrix
 from utils import create_column_matrix, create_binary_matrix
 
@@ -135,6 +141,8 @@ class Evaluation():
 
 class CrossValidationMachineLearning(CrossValidation):
 
+    __metaclass__ = ABCMeta
+
     def __init__(self, pkg_data, partition_proportion, rounds,
                  metrics_list, labels, thresholds):
 
@@ -156,6 +164,7 @@ class CrossValidationMachineLearning(CrossValidation):
         metrics_mean = {}
         num_data = len(self.pkg_data)
 
+        result_str += 'Model used {0}\n'.format(self.label)
         result_str += 'Num data used: {0}\n'.format(num_data)
 
         for label in self.labels:
@@ -230,48 +239,12 @@ class CrossValidationMachineLearning(CrossValidation):
         self.round_label_groups.append(
             self.create_labels_groups(cross_item_score))
 
-        bayes_matrix = BayesMatrix()
-
-        all_matrix = (np.matrix(cross_item_score.values()))
-        data_matrix = all_matrix[0:, 0:-1]
-        classifications = all_matrix[0:, -1]
-
-        bayes_matrix.training(data_matrix, classifications,
-                              self.labels)
-
-        return bayes_matrix
-
     def get_user_score(self, user):
         user_score = self.pkg_data
 
         self.label_groups = self.create_labels_groups(user_score)
 
         return user_score
-
-    '''
-    :param round_user: The model created by the machine learning algorithm.
-
-    :param round_partition: The data that will be used to evaluate the
-                            machine learning algorithm.
-
-    :param result_size:     Not necessary for this context
-    '''
-    def get_predicted_results(self, round_user, round_partition,
-                              result_size=0):
-        '''
-        This method should generate the predictions for the packages
-        received. It basically needs to used the generated model
-        and use it to generate the prediction.
-        '''
-
-        predicted_results = []
-
-        for pkg, input_vector in round_partition.iteritems():
-            input_vector = np.matrix(input_vector[:-1])
-            predicted_results.append(
-                round_user.get_classification(input_vector))
-
-        return create_column_matrix(predicted_results)
 
     def get_real_results(self, round_partition):
         '''
@@ -299,3 +272,99 @@ class CrossValidationMachineLearning(CrossValidation):
             predicted_result, real_result)
 
         self.overall_accuracy.append(OverallAccuracy().run(self.evaluation))
+
+
+class CrossValidationBVA(CrossValidationMachineLearning):
+
+    def __init__(self, pkg_data, partition_proportion, rounds,
+                 metrics_list, labels, thresholds):
+        super(CrossValidationBVA, self).__init__(
+            pkg_data, partition_proportion, rounds, metrics_list,
+            labels, thresholds)
+        self.label = "Binary vector model"
+
+    def get_model(self, cross_item_score):
+        super(CrossValidationBVA, self).get_model(cross_item_score)
+
+        bayes_matrix = BayesMatrix()
+
+        all_matrix = (np.matrix(cross_item_score.values()))
+        data_matrix = all_matrix[0:, 0:-1]
+        classifications = all_matrix[0:, -1]
+
+        bayes_matrix.training(data_matrix, classifications,
+                              self.labels)
+
+        return bayes_matrix
+
+    '''
+    :param round_user: The model created by the machine learning algorithm.
+
+    :param round_partition: The data that will be used to evaluate the
+                            machine learning algorithm.
+
+    :param result_size:     Not necessary for this context
+    '''
+
+    def get_predicted_results(self, round_user, round_partition,
+                              result_size=0):
+        '''
+        This method should generate the predictions for the packages
+        received. It basically needs to used the generated model
+        and use it to generate the prediction.
+        '''
+
+        predicted_results = []
+
+        for pkg, input_vector in round_partition.iteritems():
+            input_vector = np.matrix(input_vector[:-1])
+            predicted_results.append(
+                round_user.get_classification(input_vector))
+
+        return create_column_matrix(predicted_results)
+
+
+class CrossValidationBOW(CrossValidationMachineLearning):
+
+    def __init__(self, pkg_data, partition_proportion, rounds,
+                 metrics_list, labels, thresholds):
+        super(CrossValidationBOW, self).__init__(
+            pkg_data, partition_proportion, rounds, metrics_list,
+            labels, thresholds)
+        self.axi = xapian.Database(XAPIAN_DATABASE_PATH)
+        self.label = "Bag of words model"
+
+    def get_model(self, cross_item_score):
+        super(CrossValidationBOW, self).get_model(cross_item_score)
+
+        pkgs_list = cross_item_score.keys()
+        bag_of_words = BagOfWords()
+
+        bag_of_words.train_model(pkgs_list, self.axi, save_files=False)
+
+        return bag_of_words
+
+    '''
+    :param round_user: The model created by the machine learning algorithm.
+
+    :param round_partition: The data that will be used to evaluate the
+                            machine learning algorithm.
+
+    :param result_size:     Not necessary for this context
+    '''
+
+    def get_predicted_results(self, round_user, round_partition,
+                              result_size=0):
+        '''
+        This method should generate the predictions for the packages
+        received. It basically needs to used the generated model
+        and use it to generate the prediction.
+        '''
+
+        predicted_results = []
+
+        for pkg in round_partition.keys():
+            predicted_results.append(
+                round_user.classify_pkg(pkg)[0])
+
+        return create_column_matrix(predicted_results)
