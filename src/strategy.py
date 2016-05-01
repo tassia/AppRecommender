@@ -470,8 +470,8 @@ class MachineLearning(ContentBased):
 
     def get_item_score(self, pkgs_score, pkgs_classifications):
         item_score = {}
-        order = ['H', 'B', 'M', 'G', 'EX']
-        order_values = [0, 1000, 2000, 3000, 4000]
+        order = ['RU', 'U', 'NU']
+        order_values = [0, 1000, 2000]
 
         for pkg, classification in pkgs_classifications.iteritems():
             item_score[pkg] = order_values[order.index(classification)]
