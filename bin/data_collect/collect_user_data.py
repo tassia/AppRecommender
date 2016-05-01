@@ -18,6 +18,7 @@ from bin.ml_cross_validation import ml_cross_validation
 from src.app_recommender import AppRecommender
 from src.data import get_user_installed_pkgs
 from src.data_classification import get_alternative_pkg
+from src.ml.data import MachineLearningData
 from src.ml.pkg_time import save_package_time, get_packages_time
 from subprocess import Popen, PIPE
 
@@ -190,7 +191,12 @@ def collect_user_preferences():
     recommendations = {}
     recommendations_time = []
 
-    for strategy in strategies:
+    percent_message = "Preparing recommendations...\n"
+    percent_message += "[{}%]"
+
+    os.system('clear')
+    print percent_message.format(0.0)
+    for index, strategy in enumerate(strategies):
         first_time = int(round(time.time() * 1000))
         recommendations[strategy] = (get_pkgs_of_recommendation(
                                      recommendation_size,
@@ -198,6 +204,9 @@ def collect_user_preferences():
         last_time = int(round(time.time() * 1000))
         recommendations_time.append("{0}: {1}".format(strategy,
                                                       last_time - first_time))
+        percent = (index + 1.0) * 100.0 / len(strategies)
+        os.system('clear')
+        print percent_message.format(percent)
 
     all_recommendations = set(sum(recommendations.values(), []))
     all_recommendations = sorted(list(all_recommendations))
@@ -217,9 +226,10 @@ def collect_user_preferences():
 
     message_error = "\nPlease use digits 1-4 to rank a package: "
 
+    apt_cache = apt.Cache()
     for i in range(len(all_recommendations)):
         pkg = all_recommendations[i]
-        pkg_description = apt.Cache()[pkg].versions[0].description
+        pkg_description = apt_cache[pkg].versions[0].description
 
         rank = -1
 
@@ -354,6 +364,8 @@ def main():
 
     create_log_folder()
     train_machine_learning('../')
+    os.system("cp {} {}".format(
+        MachineLearningData.PKGS_CLASSIFICATIONS, LOG_PATH))
 
     collect_data = Process(target=collect_user_data)
     cross_validation = Process(
