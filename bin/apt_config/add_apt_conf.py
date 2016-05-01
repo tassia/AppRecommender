@@ -9,7 +9,7 @@ sys.path.insert(0, "{0}/../../".format(os.path.dirname(__file__)))
 APT_FOLDER = "/home/%s/.app-recommender/apt_conf" % os.getenv("SUDO_USER")
 APT_CONF_FILE = '/etc/apt/apt.conf.d/99app-recommender'
 
-FILES_FOLDER = os.getcwd()
+FILES_FOLDER = os.path.dirname(os.path.abspath(__file__))
 POST_INVOKE_PATH = FILES_FOLDER + "/post_invoke.py"
 PRE_INSTALL_PKGS_PATH = FILES_FOLDER + "/pre_install_pkgs.py"
 
