@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import commands
-import numpy as np
 
 from load_data import get_folder_path, get_all_folders_path
 
@@ -34,13 +33,13 @@ def load_strategies(folder_path):
 
 
 def get_strategies_score(strategies, user_preferences):
-    classifications = {1: 'Bad', 2: 'Redundant', 3: 'Useful',
-                       4: 'Useful Surprise'}
+    classifications = {1: 'bad', 2: 'redundant', 3: 'useful',
+                       4: 'useful_surprise'}
 
     strategies_score = {}
     for strategy, pkgs in strategies.iteritems():
-        strategies_score[strategy] = {'Bad': 0, 'Redundant': 0, 'Useful': 0,
-                                      'Useful Surprise': 0}
+        strategies_score[strategy] = {'bad': 0, 'redundant': 0, 'useful': 0,
+                                      'useful_surprise': 0}
 
         for pkg in pkgs:
             classification = classifications[user_preferences[pkg]]
@@ -50,7 +49,7 @@ def get_strategies_score(strategies, user_preferences):
 
 
 def print_strategies_score(strategies_score):
-    classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
+    classifications = ['bad', 'redundant', 'useful', 'useful_surprise']
 
     for strategy, score in strategies_score.iteritems():
         print "\nStrategy: {}".format(strategy)
@@ -74,17 +73,25 @@ def get_all_strategies_score(all_folders_path):
 
 def convert_to_csv(all_strategies_score):
     rows = []
-    rows.append('Strategy;Bad;Redundant;Useful;Useful Surprise')
-    classifications = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
+    possible_strategies = sorted(all_strategies_score[0].keys())
+    classifications = ['bad', 'redundant', 'useful', 'useful_surprise']
+
+    csv_header = ""
+    for strategy in possible_strategies:
+        for classification in classifications:
+            csv_header += '{}_{};'.format(strategy, classification)
+
+    rows.append(csv_header[:-1])
 
     for strategies_score in all_strategies_score:
-        for strategy, scores in strategies_score.iteritems():
-            row = [strategy]
+        row = []
+
+        for strategy, scores in sorted(strategies_score.items()):
             for classification in classifications:
                 row.append(scores[classification])
 
-            row = ';'.join(str(element) for element in row)
-            rows.append(row)
+        row = ';'.join(str(element) for element in row)
+        rows.append(row)
 
     return rows
 
