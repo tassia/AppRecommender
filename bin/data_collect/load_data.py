@@ -17,7 +17,7 @@ def get_folder_path():
 
     if not os.path.exists(folder_path):
         print usage_message
-        print "Folder not exists"
+        print "Folder do not exist"
         exit(1)
 
     return folder_path
