@@ -3,10 +3,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-import os
-import sys
-
 from load_data import get_csv_file_path, get_lines_from_csv_file
+
+STRATEGIES = ['cbh', 'cbml', 'cbtm']
+CLASSIFICATIONS = ['Bad', 'Redundant', 'Useful', 'Useful Surprise']
 
 
 def autolabel(ax, rects, string_format):
@@ -48,30 +48,18 @@ def plot_strategies_score(strategies_score, classifications, title, ylabel,
     plt.show()
 
 
-def get_csv_file_path():
-    usage_message = "Usage: {} [csv_file_path]".format(sys.argv[0])
-
-    if len(sys.argv) < 2:
-        print usage_message
-        exit(1)
-
-    csv_file_path = sys.argv[1]
-    csv_file_path = os.path.expanduser(csv_file_path)
-
-    if not os.path.exists(csv_file_path):
-        print usage_message
-        print "CSV file not exists"
-        exit(1)
-
-    return csv_file_path
-
-
 def load_csv_file(csv_file_path):
     lines = get_lines_from_csv_file(csv_file_path)
-    scores = [[line[0]] + map(int, line[1:]) for line in lines[1:]]
-    classifications = lines[0][1:]
 
-    return scores, classifications
+    scores = []
+    for line in lines[1:]:
+        begin = 0
+        for strategy in STRATEGIES:
+            score = [strategy] + map(int, line[begin: begin + 4])
+            begin += 4
+            scores.append(score)
+
+    return scores, CLASSIFICATIONS
 
 
 def get_sum_of_scores(scores):
