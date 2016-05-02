@@ -6,10 +6,15 @@ import src.data_classification as data_cl
 from utils import sample_classification
 import pkg_time
 
+import apt
 import calendar
+import nltk
 import pickle
+import re
 import time
 import xapian
+
+from nltk.stem.snowball import SnowballStemmer
 
 
 class FilterTag():
@@ -36,8 +41,8 @@ class FilterTerms():
             return False
 
         tfidf = data_cl.term_tfidf_weight_on_user(term)
-        return (tfidf > self.tfidf_threshold and len(term) >= 4
-                and self.term_not_used(used_terms, term))
+        return (tfidf > self.tfidf_threshold and len(term) >= 4 and
+                self.term_not_used(used_terms, term))
 
     def term_not_used(self, used_terms, term):
         is_used = term in used_terms
@@ -62,6 +67,7 @@ class MachineLearningData():
 
     def __init__(self):
         self.axi = xapian.Database(MachineLearningData.XAPIAN_DATABASE_PATH)
+        self.stemmer = SnowballStemmer('english')
 
     def create_data(self, labels, thresholds):
         if path.isfile(MachineLearningData.PKGS_CLASSIFICATIONS):
@@ -72,7 +78,9 @@ class MachineLearningData():
                                             sample_classification, labels,
                                             thresholds)
 
-        terms_name = self.get_terms_for_all_pkgs(self.axi, pkgs.keys())
+        cache = apt.Cache()
+
+        terms_name = self.get_terms_for_all_pkgs(cache, pkgs.keys())
         debtags_name = self.get_debtags_for_all_pkgs(self.axi, pkgs.keys())
 
         debtags_name = self.filter_debtags(debtags_name)
@@ -84,7 +92,7 @@ class MachineLearningData():
 
         pkgs_classifications = (
             self.get_pkgs_table_classification(self.axi, pkgs,
-                                               debtags_name,
+                                               cache, debtags_name,
                                                terms_name))
 
         self.save_pkg_data(terms_name,
@@ -142,8 +150,26 @@ class MachineLearningData():
     def get_pkg_debtags(self, axi, pkg_name):
         return self.get_pkg_data(axi, pkg_name, 'XT')
 
-    def get_pkg_terms(self, axi, pkg_name):
-        return self.get_pkg_data(axi, pkg_name, 'term')
+    def get_pkg_terms(self, cache, pkg_name, stop_words=None):
+        description = cache[pkg_name].versions[0].description.strip()
+
+        tokens = [word for sent in nltk.sent_tokenize(description) for word in
+                  nltk.word_tokenize(sent)]
+
+        if stop_words is not None:
+            tokens = [word for word in tokens if word not in stop_words]
+
+        filtered_tokens = []
+
+        for token in tokens:
+            if re.search('[a-zA-Z]', token):
+                filtered_tokens.append(token)
+        stems = [self.stemmer.stem(t) for t in filtered_tokens]
+
+        return stems
+
+    def get_pkg_section(self, cache, pkg_name):
+        return cache[pkg_name].section
 
     def get_debtags_name(self, file_path):
         with open(file_path, 'r') as text:
@@ -159,10 +185,10 @@ class MachineLearningData():
 
         return row_list
 
-    def get_terms_for_all_pkgs(self, axi, pkgs):
+    def get_terms_for_all_pkgs(self, cache, pkgs):
         pkg_terms = set()
         for pkg in pkgs:
-            pkg_terms = pkg_terms | set(self.get_pkg_terms(axi, pkg))
+            pkg_terms = pkg_terms | set(self.get_pkg_terms(cache, pkg))
 
         return pkg_terms
 
@@ -200,8 +226,8 @@ class MachineLearningData():
 
         return filtered_debtags
 
-    def get_pkgs_table_classification(self, axi, pkgs, debtags_name,
-                                      terms_name):
+    def get_pkgs_table_classification(self, axi, pkgs, cache,
+                                      debtags_name, terms_name):
         pkgs_classification = {}
 
         for key, value in pkgs.iteritems():
@@ -212,7 +238,7 @@ class MachineLearningData():
             debtags = self.create_row_table_list(debtags_name, debtags)
             pkgs_classification[key].extend(debtags)
 
-            terms = self.get_pkg_terms(axi, key)
+            terms = self.get_pkg_terms(cache, key)
             terms = self.create_row_table_list(list(terms_name), terms)
             pkgs_classification[key].extend(terms)
 

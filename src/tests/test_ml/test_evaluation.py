@@ -3,7 +3,7 @@ from collections import OrderedDict
 from numpy import array, matrix
 
 from src.ml.cross_validation import (ConfusionMatrix,
-                                     CrossValidationMachineLearning,
+                                     CrossValidationBVA,
                                      Evaluation)
 from src.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
                             F_score, MCC, Accuracy)
@@ -65,7 +65,7 @@ class CrossValidationTests(unittest.TestCase):
     def create_cross_validation_ml(self, pkg_data, partition_proportion,
                                    rounds, metrics_list, labels,
                                    thresholds):
-        return CrossValidationMachineLearning(
+        return CrossValidationBVA(
             pkg_data, partition_proportion, rounds, metrics_list,
             labels, thresholds)
 
@@ -105,7 +105,7 @@ class CrossValidationTests(unittest.TestCase):
         labels = ['B', 'M', 'G']
         thresholds = [30, 60, 80]
 
-        cross_validation_ml = CrossValidationMachineLearning(
+        cross_validation_ml = CrossValidationBVA(
             data_matrix, partition_proportion, rounds, metrics_list,
             labels, thresholds)
 
