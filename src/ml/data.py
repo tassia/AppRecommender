@@ -70,10 +70,6 @@ class MachineLearningData():
         self.stemmer = SnowballStemmer('english')
 
     def create_data(self, labels, thresholds):
-        if path.isfile(MachineLearningData.PKGS_CLASSIFICATIONS):
-            with open(MachineLearningData.PKGS_CLASSIFICATIONS, 'rb') as pkgs:
-                return pickle.load(pkgs)
-
         pkgs = self.get_pkgs_classification(data_cl.square_percent_function,
                                             sample_classification, labels,
                                             thresholds)
