@@ -479,7 +479,10 @@ class MachineLearning(ContentBased):
 
         return item_score
 
-    def get_pkgs_and_scores(self, rec, user, profile):
+    def get_pkgs_and_scores(self, rec, user):
+        profile = user.content_profile(rec.items_repository, self.content,
+                                       self.suggestion_size, rec.valid_tags)
+
         content_based = self.get_sugestion_from_profile(rec, user,
                                                         profile,
                                                         self.suggestion_size)
@@ -515,12 +518,6 @@ class MachineLearning(ContentBased):
             pkgs_classifications[pkg] = classification
 
         return pkgs_classifications
-
-    def get_profile(self, terms_name, debtags_name):
-        profile = ['XT' + debtag for debtag in debtags_name]
-        profile += terms_name
-
-        return profile
 
     def load_terms_and_debtags(self):
         terms_name = []
@@ -559,8 +556,7 @@ class MachineLearning(ContentBased):
     def run(self, rec, user, rec_size):
         terms_name, debtags_name = self.load_terms_and_debtags()
 
-        profile = self.get_profile(terms_name, debtags_name)
-        pkgs, pkgs_score = self.get_pkgs_and_scores(rec, user, profile)
+        pkgs, pkgs_score = self.get_pkgs_and_scores(rec, user)
 
         pkgs_classifications = self.get_pkgs_classifications(pkgs, terms_name,
                                                              debtags_name)
