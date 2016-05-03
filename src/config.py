@@ -154,9 +154,11 @@ class Config(Singleton):
         print "  knnco = collaborative through content"
         print "  knnco_eset = collaborative through content," \
               " eset recommendation"
+        print "  mlbva = machine_learning, Binary Vector Approach"
+        print "  mlbow = machine_learning, Bag Of Words"
         print ""
         print " [ to train machine learning ] "
-        print "  on path 'src/bin' run the script" \
+        print "  on path '/bin' run the script" \
               " 'apprec_ml_traning.py'"
 
     def read_option(self, section, option):
