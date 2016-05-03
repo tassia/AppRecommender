@@ -1,6 +1,7 @@
 from os import path
 
 from src.config import Config
+from src.decider import FilterTag, FilterDescription
 import src.data_classification as data_cl
 
 import pkg_time
@@ -14,40 +15,6 @@ import time
 import xapian
 
 from nltk.stem.snowball import SnowballStemmer
-
-
-class FilterTag():
-
-    def __init__(self, valid_tags=[]):
-        self.valid_tags = valid_tags
-
-    def __call__(self, tag):
-        if len(self.valid_tags) == 0:
-            return True
-
-        return tag in self.valid_tags
-
-
-class FilterTerms():
-
-    def __init__(self):
-        data_cl.generate_all_terms_tfidf()
-        tfidf_weights = data_cl.user_tfidf_weights
-        self.tfidf_threshold = sum(tfidf_weights.values()) / len(tfidf_weights)
-
-    def __call__(self, term, used_terms):
-        if not (term.islower() or term.startswith("Z")):
-            return False
-
-        tfidf = data_cl.term_tfidf_weight_on_user(term)
-        return (tfidf > self.tfidf_threshold and len(term) >= 4 and
-                self.term_not_used(used_terms, term))
-
-    def term_not_used(self, used_terms, term):
-        is_used = term in used_terms
-        is_used |= ("Z" + term) in used_terms
-        is_used |= term[1:] in used_terms
-        return not is_used
 
 
 class MachineLearningData():
@@ -80,8 +47,6 @@ class MachineLearningData():
         debtags_name = self.filter_debtags(debtags_name)
         debtags_name = sorted(debtags_name)
         terms_name = self.filter_terms(terms_name)
-        if len(debtags_name) > 0:
-            terms_name = terms_name[0:len(debtags_name)]
         terms_name = sorted(terms_name)
 
         pkgs_classifications = (
@@ -206,16 +171,11 @@ class MachineLearningData():
         return pkg_debtags
 
     def filter_terms(self, terms):
-        term_tfidf = {}
         filtered_terms = []
-        content_filter = FilterTerms()
+        content_filter = FilterDescription()
         for term in terms:
-            if content_filter(term, filtered_terms):
-                term_tfidf[term] = data_cl.term_tfidf_weight_on_user(term)
+            if content_filter(term):
                 filtered_terms.append(term)
-
-        filtered_terms = sorted(term_tfidf.items(), key=lambda term: term[1])
-        filtered_terms = [term[0] for term in filtered_terms]
 
         return filtered_terms
 
@@ -227,7 +187,7 @@ class MachineLearningData():
                           if not line.startswith("#")]
         content_filter = FilterTag(valid_tags)
         for tag in debtags:
-            if content_filter(tag):
+            if content_filter('XT' + tag):
                 filtered_debtags.append(tag)
 
         return filtered_debtags

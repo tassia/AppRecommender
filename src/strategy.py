@@ -26,7 +26,6 @@ import logging
 import operator
 import os
 import pickle
-import re
 import recommender
 import xapian
 
@@ -41,82 +40,12 @@ from config import Config
 from ml.bag_of_words import BagOfWords
 from ml.bayes_matrix import BayesMatrix
 from ml.data import MachineLearningData
+from decider import PkgMatchDecider, PkgExpandDecider, TagExpandDecider
 
 XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
 USER_DATA_DIR = Config().user_data_dir
 PKGS_CLASSIFICATIONS_INDICES = (USER_DATA_DIR +
                                 'pkgs_classifications_indices.txt')
-
-
-class PkgMatchDecider(xapian.MatchDecider):
-
-    """
-    Extend xapian.MatchDecider to not consider installed packages.
-    """
-
-    def __init__(self, pkgs_list):
-        """
-        Set initial parameters.
-        """
-        xapian.MatchDecider.__init__(self)
-        self.pkgs_list = pkgs_list
-
-    def __call__(self, doc):
-        """
-        True if the package is not already installed and is not a lib or a doc.
-        """
-        pkg = doc.get_data()
-        is_new = pkg not in self.pkgs_list
-        is_new = is_new and ':' not in pkg
-
-        if "kde" in pkg:
-            return is_new and "kde" in self.pkgs_list
-        if "gnome" in pkg:
-            return is_new and "gnome" in self.pkgs_list
-
-        if re.match(r'^lib.*', pkg) or re.match(r'.*doc$', pkg):
-            return False
-
-        return is_new
-
-
-class PkgExpandDecider(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider packages only.
-    """
-
-    def __init__(self, pkgs_list):
-        """
-        Set initial parameters.
-        """
-        xapian.ExpandDecider.__init__(self)
-        self.pkgs_list = pkgs_list
-
-    def __call__(self, term):
-        """
-        True if the term is a package.
-        """
-        pkg = term.lstrip("XP")
-        is_new_pkg = pkg not in self.pkgs_list and term.startswith("XP")
-        if "kde" in pkg:
-            return is_new_pkg and "kde" in self.pkgs_list
-        if "gnome" in pkg:
-            return is_new_pkg and "gnome" in self.pkgs_list
-        return is_new_pkg
-
-
-class TagExpandDecider(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider tags only.
-    """
-
-    def __call__(self, term):
-        """
-        True if the term is a package tag.
-        """
-        return term.startswith("XT")
 
 
 class RecommendationStrategy(object):

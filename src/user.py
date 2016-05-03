@@ -31,68 +31,8 @@ import xapian
 
 from error import Error
 from singleton import Singleton
+from decider import FilterTag, FilterDescription, FilterTag_or_Description
 import data
-
-
-class FilterTag(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider only tag terms.
-    """
-
-    def __init__(self, valid_tags):
-        """
-        Set initial parameters.
-        """
-        xapian.ExpandDecider.__init__(self)
-        self.valid_tags = valid_tags
-
-    def __call__(self, term):
-        """
-        Return true if the term is a tag, else false.
-        """
-        if self.valid_tags:
-            is_valid = term.lstrip("XT") in self.valid_tags
-        else:
-            is_valid = 1
-        return term.startswith("XT") and is_valid
-
-
-class FilterDescription(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider only package description terms.
-    """
-
-    def __call__(self, term):
-        """
-        Return true if the term or its stemmed version is part of a package
-        description.
-        """
-        return term.islower() or term.startswith("Z")
-
-
-class FilterTag_or_Description(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider only package description terms.
-    """
-
-    def __init__(self, valid_tags):
-        """
-        Set initial parameters.
-        """
-        xapian.ExpandDecider.__init__(self)
-        self.valid_tags = valid_tags
-
-    def __call__(self, term):
-        """
-        Return true if the term or its stemmed version is part of a package
-        description.
-        """
-        is_tag = FilterTag(self.valid_tags)(term)
-        is_description = FilterDescription()(term)
-        return is_tag or is_description
 
 
 class DemographicProfile(Singleton):
