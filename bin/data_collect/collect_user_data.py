@@ -186,7 +186,7 @@ def get_pkgs_of_recommendation(recommendation_size, strategy,
 def collect_user_preferences():
     recommendation_size = 10
     no_auto_pkg_profile = True
-    strategies = ['cbh', 'cbtm', 'cbml']
+    strategies = ['cbh', 'cbtm', 'mlbva', 'mlbow']
 
     recommendations = {}
     recommendations_time = []
