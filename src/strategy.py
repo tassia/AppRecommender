@@ -362,7 +362,6 @@ class MachineLearning(ContentBased):
         self.profile_size = profile_size
         self.suggestion_size = suggestion_size
         self.cache = apt.Cache()
-        self.stop_words = set(stopwords.words('english'))
         self.ml_data = MachineLearningData()
         self.axi = xapian.Database(XAPIAN_DATABASE_PATH)
 
@@ -374,8 +373,7 @@ class MachineLearning(ContentBased):
         sorted_result = list(reversed(sorted_result))
 
         for pkg in sorted_result:
-            pkg_terms = self.ml_data.get_pkg_terms(self.cache, pkg,
-                                                   self.stop_words)
+            pkg_terms = self.ml_data.get_pkg_terms(self.cache, pkg)
             pkg_debtags = self.ml_data.get_pkg_debtags(self.axi, pkg)
 
             terms_match = []
@@ -521,8 +519,7 @@ class MachineLearningBVA(MachineLearning):
         terms_name = kwargs['terms_name']
         debtags_name = kwargs['debtags_name']
 
-        pkg_terms = self.ml_data.get_pkg_terms(
-            self.cache, pkg, self.stop_words)
+        pkg_terms = self.ml_data.get_pkg_terms(self.cache, pkg)
         pkg_debtags = self.ml_data.get_pkg_debtags(self.axi, pkg)
         debtags_attributes = self.ml_data.create_row_table_list(
             debtags_name, pkg_debtags)

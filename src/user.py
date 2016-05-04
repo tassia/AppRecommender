@@ -136,11 +136,8 @@ class User:
             profile = tag_profile[:size / 2] + desc_profile[:size / 2]
 
         elif content == "machine_learning":
-            tag_profile = self.eset_profile(items_repository, size,
-                                            FilterTag(valid_tags))
-            desc_profile = self.eset_profile(items_repository, size,
-                                             FilterDescription())
-            profile = tag_profile[:size / 2] + desc_profile[:size / 2]
+            profile = self.eset_profile(items_repository, size,
+                                        FilterTag_or_Description(valid_tags))
 
         elif content == "tag_eset":
             profile = self.eset_profile(items_repository, size,

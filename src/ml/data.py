@@ -10,7 +10,6 @@ import apt
 import calendar
 import nltk
 import pickle
-import re
 import time
 import xapian
 
@@ -34,6 +33,13 @@ class MachineLearningData():
     def __init__(self):
         self.axi = xapian.Database(MachineLearningData.XAPIAN_DATABASE_PATH)
         self.stemmer = SnowballStemmer('english')
+
+        valid_tags = []
+        with open(path.join(Config().filters_dir, "debtags")) as tags:
+            valid_tags = [line.strip() for line in tags
+                          if not line.startswith("#")]
+        self.filter_tag = FilterTag(valid_tags)
+        self.filter_description = FilterDescription()
 
     def create_data(self, labels):
         pkgs = self.get_pkgs_classification(data_cl.square_percent_function,
@@ -121,21 +127,14 @@ class MachineLearningData():
     def get_pkg_debtags(self, axi, pkg_name):
         return self.get_pkg_data(axi, pkg_name, 'XT')
 
-    def get_pkg_terms(self, cache, pkg_name, stop_words=None):
+    def get_pkg_terms(self, cache, pkg_name):
         description = cache[pkg_name].versions[0].description.strip()
 
         tokens = [word for sent in nltk.sent_tokenize(description) for word in
                   nltk.word_tokenize(sent)]
 
-        if stop_words is not None:
-            tokens = [word for word in tokens if word not in stop_words]
-
-        filtered_tokens = []
-
-        for token in tokens:
-            if re.search('[a-zA-Z]', token):
-                filtered_tokens.append(token)
-        stems = [self.stemmer.stem(t) for t in filtered_tokens]
+        stems = [self.stemmer.stem(token) for token in tokens
+                 if self.filter_description(token)]
 
         return stems
 
@@ -172,22 +171,16 @@ class MachineLearningData():
 
     def filter_terms(self, terms):
         filtered_terms = []
-        content_filter = FilterDescription()
         for term in terms:
-            if content_filter(term):
+            if self.filter_description(term):
                 filtered_terms.append(term)
 
         return filtered_terms
 
     def filter_debtags(self, debtags):
-        valid_tags = []
         filtered_debtags = []
-        with open(path.join(Config().filters_dir, "debtags")) as tags:
-            valid_tags = [line.strip() for line in tags
-                          if not line.startswith("#")]
-        content_filter = FilterTag(valid_tags)
         for tag in debtags:
-            if content_filter('XT' + tag):
+            if self.filter_tag('XT' + tag):
                 filtered_debtags.append(tag)
 
         return filtered_debtags

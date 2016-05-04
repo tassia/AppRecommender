@@ -29,18 +29,14 @@ class PkgClassificationTests(unittest.TestCase):
             self.assertTrue(debtag in vim_debtags_result)
 
     def test_get_pkg_terms(self):
-        vim_terms = [u'vim', u'is', u'an', u'almost', u'compat', u'version',
-                     u'of', u'the', u'unix', u'editor', u'vi', u'mani', u'new',
-                     u'featur', u'have', u'been', u'ad', u'multi', u'level',
-                     u'undo', u'syntax', u'highlight', u'command', u'line',
-                     u'histori', u'on-lin', u'help', u'filenam', u'complet',
-                     u'block', u'oper', u'fold', u'unicod', u'support', u'etc',
-                     u'this', u'packag', u'contain', u'a', u'version', u'of',
-                     u'vim', u'compil', u'with', u'a', u'rather', u'standard',
-                     u'set', u'of', u'featur', u'this', u'packag', u'doe',
-                     u'not', u'provid', u'a', u'gui', u'version', u'of',
-                     u'vim', u'see', u'the', u'other', u'vim-*', u'packag',
-                     u'if', u'you', u'need', u'more', u'or', u'less']
+        vim_terms = [u'almost', u'compat', u'version', u'editor', u'new',
+                     u'featur', u'ad', u'multi', u'level', u'undo', u'syntax',
+                     u'highlight', u'command', u'line', u'histori', u'on-lin',
+                     u'help', u'filenam', u'complet', u'block', u'oper',
+                     u'fold', u'support', u'etc', u'packag', u'contain',
+                     u'version', u'vim', u'compil', u'rather', u'standard',
+                     u'set', u'featur', u'packag', u'provid', u'version',
+                     u'vim-*', u'packag', u'need', u'less']
         vim_terms_result = self.ml_data.get_pkg_terms(self.cache, 'vim')
 
         for term in vim_terms:
