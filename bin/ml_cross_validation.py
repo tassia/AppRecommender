@@ -6,6 +6,7 @@ import logging
 import os
 import pickle
 import sys
+import getopt
 
 sys.path.insert(0, "{0}/../".format(os.path.dirname(__file__)))
 
@@ -72,15 +73,46 @@ def ml_cross_validation(folder_path, ml_strategy_str):
     return ml_cross_validation
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "s", type=str,
-        help="the cross validation strategy\nbvo: bag of words\nbva: binary\
-              vector")
+def print_help():
+    print "\n"
+    print "Usage: get_axipkgs"
+    print " -h, --help \t\t Show this help"
+    print " -s, --strategy \t Set machine_learning of one strategy" \
+          ", exemple: bva, bow"
+    print "\n"
+    print " [ strategy options ] "
+    print " bva - run cross_validation from mlbva, Binary Vector" \
+          " Approach"
+    print " bow - run cross_validation from mlbow, Bag of Words"
 
-    args = parser.parse_args()
-    ml_strategy_str = args.s
-    print ml_cross_validation(CROSS_VALIDATION_FOLDER, ml_strategy_str)
-    print ("Cross validation results saved on: %s" %
-           (CROSS_VALIDATION_FOLDER))
+
+if __name__ == '__main__':
+    short_options = "hdvo:s:"
+    long_options = ["help", "strategy"]
+    valid_strategies = ['bva', 'bow']
+    ml_strategy_str = None
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], short_options,
+                                   long_options)
+    except getopt.GetoptError as error:
+        logging.error("Bad syntax: %s" % str(error))
+        print_help()
+        sys.exit()
+
+    for option, param in opts:
+        if option in ("-h", "--help"):
+            print_help()
+            sys.exit()
+        elif option in ("-s", "--strategy"):
+            ml_strategy_str = param
+        else:
+            print_help()
+            assert False, "unhandled option"
+
+    if ml_strategy_str in valid_strategies:
+        print ml_cross_validation(CROSS_VALIDATION_FOLDER, ml_strategy_str)
+        print ("Cross validation results saved on: %s" %
+               (CROSS_VALIDATION_FOLDER))
+    else:
+        print_help()

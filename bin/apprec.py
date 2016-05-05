@@ -23,11 +23,18 @@ import sys
 sys.path.insert(0, '../')
 
 from src.app_recommender import AppRecommender
+from src.load_options import LoadOptions
 
 if __name__ == '__main__':
     recommendation_size = 20
     no_auto_pkg_profile = True
 
+    load_options = LoadOptions()
+    load_options.load()
+
     app_recommender = AppRecommender()
     app_recommender.make_recommendation(recommendation_size,
                                         no_auto_pkg_profile)
+
+    print '\n'
+    print load_options.opts
