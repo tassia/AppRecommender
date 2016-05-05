@@ -26,7 +26,6 @@ import logging
 import operator
 import os
 import pickle
-import re
 import recommender
 import xapian
 
@@ -41,82 +40,12 @@ from config import Config
 from ml.bag_of_words import BagOfWords
 from ml.bayes_matrix import BayesMatrix
 from ml.data import MachineLearningData
+from decider import PkgMatchDecider, PkgExpandDecider, TagExpandDecider
 
 XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
 USER_DATA_DIR = Config().user_data_dir
 PKGS_CLASSIFICATIONS_INDICES = (USER_DATA_DIR +
                                 'pkgs_classifications_indices.txt')
-
-
-class PkgMatchDecider(xapian.MatchDecider):
-
-    """
-    Extend xapian.MatchDecider to not consider installed packages.
-    """
-
-    def __init__(self, pkgs_list):
-        """
-        Set initial parameters.
-        """
-        xapian.MatchDecider.__init__(self)
-        self.pkgs_list = pkgs_list
-
-    def __call__(self, doc):
-        """
-        True if the package is not already installed and is not a lib or a doc.
-        """
-        pkg = doc.get_data()
-        is_new = pkg not in self.pkgs_list
-        is_new = is_new and ':' not in pkg
-
-        if "kde" in pkg:
-            return is_new and "kde" in self.pkgs_list
-        if "gnome" in pkg:
-            return is_new and "gnome" in self.pkgs_list
-
-        if re.match(r'^lib.*', pkg) or re.match(r'.*doc$', pkg):
-            return False
-
-        return is_new
-
-
-class PkgExpandDecider(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider packages only.
-    """
-
-    def __init__(self, pkgs_list):
-        """
-        Set initial parameters.
-        """
-        xapian.ExpandDecider.__init__(self)
-        self.pkgs_list = pkgs_list
-
-    def __call__(self, term):
-        """
-        True if the term is a package.
-        """
-        pkg = term.lstrip("XP")
-        is_new_pkg = pkg not in self.pkgs_list and term.startswith("XP")
-        if "kde" in pkg:
-            return is_new_pkg and "kde" in self.pkgs_list
-        if "gnome" in pkg:
-            return is_new_pkg and "gnome" in self.pkgs_list
-        return is_new_pkg
-
-
-class TagExpandDecider(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider tags only.
-    """
-
-    def __call__(self, term):
-        """
-        True if the term is a package tag.
-        """
-        return term.startswith("XT")
 
 
 class RecommendationStrategy(object):
@@ -433,7 +362,6 @@ class MachineLearning(ContentBased):
         self.profile_size = profile_size
         self.suggestion_size = suggestion_size
         self.cache = apt.Cache()
-        self.stop_words = set(stopwords.words('english'))
         self.ml_data = MachineLearningData()
         self.axi = xapian.Database(XAPIAN_DATABASE_PATH)
 
@@ -445,8 +373,7 @@ class MachineLearning(ContentBased):
         sorted_result = list(reversed(sorted_result))
 
         for pkg in sorted_result:
-            pkg_terms = self.ml_data.get_pkg_terms(self.cache, pkg,
-                                                   self.stop_words)
+            pkg_terms = self.ml_data.get_pkg_terms(self.cache, pkg)
             pkg_debtags = self.ml_data.get_pkg_debtags(self.axi, pkg)
 
             terms_match = []
@@ -470,8 +397,8 @@ class MachineLearning(ContentBased):
 
     def get_item_score(self, pkgs_score, pkgs_classifications):
         item_score = {}
-        order = ['H', 'B', 'M', 'G', 'EX']
-        order_values = [0, 1000, 2000, 3000, 4000]
+        order = ['RU', 'U', 'NU']
+        order_values = [0, 1000, 2000]
 
         for pkg, classification in pkgs_classifications.iteritems():
             item_score[pkg] = order_values[order.index(classification)]
@@ -479,7 +406,10 @@ class MachineLearning(ContentBased):
 
         return item_score
 
-    def get_pkgs_and_scores(self, rec, user, profile):
+    def get_pkgs_and_scores(self, rec, user):
+        profile = user.content_profile(rec.items_repository, self.content,
+                                       self.suggestion_size, rec.valid_tags)
+
         content_based = self.get_sugestion_from_profile(rec, user,
                                                         profile,
                                                         self.suggestion_size)
@@ -515,12 +445,6 @@ class MachineLearning(ContentBased):
             pkgs_classifications[pkg] = classification
 
         return pkgs_classifications
-
-    def get_profile(self, terms_name, debtags_name):
-        profile = ['XT' + debtag for debtag in debtags_name]
-        profile += terms_name
-
-        return profile
 
     def load_terms_and_debtags(self):
         terms_name = []
@@ -559,8 +483,7 @@ class MachineLearning(ContentBased):
     def run(self, rec, user, rec_size):
         terms_name, debtags_name = self.load_terms_and_debtags()
 
-        profile = self.get_profile(terms_name, debtags_name)
-        pkgs, pkgs_score = self.get_pkgs_and_scores(rec, user, profile)
+        pkgs, pkgs_score = self.get_pkgs_and_scores(rec, user)
 
         pkgs_classifications = self.get_pkgs_classifications(pkgs, terms_name,
                                                              debtags_name)
@@ -596,8 +519,7 @@ class MachineLearningBVA(MachineLearning):
         terms_name = kwargs['terms_name']
         debtags_name = kwargs['debtags_name']
 
-        pkg_terms = self.ml_data.get_pkg_terms(
-            self.cache, pkg, self.stop_words)
+        pkg_terms = self.ml_data.get_pkg_terms(self.cache, pkg)
         pkg_debtags = self.ml_data.get_pkg_debtags(self.axi, pkg)
         debtags_attributes = self.ml_data.create_row_table_list(
             debtags_name, pkg_debtags)

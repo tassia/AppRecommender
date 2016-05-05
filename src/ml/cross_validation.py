@@ -144,11 +144,10 @@ class CrossValidationMachineLearning(CrossValidation):
     __metaclass__ = ABCMeta
 
     def __init__(self, pkg_data, partition_proportion, rounds,
-                 metrics_list, labels, thresholds):
+                 metrics_list, labels):
 
         self.pkg_data = pkg_data
         self.labels = labels
-        self.thresholds = thresholds
         self.label_groups = {}
         self.round_label_groups = []
         self.round_num_data = []
@@ -277,10 +276,10 @@ class CrossValidationMachineLearning(CrossValidation):
 class CrossValidationBVA(CrossValidationMachineLearning):
 
     def __init__(self, pkg_data, partition_proportion, rounds,
-                 metrics_list, labels, thresholds):
+                 metrics_list, labels):
         super(CrossValidationBVA, self).__init__(
             pkg_data, partition_proportion, rounds, metrics_list,
-            labels, thresholds)
+            labels)
         self.label = "Binary vector model"
 
     def get_model(self, cross_item_score):
@@ -327,10 +326,10 @@ class CrossValidationBVA(CrossValidationMachineLearning):
 class CrossValidationBOW(CrossValidationMachineLearning):
 
     def __init__(self, pkg_data, partition_proportion, rounds,
-                 metrics_list, labels, thresholds):
+                 metrics_list, labels):
         super(CrossValidationBOW, self).__init__(
             pkg_data, partition_proportion, rounds, metrics_list,
-            labels, thresholds)
+            labels)
         self.axi = xapian.Database(XAPIAN_DATABASE_PATH)
         self.label = "Bag of words model"
 

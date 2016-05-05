@@ -1,54 +1,19 @@
 from os import path
 
 from src.config import Config
+from src.decider import FilterTag, FilterDescription
 import src.data_classification as data_cl
 
-from utils import sample_classification
 import pkg_time
 
 import apt
 import calendar
 import nltk
 import pickle
-import re
 import time
 import xapian
 
 from nltk.stem.snowball import SnowballStemmer
-
-
-class FilterTag():
-
-    def __init__(self, valid_tags=[]):
-        self.valid_tags = valid_tags
-
-    def __call__(self, tag):
-        if len(self.valid_tags) == 0:
-            return True
-
-        return tag in self.valid_tags
-
-
-class FilterTerms():
-
-    def __init__(self):
-        data_cl.generate_all_terms_tfidf()
-        tfidf_weights = data_cl.user_tfidf_weights
-        self.tfidf_threshold = sum(tfidf_weights.values()) / len(tfidf_weights)
-
-    def __call__(self, term, used_terms):
-        if not (term.islower() or term.startswith("Z")):
-            return False
-
-        tfidf = data_cl.term_tfidf_weight_on_user(term)
-        return (tfidf > self.tfidf_threshold and len(term) >= 4 and
-                self.term_not_used(used_terms, term))
-
-    def term_not_used(self, used_terms, term):
-        is_used = term in used_terms
-        is_used |= ("Z" + term) in used_terms
-        is_used |= term[1:] in used_terms
-        return not is_used
 
 
 class MachineLearningData():
@@ -69,14 +34,16 @@ class MachineLearningData():
         self.axi = xapian.Database(MachineLearningData.XAPIAN_DATABASE_PATH)
         self.stemmer = SnowballStemmer('english')
 
-    def create_data(self, labels, thresholds):
-        if path.isfile(MachineLearningData.PKGS_CLASSIFICATIONS):
-            with open(MachineLearningData.PKGS_CLASSIFICATIONS, 'rb') as pkgs:
-                return pickle.load(pkgs)
+        valid_tags = []
+        with open(path.join(Config().filters_dir, "debtags")) as tags:
+            valid_tags = [line.strip() for line in tags
+                          if not line.startswith("#")]
+        self.filter_tag = FilterTag(valid_tags)
+        self.filter_description = FilterDescription()
 
+    def create_data(self, labels):
         pkgs = self.get_pkgs_classification(data_cl.square_percent_function,
-                                            sample_classification, labels,
-                                            thresholds)
+                                            labels)
 
         cache = apt.Cache()
 
@@ -86,8 +53,6 @@ class MachineLearningData():
         debtags_name = self.filter_debtags(debtags_name)
         debtags_name = sorted(debtags_name)
         terms_name = self.filter_terms(terms_name)
-        if len(debtags_name) > 0:
-            terms_name = terms_name[0:len(debtags_name)]
         terms_name = sorted(terms_name)
 
         pkgs_classifications = (
@@ -106,9 +71,9 @@ class MachineLearningData():
 
         return pkgs_classifications
 
-    def get_pkgs_classification(self, percent_function,
-                                classification_function, labels, thresholds):
-        pkgs = {}
+    def get_pkgs_classification(self, percent_function, labels):
+        pkgs_percent = {}
+        pkgs_classification = {}
         time_now = calendar.timegm(time.gmtime())
 
         pkg_data = pkg_time.get_package_data()
@@ -117,12 +82,25 @@ class MachineLearningData():
             modify = time_values[0]
             access = time_values[1]
 
-            percent = percent_function(modify, access, time_now)
+            pkgs_percent[name] = percent_function(modify, access, time_now)
 
-            pkgs[name] = classification_function(percent * 100, labels,
-                                                 thresholds)
+        pkgs = pkgs_percent.keys()
+        pkgs = sorted(pkgs, key=lambda pkg: pkgs_percent[pkg])
+        pkgs = list(reversed(pkgs))
 
-        return pkgs
+        size = len(pkgs) / len(labels)
+        for index, label in enumerate(labels):
+            index_begin = size * index
+            index_end = index_begin + size
+            classifications = dict.fromkeys(pkgs[index_begin:index_end], label)
+            pkgs_classification.update(classifications)
+
+        index_begin = size * len(labels)
+        if index_begin < len(labels):
+            classifications = dict.fromkeys(pkgs[index_begin], label[-1])
+            pkgs_classification.update(classifications)
+
+        return pkgs_classification
 
     def get_pkg_data(self, axi, pkg_name, data_type):
         pkg_name = 'XP' + pkg_name
@@ -142,7 +120,7 @@ class MachineLearningData():
                 if pkg_term.startswith(data_type):
                     pkg_info.append(pkg_term[len(data_type):])
                 elif data_type == 'term':
-                    if pkg_term.startswith('Z') or pkg_term[0].islower():
+                    if pkg_term[0].islower():
                         pkg_info.append(pkg_term)
 
         return pkg_info
@@ -150,21 +128,14 @@ class MachineLearningData():
     def get_pkg_debtags(self, axi, pkg_name):
         return self.get_pkg_data(axi, pkg_name, 'XT')
 
-    def get_pkg_terms(self, cache, pkg_name, stop_words=None):
+    def get_pkg_terms(self, cache, pkg_name):
         description = cache[pkg_name].versions[0].description.strip()
 
         tokens = [word for sent in nltk.sent_tokenize(description) for word in
                   nltk.word_tokenize(sent)]
 
-        if stop_words is not None:
-            tokens = [word for word in tokens if word not in stop_words]
-
-        filtered_tokens = []
-
-        for token in tokens:
-            if re.search('[a-zA-Z]', token):
-                filtered_tokens.append(token)
-        stems = [self.stemmer.stem(t) for t in filtered_tokens]
+        stems = [self.stemmer.stem(token) for token in tokens
+                 if self.filter_description(token)]
 
         return stems
 
@@ -200,28 +171,17 @@ class MachineLearningData():
         return pkg_debtags
 
     def filter_terms(self, terms):
-        term_tfidf = {}
         filtered_terms = []
-        content_filter = FilterTerms()
         for term in terms:
-            if content_filter(term, filtered_terms):
-                term_tfidf[term] = data_cl.term_tfidf_weight_on_user(term)
+            if self.filter_description(term):
                 filtered_terms.append(term)
-
-        filtered_terms = sorted(term_tfidf.items(), key=lambda term: term[1])
-        filtered_terms = [term[0] for term in filtered_terms]
 
         return filtered_terms
 
     def filter_debtags(self, debtags):
-        valid_tags = []
         filtered_debtags = []
-        with open(path.join(Config().filters_dir, "debtags")) as tags:
-            valid_tags = [line.strip() for line in tags
-                          if not line.startswith("#")]
-        content_filter = FilterTag(valid_tags)
         for tag in debtags:
-            if content_filter(tag):
+            if self.filter_tag('XT' + tag):
                 filtered_debtags.append(tag)
 
         return filtered_debtags

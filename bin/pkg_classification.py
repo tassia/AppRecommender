@@ -38,14 +38,13 @@ def main():
         exit(1)
 
     ml_data = MachineLearningData()
-    labels = ['EX', 'G', 'M', 'B', 'H']
-    threshold = [95, 65, 25, 10, 5]
-    pkgs_classifications = ml_data.create_data(labels, threshold)
+    labels = ['RU', 'U', 'NU']
+    pkgs_classifications = ml_data.create_data(labels)
 
     all_matrix = (np.matrix(pkgs_classifications.values()))
     data_matrix = all_matrix[0:, 0:-1]
     classifications = all_matrix[0:, -1]
-    order_of_classifications = ['H', 'B', 'M', 'G', 'EX']
+    order_of_classifications = ['NU', 'U', 'RU']
 
     bayes_matrix = BayesMatrix()
     bayes_matrix.training(data_matrix, classifications,

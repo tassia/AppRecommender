@@ -63,11 +63,10 @@ class EvaluationTest(unittest.TestCase):
 class CrossValidationTests(unittest.TestCase):
 
     def create_cross_validation_ml(self, pkg_data, partition_proportion,
-                                   rounds, metrics_list, labels,
-                                   thresholds):
+                                   rounds, metrics_list, labels):
         return CrossValidationBVA(
             pkg_data, partition_proportion, rounds, metrics_list,
-            labels, thresholds)
+            labels)
 
     def compare_column_matrix(self, expected_matrix, actual_matrix):
         self.assertEquals(expected_matrix.shape, actual_matrix.shape)
@@ -78,7 +77,7 @@ class CrossValidationTests(unittest.TestCase):
 
     def test_get_real_results(self):
         cross_validation_ml = self.create_cross_validation_ml(
-            None, 0.1, 1, [], [], [])
+            None, 0.1, 1, [], [])
         test_data = {'test1': [1, 0, 1, 0, 'T'], 'test2': [1, 1, 1, 0, 'F']}
 
         expected_result = array([['T'], ['F']])
@@ -103,11 +102,10 @@ class CrossValidationTests(unittest.TestCase):
         rounds = 1
         metrics_list = [SimpleAccuracy()]
         labels = ['B', 'M', 'G']
-        thresholds = [30, 60, 80]
 
         cross_validation_ml = CrossValidationBVA(
             data_matrix, partition_proportion, rounds, metrics_list,
-            labels, thresholds)
+            labels)
 
         self.assertEquals(len(data_matrix),
                           len(cross_validation_ml.get_user_score(None)))

@@ -6,25 +6,12 @@ import xapian
 
 from src.ml.data import MachineLearningData
 
-from src.ml.utils import sample_classification
-
 
 class PkgClassificationTests(unittest.TestCase):
 
     def setUp(self):
         self.ml_data = MachineLearningData()
         self.cache = apt.Cache()
-
-    def test_sample_classification(self):
-
-        labels = ['EX', 'G', 'M', 'B', 'H']
-        threshold = [85, 75, 55, 35, 10]
-
-        self.assertEqual('EX', sample_classification(86, labels, threshold))
-        self.assertEqual('G', sample_classification(78, labels, threshold))
-        self.assertEqual('M', sample_classification(65, labels, threshold))
-        self.assertEqual('B', sample_classification(42, labels, threshold))
-        self.assertEqual('H', sample_classification(12, labels, threshold))
 
     def test_get_pkg_debtags(self):
         vim_debtags = ['devel::editor', 'implemented-in::c',
@@ -42,18 +29,14 @@ class PkgClassificationTests(unittest.TestCase):
             self.assertTrue(debtag in vim_debtags_result)
 
     def test_get_pkg_terms(self):
-        vim_terms = [u'vim', u'is', u'an', u'almost', u'compat', u'version',
-                     u'of', u'the', u'unix', u'editor', u'vi', u'mani', u'new',
-                     u'featur', u'have', u'been', u'ad', u'multi', u'level',
-                     u'undo', u'syntax', u'highlight', u'command', u'line',
-                     u'histori', u'on-lin', u'help', u'filenam', u'complet',
-                     u'block', u'oper', u'fold', u'unicod', u'support', u'etc',
-                     u'this', u'packag', u'contain', u'a', u'version', u'of',
-                     u'vim', u'compil', u'with', u'a', u'rather', u'standard',
-                     u'set', u'of', u'featur', u'this', u'packag', u'doe',
-                     u'not', u'provid', u'a', u'gui', u'version', u'of',
-                     u'vim', u'see', u'the', u'other', u'vim-*', u'packag',
-                     u'if', u'you', u'need', u'more', u'or', u'less']
+        vim_terms = [u'almost', u'compat', u'version', u'editor', u'new',
+                     u'featur', u'ad', u'multi', u'level', u'undo', u'syntax',
+                     u'highlight', u'command', u'line', u'histori', u'on-lin',
+                     u'help', u'filenam', u'complet', u'block', u'oper',
+                     u'fold', u'support', u'etc', u'packag', u'contain',
+                     u'version', u'vim', u'compil', u'rather', u'standard',
+                     u'set', u'featur', u'packag', u'provid', u'version',
+                     u'vim-*', u'packag', u'need', u'less']
         vim_terms_result = self.ml_data.get_pkg_terms(self.cache, 'vim')
 
         for term in vim_terms:
@@ -61,7 +44,7 @@ class PkgClassificationTests(unittest.TestCase):
 
     def test_create_row_table_list(self):
         labels_name = ['devel::editor', 'implemented-in::c', 'complet',
-                       'Zcontain', 'Zsyntax', 'Zunix', 'Zversion']
+                       'contain', 'syntax', 'unix', 'version']
         pkg_elements = ['implemented-in::c', 'complet']
 
         row_list_to_assert = [0, 1, 1, 0, 0, 0, 0]

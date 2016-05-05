@@ -31,68 +31,8 @@ import xapian
 
 from error import Error
 from singleton import Singleton
+from decider import FilterTag, FilterDescription, FilterTag_or_Description
 import data
-
-
-class FilterTag(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider only tag terms.
-    """
-
-    def __init__(self, valid_tags):
-        """
-        Set initial parameters.
-        """
-        xapian.ExpandDecider.__init__(self)
-        self.valid_tags = valid_tags
-
-    def __call__(self, term):
-        """
-        Return true if the term is a tag, else false.
-        """
-        if self.valid_tags:
-            is_valid = term.lstrip("XT") in self.valid_tags
-        else:
-            is_valid = 1
-        return term.startswith("XT") and is_valid
-
-
-class FilterDescription(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider only package description terms.
-    """
-
-    def __call__(self, term):
-        """
-        Return true if the term or its stemmed version is part of a package
-        description.
-        """
-        return term.islower() or term.startswith("Z")
-
-
-class FilterTag_or_Description(xapian.ExpandDecider):
-
-    """
-    Extend xapian.ExpandDecider to consider only package description terms.
-    """
-
-    def __init__(self, valid_tags):
-        """
-        Set initial parameters.
-        """
-        xapian.ExpandDecider.__init__(self)
-        self.valid_tags = valid_tags
-
-    def __call__(self, term):
-        """
-        Return true if the term or its stemmed version is part of a package
-        description.
-        """
-        is_tag = FilterTag(self.valid_tags)(term)
-        is_description = FilterDescription()(term)
-        return is_tag or is_description
 
 
 class DemographicProfile(Singleton):
@@ -196,13 +136,8 @@ class User:
             profile = tag_profile[:size / 2] + desc_profile[:size / 2]
 
         elif content == "machine_learning":
-            tag_profile = self.tfidf_profile(items_repository, size,
-                                             FilterTag(valid_tags),
-                                             time_context=1)
-            desc_profile = self.tfidf_profile(items_repository, size,
-                                              FilterDescription(),
-                                              time_context=1)
-            profile = tag_profile[:size / 2] + desc_profile[:size / 2]
+            profile = self.eset_profile(items_repository, size,
+                                        FilterTag_or_Description(valid_tags))
 
         elif content == "tag_eset":
             profile = self.eset_profile(items_repository, size,
