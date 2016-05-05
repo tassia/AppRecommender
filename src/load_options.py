@@ -12,7 +12,7 @@ from ConfigParser import ConfigParser, MissingSectionHeaderError
 class LoadOptions:
 
     def __init__(self):
-        self.opts = []
+        self.options = []
         self.config = Config()
         try:
             self.config_parser = ConfigParser()
@@ -57,7 +57,7 @@ class LoadOptions:
         print "  -w, --weight=OPTION        Search weighting scheme"
         print "  -s, --strategy=OPTION      Recommendation strategy"
         print "  -z, --profilesize=k        Size of user profile"
-        print "  -i, --profiling=OPTION     Profile filter strategy"
+        print "  -r, --profiling=OPTION     Profile filter strategy"
         print "  -n, --neighbors=k          " \
               "Size of neighborhood for collaboration"
         print ""
@@ -165,16 +165,16 @@ class LoadOptions:
         self.config.popcon_profiling = self.read_option('recommender',
                                                  'popcon_profiling')
 
-        short_options = "hdvo:f:b:a:e:p:m:u:l:c:x:w:s:z:i:n:"
+        short_options = "hdvo:f:b:a:e:p:m:u:l:c:x:w:s:z:r:n:idvo:"
         long_options = ["help", "debug", "verbose", "output=", "filtersdir=",
                         "pkgsfilter=", "axi=", "dde=", "popconindex=",
                         "popcondir=", "indexmode=", "clustersdir=",
                         "kmedoids=", "maxpopcon=", "weight=", "strategy=",
-                        "profile_size=", "profiling=", "neighbors="]
+                        "profile_size=", "profiling=", "neighbors=", "init"]
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
-            self.opts = opts
+            self.options = opts
         except getopt.GetoptError as error:
             self.config.set_logger()
             logging.error("Bad syntax: %s" % str(error))
@@ -221,6 +221,8 @@ class LoadOptions:
                 self.config.profiling = p
             elif o in ("-n", "--neighbors"):
                 self.config.k_neighbors = int(p)
+            elif o in ("-i", "--init"):
+                continue
             else:
                 assert False, "unhandled option"
 

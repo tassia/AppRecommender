@@ -23,6 +23,7 @@ import sys
 sys.path.insert(0, '../')
 
 from src.app_recommender import AppRecommender
+from src.initialize import Initialize
 from src.load_options import LoadOptions
 
 if __name__ == '__main__':
@@ -32,9 +33,13 @@ if __name__ == '__main__':
     load_options = LoadOptions()
     load_options.load()
 
+    for option, _ in load_options.options:
+        if option in ("-i", "--init"):
+            print "Initializating AppRecommender"
+            initialize = Initialize()
+            initialize.prepare_data()
+            exit(0)
+
     app_recommender = AppRecommender()
     app_recommender.make_recommendation(recommendation_size,
                                         no_auto_pkg_profile)
-
-    print '\n'
-    print load_options.opts
