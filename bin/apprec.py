@@ -26,6 +26,7 @@ sys.path.insert(0, '../')
 from src.app_recommender import AppRecommender
 from src.initialize import Initialize
 from src.load_options import LoadOptions
+from ml_training import train_machine_learning
 
 
 def call_initialize(options):
@@ -36,7 +37,7 @@ def call_initialize(options):
     return False
 
 
-def run_apprecommender():
+def run_apprecommender(options):
     try:
         recommendation_size = 20
         no_auto_pkg_profile = True
@@ -48,10 +49,23 @@ def run_apprecommender():
         print "\n"
         print "Please, Initialize AppRecommender"
         print "Run: apprec.py --init"
+    except (IOError), error:
+        for _, argument in options:
+            if "ml" in argument:
+                print "\n"
+                print "Please, make Machine Learning Training"
+                print "Run: apprec.py --train"
+
+
+def call_training(options):
+    for option, _ in options:
+        if option in ("-t", "--train"):
+            return True
+
+    return False
 
 
 def main():
-
     load_options = LoadOptions()
     load_options.load()
 
@@ -59,8 +73,11 @@ def main():
         print "Initializating AppRecommender"
         initialize = Initialize()
         initialize.prepare_data()
+    elif call_training(load_options.options):
+        print "Training machine learning"
+        train_machine_learning()
     else:
-        run_apprecommender()
+        run_apprecommender(load_options.options)
 
 
 if __name__ == '__main__':

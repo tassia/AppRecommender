@@ -13,7 +13,7 @@ sys.path.insert(0, '../../')
 
 from multiprocessing import Process
 
-from bin.apprec_ml_traning import train_machine_learning
+from bin.ml_training import train_machine_learning
 from bin.ml_cross_validation import ml_cross_validation
 from src.app_recommender import AppRecommender
 from src.data import get_user_installed_pkgs
@@ -363,7 +363,7 @@ def main():
         exit(1)
 
     create_log_folder()
-    train_machine_learning('../')
+    train_machine_learning()
     os.system("cp {} {}".format(
         MachineLearningData.PKGS_CLASSIFICATIONS, LOG_PATH))
 
