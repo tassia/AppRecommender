@@ -5,6 +5,7 @@ import xapian
 
 from nltk.corpus import stopwords
 
+
 class PkgMatchDecider(xapian.MatchDecider):
 
     """
@@ -107,6 +108,7 @@ class FilterDescription(xapian.ExpandDecider):
     """
 
     def __init__(self):
+        xapian.ExpandDecider.__init__(self)
         self.stop_words = set(stopwords.words('english'))
 
     def __call__(self, term):
