@@ -86,6 +86,7 @@ class MachineLearningData():
 
         pkgs = pkgs_percent.keys()
         pkgs = sorted(pkgs, key=lambda pkg: pkgs_percent[pkg])
+        pkgs = list(reversed(pkgs))
 
         size = len(pkgs) / len(labels)
         for index, label in enumerate(labels):
