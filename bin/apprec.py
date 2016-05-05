@@ -19,6 +19,7 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
+import xapian
 
 sys.path.insert(0, '../')
 
@@ -26,20 +27,41 @@ from src.app_recommender import AppRecommender
 from src.initialize import Initialize
 from src.load_options import LoadOptions
 
-if __name__ == '__main__':
-    recommendation_size = 20
-    no_auto_pkg_profile = True
+
+def call_initialize(options):
+    for option, _ in options:
+        if option in ("-i", "--init"):
+            return True
+
+    return False
+
+
+def run_apprecommender():
+    try:
+        recommendation_size = 20
+        no_auto_pkg_profile = True
+
+        app_recommender = AppRecommender()
+        app_recommender.make_recommendation(recommendation_size,
+                                            no_auto_pkg_profile)
+    except (xapian.DatabaseOpeningError), error:
+        print "\n"
+        print "Please, Initialize AppRecommender"
+        print "Run: apprec.py --init"
+
+
+def main():
 
     load_options = LoadOptions()
     load_options.load()
 
-    for option, _ in load_options.options:
-        if option in ("-i", "--init"):
-            print "Initializating AppRecommender"
-            initialize = Initialize()
-            initialize.prepare_data()
-            exit(0)
+    if call_initialize(load_options.options):
+        print "Initializating AppRecommender"
+        initialize = Initialize()
+        initialize.prepare_data()
+    else:
+        run_apprecommender()
 
-    app_recommender = AppRecommender()
-    app_recommender.make_recommendation(recommendation_size,
-                                        no_auto_pkg_profile)
+
+if __name__ == '__main__':
+    main()
