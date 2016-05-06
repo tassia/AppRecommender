@@ -43,7 +43,7 @@ class Config(Singleton):
 
             # data_source options
             self.base_dir = os.path.expanduser('~/.app-recommender')
-            self.user_data_dir = os.path.join(self.base_dir, "user_data")
+            self.user_data_dir = os.path.join(self.base_dir, "user_data/")
             # filters for valid packages
             self.filters_dir = os.path.join(self.base_dir, "filters")
             self.pkgs_filter = os.path.join(self.filters_dir, "desktopapps")
