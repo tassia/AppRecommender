@@ -21,7 +21,7 @@ def train_machine_learning():
 
     print("\n - Generating debtags")
     os.system("{0}/get_axipkgs.py -t XT > {1}tags.txt".format(folder_path,
-                                                             USER_DATA_DIR))
+                                                              USER_DATA_DIR))
 
     print("\n - Making machine learning traning")
     os.system("rm -f {0}/pkgs_classifications.txt".format(USER_DATA_DIR))

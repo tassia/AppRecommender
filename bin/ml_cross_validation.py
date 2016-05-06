@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
     if ml_strategy_str in valid_strategies:
         print ml_cross_validation(CROSS_VALIDATION_FOLDER, ml_strategy_str)
-        print ("Cross validation results saved on: %s" %
-               (CROSS_VALIDATION_FOLDER))
+        print("Cross validation results saved on: %s" %
+              (CROSS_VALIDATION_FOLDER))
     else:
         print_help()

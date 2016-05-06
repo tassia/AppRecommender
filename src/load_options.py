@@ -236,4 +236,3 @@ class LoadOptions:
         print " [ to train machine learning ] "
         print "  on path '/bin' run the script" \
               " 'apprec_ml_traning.py'"
-
