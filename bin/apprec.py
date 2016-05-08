@@ -53,7 +53,7 @@ def run_apprecommender(options):
         for _, argument in options:
             if "ml" in argument:
                 print "\n"
-                print "Please, make Machine Learning Training"
+                print "Please, run Machine Learning Training"
                 print "Run: apprec.py --train"
 
 
@@ -65,7 +65,7 @@ def call_training(options):
     return False
 
 
-def main():
+def run():
     load_options = LoadOptions()
     load_options.load()
 
@@ -81,4 +81,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    run()

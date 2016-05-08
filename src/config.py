@@ -25,6 +25,7 @@ import logging
 import logging.handlers
 
 from singleton import Singleton
+from ConfigParser import ConfigParser, MissingSectionHeaderError
 
 
 class Config(Singleton):
@@ -35,6 +36,14 @@ class Config(Singleton):
         """
         Set default configuration options.
         """
+        try:
+            self.config_parser = ConfigParser()
+            self.config_parser.read(['/etc/apprecommender/recommender.conf',
+                              os.path.expanduser('~/.app_recommender.rc'),
+                              os.path.expanduser('app_recommender.cfg')])
+        except (MissingSectionHeaderError), err:
+            logging.error("Error in config file syntax: %s", str(err))
+            os.abort()
         if not hasattr(self, 'initialized'):
             # general options
             self.debug = 0
@@ -92,6 +101,83 @@ class Config(Singleton):
             self.set_logger()
             self.initialized = 1
             logging.info("Basic config")
+
+    def read_option(self, section, option):
+        """
+        Read option from configuration file if it is defined there or return
+        default value.
+        """
+        var = "self.%s" % option
+        if self.config_parser.has_option(section, option):
+            return self.config_parser.get(section, option)
+        else:
+            return eval(var)
+
+    def load_config_file(self):
+        """
+        Load options from configuration file and command line arguments.
+        """
+        config.debug = int(self.read_option('general', 'debug'))
+        config.debug = int(self.read_option('general', 'verbose'))
+        config.base_dir = os.path.expanduser(self.read_option('data_sources',
+                                           'base_dir'))
+        config.user_data_dir = os.path.join(config.base_dir,
+                                          self.read_option('data_sources',
+                                                           'user_data_dir'))
+        config.output = os.path.join(config.base_dir,
+                                   self.read_option('general', 'output'))
+        config.filters_dir = os.path.join(config.base_dir,
+                                        self.read_option('data_sources',
+                                                         'filters_dir'))
+        config.pkgs_filter = os.path.join(config.filters_dir,
+                                        self.read_option('data_sources',
+                                                         'pkgs_filter'))
+        config.axi = self.read_option('data_sources', 'axi')
+        config.axi_programs = os.path.join(config.base_dir,
+                                         self.read_option('data_sources',
+                                                          'axi_programs'))
+        config.axi_desktopapps = os.path.join(config.base_dir,
+                                            self.read_option(
+                                                'data_sources',
+                                                'axi_desktopapps'))
+        # config.index_mode = self.read_option('data_sources', 'index_mode')
+        config.popcon = int(self.read_option('data_sources', 'popcon'))
+        config.popcon_programs = os.path.join(config.base_dir,
+                                            self.read_option(
+                                                'data_sources',
+                                                'popcon_programs'))
+        config.popcon_desktopapps = os.path.join(config.base_dir,
+                                               self.read_option(
+                                                   'data_sources',
+                                                   'popcon_desktopapps'))
+        config.popcon_index = os.path.join(config.base_dir,
+                                         self.read_option('data_sources',
+                                                          'popcon_index'))
+        config.popcon_dir = os.path.join(config.base_dir,
+                                       self.read_option('data_sources',
+                                                        'popcon_dir'))
+        config.max_popcon = int(self.read_option('data_sources', 'max_popcon'))
+        config.clusters_dir = os.path.join(config.base_dir,
+                                         self.read_option('data_sources',
+                                                          'clusters_dir'))
+        config.k_medoids = int(self.read_option('data_sources', 'k_medoids'))
+        config.dde_url = self.read_option('data_sources', 'dde_url')
+        config.dde_server = self.read_option('data_sources', 'dde_server')
+        config.dde_port = self.read_option('data_sources', 'dde_port')
+
+        config.weight = self.read_option('recommender', 'weight')
+        config.bm25_k1 = float(self.read_option('recommender', 'bm25_k1'))
+        config.bm25_k2 = float(self.read_option('recommender', 'bm25_k2'))
+        config.bm25_k3 = float(self.read_option('recommender', 'bm25_k3'))
+        config.bm25_b = float(self.read_option('recommender', 'bm25_b'))
+        config.bm25_nl = float(self.read_option('recommender', 'bm25_nl'))
+        config.strategy = self.read_option('recommender', 'strategy')
+        config.profile_size = int(self.read_option('recommender',
+                                                 'profile_size'))
+        config.k_neighbors = int(self.read_option('recommender',
+                                                'k_neighbors'))
+        config.popcon_profiling = self.read_option('recommender',
+                                                 'popcon_profiling')
 
     def set_logger(self):
         """

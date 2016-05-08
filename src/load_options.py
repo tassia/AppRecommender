@@ -6,105 +6,16 @@ import sys
 import logging
 
 from config import Config
-from ConfigParser import ConfigParser, MissingSectionHeaderError
+from singleton import Singleton
 
 
-class LoadOptions:
+class LoadOptions(Singleton):
 
     def __init__(self):
         self.options = []
-        self.config = Config()
-        try:
-            self.config_parser = ConfigParser()
-            self.config_parser.read(['/etc/apprecommender/recommender.conf',
-                              os.path.expanduser('~/.app_recommender.rc'),
-                              os.path.expanduser('app_recommender.cfg')])
-        except (MissingSectionHeaderError), err:
-            logging.error("Error in config file syntax: %s", str(err))
-            os.abort()
 
     def load(self):
-        self.load_config_file()
-        self.load_input_args()
-
-    def read_option(self, section, option):
-        """
-        Read option from configuration file if it is defined there or return
-        default value.
-        """
-        var = "self.config.%s" % option
-        if self.config_parser.has_option(section, option):
-            return self.config_parser.get(section, option)
-        else:
-            return eval(var)
-
-    def load_config_file(self):
-        """
-        Load options from configuration file and command line arguments.
-        """
-        self.config.debug = int(self.read_option('general', 'debug'))
-        self.config.debug = int(self.read_option('general', 'verbose'))
-        self.config.base_dir = os.path.expanduser(self.read_option('data_sources',
-                                           'base_dir'))
-        self.config.user_data_dir = os.path.join(self.config.base_dir,
-                                          self.read_option('data_sources',
-                                                           'user_data_dir'))
-        self.config.output = os.path.join(self.config.base_dir,
-                                   self.read_option('general', 'output'))
-        self.config.filters_dir = os.path.join(self.config.base_dir,
-                                        self.read_option('data_sources',
-                                                         'filters_dir'))
-        self.config.pkgs_filter = os.path.join(self.config.filters_dir,
-                                        self.read_option('data_sources',
-                                                         'pkgs_filter'))
-        self.config.axi = self.read_option('data_sources', 'axi')
-        self.config.axi_programs = os.path.join(self.config.base_dir,
-                                         self.read_option('data_sources',
-                                                          'axi_programs'))
-        self.config.axi_desktopapps = os.path.join(self.config.base_dir,
-                                            self.read_option(
-                                                'data_sources',
-                                                'axi_desktopapps'))
-        # self.config.index_mode = self.read_option('data_sources', 'index_mode')
-        self.config.popcon = int(self.read_option('data_sources', 'popcon'))
-        self.config.popcon_programs = os.path.join(self.config.base_dir,
-                                            self.read_option(
-                                                'data_sources',
-                                                'popcon_programs'))
-        self.config.popcon_desktopapps = os.path.join(self.config.base_dir,
-                                               self.read_option(
-                                                   'data_sources',
-                                                   'popcon_desktopapps'))
-        self.config.popcon_index = os.path.join(self.config.base_dir,
-                                         self.read_option('data_sources',
-                                                          'popcon_index'))
-        self.config.popcon_dir = os.path.join(self.config.base_dir,
-                                       self.read_option('data_sources',
-                                                        'popcon_dir'))
-        self.config.max_popcon = int(self.read_option('data_sources', 'max_popcon'))
-        self.config.clusters_dir = os.path.join(self.config.base_dir,
-                                         self.read_option('data_sources',
-                                                          'clusters_dir'))
-        self.config.k_medoids = int(self.read_option('data_sources', 'k_medoids'))
-        self.config.dde_url = self.read_option('data_sources', 'dde_url')
-        self.config.dde_server = self.read_option('data_sources', 'dde_server')
-        self.config.dde_port = self.read_option('data_sources', 'dde_port')
-
-        self.config.weight = self.read_option('recommender', 'weight')
-        self.config.bm25_k1 = float(self.read_option('recommender', 'bm25_k1'))
-        self.config.bm25_k2 = float(self.read_option('recommender', 'bm25_k2'))
-        self.config.bm25_k3 = float(self.read_option('recommender', 'bm25_k3'))
-        self.config.bm25_b = float(self.read_option('recommender', 'bm25_b'))
-        self.config.bm25_nl = float(self.read_option('recommender', 'bm25_nl'))
-        self.config.strategy = self.read_option('recommender', 'strategy')
-        self.config.profile_size = int(self.read_option('recommender',
-                                                 'profile_size'))
-        self.config.k_neighbors = int(self.read_option('recommender',
-                                                'k_neighbors'))
-        self.config.popcon_profiling = self.read_option('recommender',
-                                                 'popcon_profiling')
-
-    def load_input_args(self):
+        config = Config()
         short_options = "hdvo:f:b:a:e:p:m:u:l:c:x:w:s:z:r:n:idvo:tdvo"
         long_options = ["help", "debug", "verbose", "output=", "filtersdir=",
                         "pkgsfilter=", "axi=", "dde=", "popconindex=",
@@ -117,7 +28,7 @@ class LoadOptions:
                                        long_options)
             self.options = opts
         except getopt.GetoptError as error:
-            self.config.set_logger()
+            config.set_logger()
             logging.error("Bad syntax: %s" % str(error))
             self.usage()
             sys.exit()
@@ -127,41 +38,41 @@ class LoadOptions:
                 self.usage()
                 sys.exit()
             elif o in ("-d", "--debug"):
-                self.config.debug = 1
+                config.debug = 1
             elif o in ("-v", "--verbose"):
-                self.config.verbose = 1
+                config.verbose = 1
             elif o in ("-o", "--output"):
-                self.config.output = p
+                config.output = p
             elif o in ("-f", "--filtersdir"):
-                self.config.filters_dir = p
+                config.filters_dir = p
             elif o in ("-b", "--pkgsfilter"):
-                self.config.pkgs_filter = p
+                config.pkgs_filter = p
             elif o in ("-a", "--axi"):
-                self.config.axi = p
+                config.axi = p
             elif o in ("-e", "--dde"):
-                self.config.dde_url = p
+                config.dde_url = p
             elif o in ("-p", "--popconindex"):
-                self.config.popcon_index = p
+                config.popcon_index = p
             elif o in ("-m", "--popcondir"):
-                self.config.popcon_dir = p
+                config.popcon_dir = p
             elif o in ("-u", "--index_mode"):
-                self.config.index_mode = p
+                config.index_mode = p
             elif o in ("-l", "--clustersdir"):
-                self.config.clusters_dir = p
+                config.clusters_dir = p
             elif o in ("-c", "--kmedoids"):
-                self.config.k_medoids = int(p)
+                config.k_medoids = int(p)
             elif o in ("-x", "--max_popcon"):
-                self.config.max_popcon = int(p)
+                config.max_popcon = int(p)
             elif o in ("-w", "--weight"):
-                self.config.weight = p
+                config.weight = p
             elif o in ("-s", "--strategy"):
-                self.config.strategy = p
+                config.strategy = p
             elif o in ("-z", "--profile_size"):
-                self.config.profile_size = int(p)
+                config.profile_size = int(p)
             elif o in ("-z", "--profiling"):
-                self.config.profiling = p
+                config.profiling = p
             elif o in ("-n", "--neighbors"):
-                self.config.k_neighbors = int(p)
+                config.k_neighbors = int(p)
             elif o in ("-i", "--init"):
                 continue
             elif o in ("-t", "--train"):
@@ -178,7 +89,7 @@ class LoadOptions:
         print "  -h, --help                 Print this help"
         print "  -i, --init                 Initialize AppRecommender data"
         print "  -t, --train                Make training of AppRecommender" \
-              "machine learning"
+              " machine learning"
         print "  -d, --debug                Set logging level to debug"
         print "  -v, --verbose              Set logging level to verbose"
         print "  -o, --output=PATH          Path to file to save output"
