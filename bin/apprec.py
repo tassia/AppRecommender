@@ -26,7 +26,13 @@ sys.path.insert(0, '../')
 from src.app_recommender import AppRecommender
 from src.initialize import Initialize
 from src.load_options import LoadOptions
+from src.config import Config
 from ml_training import train_machine_learning
+
+
+SUCCESS = 0
+ERROR_INIT = 1
+ERROR_TRAIN = 2
 
 
 def call_initialize(options):
@@ -45,16 +51,12 @@ def run_apprecommender(options):
         app_recommender = AppRecommender()
         app_recommender.make_recommendation(recommendation_size,
                                             no_auto_pkg_profile)
+        return SUCCESS
     except (xapian.DatabaseOpeningError), error:
-        print "\n"
-        print "Please, Initialize AppRecommender"
-        print "Run: apprec.py --init"
+        return ERROR_INIT
     except (IOError), error:
-        for _, argument in options:
-            if "ml" in argument:
-                print "\n"
-                print "Please, run Machine Learning Training"
-                print "Run: apprec.py --train"
+        if "ml" in Config().strategy:
+            return ERROR_TRAIN
 
 
 def call_training(options):
@@ -73,12 +75,23 @@ def run():
         print "Initializating AppRecommender"
         initialize = Initialize()
         initialize.prepare_data()
+        return SUCCESS
     elif call_training(load_options.options):
         print "Training machine learning"
         train_machine_learning()
+        return SUCCESS
     else:
-        run_apprecommender(load_options.options)
+        return run_apprecommender(load_options.options)
 
 
 if __name__ == '__main__':
-    run()
+    result = run()
+
+    if result is ERROR_INIT:
+        print "\n"
+        print "Please, Initialize AppRecommender"
+        print "Run: apprec.py --init"
+    elif result is ERROR_TRAIN:
+        print "\n"
+        print "Please, run Machine Learning Training"
+        print "Run: apprec.py --train"
