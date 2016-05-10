@@ -6,6 +6,7 @@ import sys
 sys.path.append('..')
 
 from src.config import Config
+from src.initialize import Initialize
 
 USER_DATA_DIR = Config().user_data_dir
 
@@ -14,14 +15,18 @@ def train_machine_learning():
     if not os.path.exists(USER_DATA_DIR):
         os.makedirs(USER_DATA_DIR)
 
+    initialize = Initialize()
     folder_path = os.path.dirname(os.path.abspath(__file__))
 
     print("\n - Generating packages time list")
     os.system("{0}/pkg_time_list.py".format(folder_path))
 
     print("\n - Generating debtags")
-    os.system("{0}/get_axipkgs.py -t XT > {1}tags.txt".format(folder_path,
-                                                              USER_DATA_DIR))
+    debtags = initialize.get_tags()
+    debtags_path = "{}/tags.txt".format(USER_DATA_DIR)
+    with open(debtags_path, 'w') as text:
+        for debtag in debtags:
+            text.write(debtag + '\n')
 
     print("\n - Making machine learning traning")
     os.system("rm -f {0}/pkgs_classifications.txt".format(USER_DATA_DIR))
