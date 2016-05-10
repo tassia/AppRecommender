@@ -6,6 +6,7 @@ import logging
 import bin.apprec as apprec
 
 from src.config import Config
+from src.ml.data import MachineLearningData
 
 
 class RunTests(unittest.TestCase):
@@ -35,8 +36,12 @@ class RunTests(unittest.TestCase):
         strategy = config.strategy
         config.strategy = 'mlbva'
 
+        training_path = MachineLearningData.MACHINE_LEARNING_TRAINING
+        MachineLearningData.MACHINE_LEARNING_TRAINING = "error.txt"
+
         result = apprec.run()
 
         config.strategy = strategy
+        MachineLearningData.MACHINE_LEARNING_TRAINING = training_path
 
         self.assertEqual(apprec.ERROR_TRAIN, result)
