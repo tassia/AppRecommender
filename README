@@ -40,7 +40,7 @@ $ cd ./bin
 $ ./apprec.py --init
 
 
-Run Machine Learning Traning
+Run Machine Learning Training
 ----------------------------
 
 $ cd ./bin
