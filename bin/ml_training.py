@@ -24,9 +24,7 @@ def train_machine_learning():
     print("\n - Generating debtags")
     debtags = initialize.get_tags()
     debtags_path = "{}/tags.txt".format(USER_DATA_DIR)
-    with open(debtags_path, 'w') as text:
-        for debtag in debtags:
-            text.write(debtag + '\n')
+    initialize.save_list(debtags, debtags_path)
 
     print("\n - Making machine learning traning")
     os.system("rm -f {0}/pkgs_classifications.txt".format(USER_DATA_DIR))

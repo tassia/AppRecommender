@@ -99,20 +99,21 @@ class Initialize:
     def prepare_data(self):
         config = Config()
 
-        shutil.rmtree(config.base_dir)
+        if os.path.exists(config.base_dir):
+            shutil.rmtree(config.base_dir)
         os.makedirs(config.base_dir)
         os.makedirs(config.filters_dir)
 
         tags = self.get_tags()
         tags_path = "{}/debtags".format(config.filters_dir)
-        with open(tags_path, 'w') as text:
-            for tag in tags:
-                text.write(tag + '\n')
+        self.save_list(tags, tags_path)
 
         pkgs = self.get_axipkgs()
         pkgs_path = "{}/desktopapps".format(config.filters_dir)
-        with open(pkgs_path, 'w') as text:
-            for pkg in pkgs:
-                text.write(pkg + '\n')
+        self.save_list(pkgs, pkgs_path)
 
         self.indexer_axi('sample', pkgs_path)
+
+    def save_list(self, elements, path):
+        with open(path, 'w') as text:
+            text.write('\n'.join(elements) + '\n')
