@@ -52,9 +52,9 @@ def run_apprecommender(options):
         app_recommender.make_recommendation(recommendation_size,
                                             no_auto_pkg_profile)
         return SUCCESS
-    except (xapian.DatabaseOpeningError), error:
+    except xapian.DatabaseOpeningError:
         return ERROR_INIT
-    except (IOError), error:
+    except IOError:
         if "ml" in Config().strategy:
             return ERROR_TRAIN
 
