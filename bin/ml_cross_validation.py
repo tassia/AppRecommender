@@ -61,8 +61,9 @@ def ml_cross_validation(folder_path, ml_strategy_str):
         ml_strategy_str, pkg_data, partition_size, rounds,
         metrics_list, labels)
 
-    cross_validaton_file = 'cross_validation_result_{0}_{1}_{2}.txt'.format(
-        rounds, partition_size, dt.datetime.now().strftime('%Y%m%d%H%M'))
+    cross_validaton_file = 'cross_validation_result_{}_{}_{}_{}.txt'.format(
+        ml_strategy_str, rounds, partition_size,
+        dt.datetime.now().strftime('%Y%m%d%H%M'))
 
     ml_cross_validation.run(None)
 
