@@ -114,6 +114,14 @@ class Initialize:
 
         self.indexer_axi('sample', pkgs_path)
 
+    def get_role_program_pkgs(self):
+        command = "cat /var/lib/debtags/package-tags | " \
+                  "grep 'role::program' | " \
+                  "awk -F: '{ print $1}'"
+        pkgs = commands.getoutput(command).splitlines()
+
+        return pkgs
+
     def save_list(self, elements, path):
         with open(path, 'w') as text:
             text.write('\n'.join(elements) + '\n')
