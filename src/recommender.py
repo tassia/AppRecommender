@@ -177,10 +177,13 @@ class Recommender:
         #    self.strategy = strategy.Demographic(strategy_str)
         else:
             logging.info("Strategy not defined.")
-            return
+            self.strategy = None
 
     def get_recommendation(self, user, result_size=100):
         """
         Produces recommendation using previously loaded strategy.
         """
+        if self.strategy is None:
+            return ""
+
         return self.strategy.run(self, user, result_size)
