@@ -67,10 +67,10 @@ class RecommenderTests(unittest.TestCase):
         self.assertEqual(self.rec.strategy.content, "time")
         self.rec.set_strategy("mlbva")
         self.assertIsInstance(self.rec.strategy, MachineLearningBVA)
-        self.assertEqual(self.rec.strategy.content, "machine_learning")
+        self.assertEqual(self.rec.strategy.content, "mix_eset")
         self.rec.set_strategy("mlbow")
         self.assertIsInstance(self.rec.strategy, MachineLearningBOW)
-        self.assertEqual(self.rec.strategy.content, "machine_learning")
+        self.assertEqual(self.rec.strategy.content, "mix_eset")
         # self.rec.set_strategy("knn")
         # self.assertIsInstance(self.rec.strategy,Collaborative)
 
