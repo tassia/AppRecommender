@@ -19,7 +19,7 @@ from src.app_recommender import AppRecommender
 from src.data import get_user_installed_pkgs
 from src.data_classification import get_alternative_pkg
 from src.ml.data import MachineLearningData
-from src.ml.pkg_time import save_package_time, get_packages_time
+from src.ml.pkg_time import PkgTime
 from subprocess import Popen, PIPE
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
@@ -129,14 +129,16 @@ def collect_all_user_pkgs():
 
 
 def collect_pkgs_time():
+    pkg_time = PkgTime()
+
     if create_file(PKGS_TIME_PATH):
         manual_pkgs = []
         with open(MANUAL_INSTALLED_PKGS_PATH, 'r') as text:
             manual_pkgs = [line.strip() for line in text]
 
-        pkgs_time = get_packages_time(manual_pkgs)
+        pkgs_time = pkg_time.get_packages_time(manual_pkgs)
 
-        save_package_time(pkgs_time, PKGS_TIME_PATH)
+        pkg_time.save_package_time(pkgs_time, PKGS_TIME_PATH)
 
 
 def collect_pkgs_binary():

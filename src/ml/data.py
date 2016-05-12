@@ -1,10 +1,9 @@
 from os import path
 
+from pkg_time import PkgTime
 from src.config import Config
 from src.decider import FilterTag, FilterDescription
 import src.data_classification as data_cl
-
-import pkg_time
 
 import apt
 import calendar
@@ -75,7 +74,7 @@ class MachineLearningData():
         pkgs_percent = {}
         pkgs_classification = {}
         time_now = calendar.timegm(time.gmtime())
-
+        pkg_time = PkgTime()
         pkg_data = pkg_time.get_package_data()
 
         for name, time_values in pkg_data.iteritems():

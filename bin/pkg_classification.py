@@ -14,28 +14,9 @@ from os import makedirs
 from os import path
 
 
-def have_files():
-    have = True
-    scripts = []
-
+def main():
     if not path.exists(MachineLearningData.USER_DATA_DIR):
         makedirs(MachineLearningData.USER_DATA_DIR)
-
-    if not path.isfile(MachineLearningData.PKG_DATA_PATH):
-        have = False
-        scripts.append("pkg_time_list.py")
-
-    if not have:
-        print("Run scripts to generate important files:")
-        for script in scripts:
-            print("-  {0}".format(script))
-
-    return have
-
-
-def main():
-    if not have_files():
-        exit(1)
 
     ml_data = MachineLearningData()
     labels = ['RU', 'U', 'NU']

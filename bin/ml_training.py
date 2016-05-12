@@ -7,6 +7,7 @@ sys.path.append('..')
 
 from src.config import Config
 from src.initialize import Initialize
+from src.ml.pkg_time import PkgTime
 
 USER_DATA_DIR = Config().user_data_dir
 
@@ -15,11 +16,12 @@ def train_machine_learning():
     if not os.path.exists(USER_DATA_DIR):
         os.makedirs(USER_DATA_DIR)
 
+    pkg_time = PkgTime()
     initialize = Initialize()
     folder_path = os.path.dirname(os.path.abspath(__file__))
 
     print("\n - Generating packages time list")
-    os.system("{0}/pkg_time_list.py".format(folder_path))
+    pkg_time.create_pkg_data()
 
     print("\n - Generating debtags")
     debtags = initialize.get_tags()
