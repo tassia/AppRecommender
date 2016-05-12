@@ -1,4 +1,5 @@
 from os import path
+from os import makedirs
 
 from pkg_time import PkgTime
 from src.config import Config
@@ -41,6 +42,9 @@ class MachineLearningData():
         self.filter_description = FilterDescription()
 
     def create_data(self, labels):
+        if not path.exists(MachineLearningData.USER_DATA_DIR):
+            makedirs(MachineLearningData.USER_DATA_DIR)
+
         pkgs = self.get_pkgs_classification(data_cl.square_percent_function,
                                             labels)
 
@@ -61,10 +65,8 @@ class MachineLearningData():
 
         self.save_pkg_data(terms_name,
                            MachineLearningData.MACHINE_LEARNING_TERMS)
-
         self.save_pkg_data(debtags_name,
                            MachineLearningData.MACHINE_LEARNING_DEBTAGS)
-
         self.save_pkg_data(pkgs_classifications,
                            MachineLearningData.PKGS_CLASSIFICATIONS)
 

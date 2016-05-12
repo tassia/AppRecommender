@@ -460,6 +460,13 @@ class MachineLearning(ContentBased):
 
         return terms_name, debtags_name
 
+    def train(self):
+        ml_data = MachineLearningData()
+        labels = ['RU', 'U', 'NU']
+        pkgs_classifications = ml_data.create_data(labels)
+
+        self.run_train(pkgs_classifications)
+
     @abstractmethod
     def get_debtags_path(self):
         raise NotImplementedError("Method not implemented.")
@@ -478,6 +485,10 @@ class MachineLearning(ContentBased):
 
     @abstractmethod
     def prepare_pkg_data(self, pkg, **kwargs):
+        raise NotImplementedError("Method not implemented.")
+
+    @abstractmethod
+    def run_train(self, pkgs_classifications):
         raise NotImplementedError("Method not implemented.")
 
     def run(self, rec, user, rec_size):
@@ -531,6 +542,19 @@ class MachineLearningBVA(MachineLearning):
 
         return attribute_vector
 
+    def run_train(self, pkgs_classifications):
+        all_matrix = (np.matrix(pkgs_classifications.values()))
+        data_matrix = all_matrix[0:, 0:-1]
+        classifications = all_matrix[0:, -1]
+        order_of_classifications = ['NU', 'U', 'RU']
+
+        bayes_matrix = BayesMatrix()
+        bayes_matrix.training(data_matrix, classifications,
+                              order_of_classifications)
+
+        BayesMatrix.save(bayes_matrix,
+                         MachineLearningData.MACHINE_LEARNING_TRAINING)
+
 
 class MachineLearningBOW(MachineLearning):
 
@@ -558,3 +582,11 @@ class MachineLearningBOW(MachineLearning):
         attribute_vector = ml_strategy.create_pkg_data(
             pkg, self.axi, self.cache, self.ml_data)
         return attribute_vector
+
+    def run_train(self, pkgs_classifications):
+        bag_of_words = BagOfWords()
+        pkgs_list = pkgs_classifications.keys()
+        axi = xapian.Database(XAPIAN_DATABASE_PATH)
+
+        bag_of_words.train_model(pkgs_list, axi)
+        BagOfWords.save(bag_of_words, BagOfWords.BAG_OF_WORDS_MODEL)
