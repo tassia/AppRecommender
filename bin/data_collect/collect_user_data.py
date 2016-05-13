@@ -19,7 +19,8 @@ from src.data import get_user_installed_pkgs
 from src.data_classification import get_alternative_pkg
 from src.ml.data import MachineLearningData
 from src.ml.pkg_time import PkgTime
-from src.strategy import MachineLearningBVA, MachineLearningBOW
+from src.strategy import (MachineLearning, MachineLearningBVA,
+                          MachineLearningBOW)
 from subprocess import Popen, PIPE
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
@@ -365,8 +366,8 @@ def main():
         exit(1)
 
     create_log_folder()
-    MachineLearningBVA('machine-learning', 10).train()
-    MachineLearningBOW('machine-learning', 10).train()
+    MachineLearning.train(MachineLearningBVA)
+    MachineLearning.train(MachineLearningBOW)
     os.system("cp {} {}".format(
         MachineLearningData.PKGS_CLASSIFICATIONS, LOG_PATH))
 
