@@ -355,6 +355,8 @@ class MachineLearning(ContentBased):
 
     __metaclass__ = ABCMeta
 
+    PKGS_CLASSIFICATIONS = None
+
     def __init__(self, content, profile_size, suggestion_size=200):
         ContentBased.__init__(self, content, profile_size)
         self.content = content
@@ -460,12 +462,14 @@ class MachineLearning(ContentBased):
 
         return terms_name, debtags_name
 
-    def train(self):
-        ml_data = MachineLearningData()
-        labels = ['RU', 'U', 'NU']
-        pkgs_classifications = ml_data.create_data(labels)
+    @staticmethod
+    def train(cls):
+        if MachineLearning.PKGS_CLASSIFICATIONS is None:
+            ml_data = MachineLearningData()
+            labels = ['RU', 'U', 'NU']
+            MachineLearning.PKGS_CLASSIFICATIONS = ml_data.create_data(labels)
 
-        self.run_train(pkgs_classifications)
+        cls.run_train(MachineLearning.PKGS_CLASSIFICATIONS)
 
     @abstractmethod
     def get_debtags_path(self):
@@ -488,7 +492,7 @@ class MachineLearning(ContentBased):
         raise NotImplementedError("Method not implemented.")
 
     @abstractmethod
-    def run_train(self, pkgs_classifications):
+    def run_train(cls, pkgs_classifications):
         raise NotImplementedError("Method not implemented.")
 
     def run(self, rec, user, rec_size):
@@ -542,7 +546,8 @@ class MachineLearningBVA(MachineLearning):
 
         return attribute_vector
 
-    def run_train(self, pkgs_classifications):
+    @classmethod
+    def run_train(cls, pkgs_classifications):
         all_matrix = (np.matrix(pkgs_classifications.values()))
         data_matrix = all_matrix[0:, 0:-1]
         classifications = all_matrix[0:, -1]
@@ -583,7 +588,8 @@ class MachineLearningBOW(MachineLearning):
             pkg, self.axi, self.cache, self.ml_data)
         return attribute_vector
 
-    def run_train(self, pkgs_classifications):
+    @classmethod
+    def run_train(cls, pkgs_classifications):
         bag_of_words = BagOfWords()
         pkgs_list = pkgs_classifications.keys()
         axi = xapian.Database(XAPIAN_DATABASE_PATH)

@@ -27,7 +27,8 @@ from src.app_recommender import AppRecommender
 from src.initialize import Initialize
 from src.load_options import LoadOptions
 from src.config import Config
-from src.ml.train import MachineLearningTraing
+from src.strategy import (MachineLearning, MachineLearningBVA,
+                          MachineLearningBOW)
 
 SUCCESS = 0
 ERROR_INIT = 1
@@ -77,8 +78,8 @@ def run():
         return SUCCESS
     elif call_training(load_options.options):
         print "Training machine learning"
-        training = MachineLearningTraing()
-        training.train()
+        MachineLearning.train(MachineLearningBVA)
+        MachineLearning.train(MachineLearningBOW)
         return SUCCESS
     else:
         return run_apprecommender(load_options.options)
