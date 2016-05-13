@@ -18,6 +18,7 @@ __license__ = """
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import nltk
 import sys
 import xapian
 
@@ -33,6 +34,7 @@ from src.strategy import (MachineLearning, MachineLearningBVA,
 SUCCESS = 0
 ERROR_INIT = 1
 ERROR_TRAIN = 2
+ERROR_NLTK = 3
 
 
 def call_initialize(options):
@@ -67,6 +69,14 @@ def call_training(options):
     return False
 
 
+def nltk_download(nltk_files):
+    for nltk_file in nltk_files:
+        if not nltk.download(nltk_file):
+            return False
+
+    return True
+
+
 def run():
     load_options = LoadOptions()
     load_options.load()
@@ -77,6 +87,11 @@ def run():
         initialize.prepare_data()
         return SUCCESS
     elif call_training(load_options.options):
+        print 'Downloading NLTK dependencies'
+        nltk_files = ['punkt', 'stopwords']
+        if not nltk_download(nltk_files):
+            return ERROR_NLTK
+
         print "Training machine learning"
         MachineLearning.train(MachineLearningBVA)
         MachineLearning.train(MachineLearningBOW)
@@ -96,3 +111,6 @@ if __name__ == '__main__':
         print "\n"
         print "Please, run Machine Learning Training"
         print "Run: apprec.py --train"
+    elif result is ERROR_NLTK:
+        print "\n"
+        print "No internet to download nltk dependencies"
