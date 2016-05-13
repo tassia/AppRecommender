@@ -72,7 +72,7 @@ def run():
     load_options.load()
 
     if call_initialize(load_options.options):
-        print "Initializating AppRecommender"
+        print "Initializing AppRecommender"
         initialize = Initialize()
         initialize.prepare_data()
         return SUCCESS
