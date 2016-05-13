@@ -355,6 +355,8 @@ class MachineLearning(ContentBased):
 
     __metaclass__ = ABCMeta
 
+    PKGS_CLASSIFICATIONS = None
+
     def __init__(self, content, profile_size, suggestion_size=200):
         ContentBased.__init__(self, content, profile_size)
         self.content = content
@@ -460,6 +462,15 @@ class MachineLearning(ContentBased):
 
         return terms_name, debtags_name
 
+    @staticmethod
+    def train(cls):
+        if MachineLearning.PKGS_CLASSIFICATIONS is None:
+            ml_data = MachineLearningData()
+            labels = ['RU', 'U', 'NU']
+            MachineLearning.PKGS_CLASSIFICATIONS = ml_data.create_data(labels)
+
+        cls.run_train(MachineLearning.PKGS_CLASSIFICATIONS)
+
     @abstractmethod
     def get_debtags_path(self):
         raise NotImplementedError("Method not implemented.")
@@ -478,6 +489,10 @@ class MachineLearning(ContentBased):
 
     @abstractmethod
     def prepare_pkg_data(self, pkg, **kwargs):
+        raise NotImplementedError("Method not implemented.")
+
+    @abstractmethod
+    def run_train(cls, pkgs_classifications):
         raise NotImplementedError("Method not implemented.")
 
     def run(self, rec, user, rec_size):
@@ -531,6 +546,20 @@ class MachineLearningBVA(MachineLearning):
 
         return attribute_vector
 
+    @classmethod
+    def run_train(cls, pkgs_classifications):
+        all_matrix = (np.matrix(pkgs_classifications.values()))
+        data_matrix = all_matrix[0:, 0:-1]
+        classifications = all_matrix[0:, -1]
+        order_of_classifications = ['NU', 'U', 'RU']
+
+        bayes_matrix = BayesMatrix()
+        bayes_matrix.training(data_matrix, classifications,
+                              order_of_classifications)
+
+        BayesMatrix.save(bayes_matrix,
+                         MachineLearningData.MACHINE_LEARNING_TRAINING)
+
 
 class MachineLearningBOW(MachineLearning):
 
@@ -558,3 +587,12 @@ class MachineLearningBOW(MachineLearning):
         attribute_vector = ml_strategy.create_pkg_data(
             pkg, self.axi, self.cache, self.ml_data)
         return attribute_vector
+
+    @classmethod
+    def run_train(cls, pkgs_classifications):
+        bag_of_words = BagOfWords()
+        pkgs_list = pkgs_classifications.keys()
+        axi = xapian.Database(XAPIAN_DATABASE_PATH)
+
+        bag_of_words.train_model(pkgs_list, axi)
+        BagOfWords.save(bag_of_words, BagOfWords.BAG_OF_WORDS_MODEL)

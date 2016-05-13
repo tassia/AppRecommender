@@ -19,15 +19,80 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
+import xapian
 
 sys.path.insert(0, '../')
 
 from src.app_recommender import AppRecommender
+from src.initialize import Initialize
+from src.load_options import LoadOptions
+from src.config import Config
+from src.strategy import (MachineLearning, MachineLearningBVA,
+                          MachineLearningBOW)
+
+SUCCESS = 0
+ERROR_INIT = 1
+ERROR_TRAIN = 2
+
+
+def call_initialize(options):
+    for option, _ in options:
+        if option in ("-i", "--init"):
+            return True
+
+    return False
+
+
+def run_apprecommender(options):
+    try:
+        recommendation_size = 20
+        no_auto_pkg_profile = True
+
+        app_recommender = AppRecommender()
+        app_recommender.make_recommendation(recommendation_size,
+                                            no_auto_pkg_profile)
+        return SUCCESS
+    except xapian.DatabaseOpeningError:
+        return ERROR_INIT
+    except IOError:
+        if "ml" in Config().strategy:
+            return ERROR_TRAIN
+
+
+def call_training(options):
+    for option, _ in options:
+        if option in ("-t", "--train"):
+            return True
+
+    return False
+
+
+def run():
+    load_options = LoadOptions()
+    load_options.load()
+
+    if call_initialize(load_options.options):
+        print "Initializing AppRecommender"
+        initialize = Initialize()
+        initialize.prepare_data()
+        return SUCCESS
+    elif call_training(load_options.options):
+        print "Training machine learning"
+        MachineLearning.train(MachineLearningBVA)
+        MachineLearning.train(MachineLearningBOW)
+        return SUCCESS
+    else:
+        return run_apprecommender(load_options.options)
+
 
 if __name__ == '__main__':
-    recommendation_size = 20
-    no_auto_pkg_profile = True
+    result = run()
 
-    app_recommender = AppRecommender()
-    app_recommender.make_recommendation(recommendation_size,
-                                        no_auto_pkg_profile)
+    if result is ERROR_INIT:
+        print "\n"
+        print "Please, Initialize AppRecommender"
+        print "Run: apprec.py --init"
+    elif result is ERROR_TRAIN:
+        print "\n"
+        print "Please, run Machine Learning Training"
+        print "Run: apprec.py --train"

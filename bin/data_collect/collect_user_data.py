@@ -13,13 +13,14 @@ sys.path.insert(0, '../../')
 
 from multiprocessing import Process
 
-from bin.apprec_ml_traning import train_machine_learning
 from bin.ml_cross_validation import ml_cross_validation
 from src.app_recommender import AppRecommender
 from src.data import get_user_installed_pkgs
 from src.data_classification import get_alternative_pkg
 from src.ml.data import MachineLearningData
-from src.ml.pkg_time import save_package_time, get_packages_time
+from src.ml.pkg_time import PkgTime
+from src.strategy import (MachineLearning, MachineLearningBVA,
+                          MachineLearningBOW)
 from subprocess import Popen, PIPE
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
@@ -129,14 +130,16 @@ def collect_all_user_pkgs():
 
 
 def collect_pkgs_time():
+    pkg_time = PkgTime()
+
     if create_file(PKGS_TIME_PATH):
         manual_pkgs = []
         with open(MANUAL_INSTALLED_PKGS_PATH, 'r') as text:
             manual_pkgs = [line.strip() for line in text]
 
-        pkgs_time = get_packages_time(manual_pkgs)
+        pkgs_time = pkg_time.get_packages_time(manual_pkgs)
 
-        save_package_time(pkgs_time, PKGS_TIME_PATH)
+        pkg_time.save_package_time(pkgs_time, PKGS_TIME_PATH)
 
 
 def collect_pkgs_binary():
@@ -363,15 +366,19 @@ def main():
         exit(1)
 
     create_log_folder()
-    train_machine_learning('../')
+    MachineLearning.train(MachineLearningBVA)
+    MachineLearning.train(MachineLearningBOW)
     os.system("cp {} {}".format(
         MachineLearningData.PKGS_CLASSIFICATIONS, LOG_PATH))
 
     collect_data = Process(target=collect_user_data)
-    cross_validation = Process(
-        target=ml_cross_validation, args=(LOG_PATH + '/', ))
+    cross_validation_mlbva = Process(
+        target=ml_cross_validation, args=(LOG_PATH + '/', 'mlbva'))
+    cross_validation_mlbow = Process(
+        target=ml_cross_validation, args=(LOG_PATH + '/', 'mlbow'))
     collect_data.start()
-    cross_validation.start()
+    cross_validation_mlbva.start()
+    cross_validation_mlbow.start()
 
     os.system('clear')
     print "Preparing recommendations..."
@@ -379,7 +386,8 @@ def main():
 
     print "\n\nWaiting for data collection complete"
     collect_data.join()
-    cross_validation.join()
+    cross_validation_mlbva.join()
+    cross_validation_mlbow.join()
 
     print "\n\nFinished: All files and recommendations were collected"
     print "Collect data folder: {0}".format(LOG_PATH)

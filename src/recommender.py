@@ -149,10 +149,16 @@ class Recommender:
         elif strategy_str == "cbtm":
             self.strategy = strategy.ContentBased("time", profile_size)
         elif strategy_str == "mlbva":
-            self.strategy = strategy.MachineLearningBVA("machine_learning",
+            self.strategy = strategy.MachineLearningBVA("mix",
                                                         profile_size)
         elif strategy_str == "mlbow":
-            self.strategy = strategy.MachineLearningBOW("machine_learning",
+            self.strategy = strategy.MachineLearningBOW("mix",
+                                                        profile_size)
+        elif strategy_str == "mlbva_eset":
+            self.strategy = strategy.MachineLearningBVA("mix_eset",
+                                                        profile_size)
+        elif strategy_str == "mlbow_eset":
+            self.strategy = strategy.MachineLearningBOW("mix_eset",
                                                         profile_size)
         elif strategy_str == "cb_eset":
             self.strategy = strategy.ContentBased("mix_eset", profile_size)
@@ -177,10 +183,13 @@ class Recommender:
         #    self.strategy = strategy.Demographic(strategy_str)
         else:
             logging.info("Strategy not defined.")
-            return
+            self.strategy = None
 
     def get_recommendation(self, user, result_size=100):
         """
         Produces recommendation using previously loaded strategy.
         """
+        if self.strategy is None:
+            return ""
+
         return self.strategy.run(self, user, result_size)

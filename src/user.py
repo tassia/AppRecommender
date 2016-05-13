@@ -134,11 +134,6 @@ class User:
                                               FilterDescription(),
                                               time_context=1)
             profile = tag_profile[:size / 2] + desc_profile[:size / 2]
-
-        elif content == "machine_learning":
-            profile = self.eset_profile(items_repository, size,
-                                        FilterTag_or_Description(valid_tags))
-
         elif content == "tag_eset":
             profile = self.eset_profile(items_repository, size,
                                         FilterTag(valid_tags))
