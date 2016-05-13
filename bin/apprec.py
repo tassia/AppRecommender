@@ -100,7 +100,7 @@ def run():
         return run_apprecommender(load_options.options)
 
 
-if __name__ == '__main__':
+def main():
     result = run()
 
     if result is ERROR_INIT:
@@ -114,3 +114,7 @@ if __name__ == '__main__':
     elif result is ERROR_NLTK:
         print "\n"
         print "No internet to download nltk dependencies"
+
+
+if __name__ == '__main__':
+    main()

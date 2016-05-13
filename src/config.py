@@ -38,21 +38,21 @@ class Config(Singleton):
         """
         try:
             self.config_parser = ConfigParser()
-            self.config_parser.read(['/etc/apprecommender/recommender.conf',
-                              os.path.expanduser('~/.app_recommender.rc'),
-                              os.path.expanduser('app_recommender.cfg')])
+            self.config_parser.read(
+                ['/etc/apprecommender/recommender.conf',
+                 os.path.expanduser('~/.app_recommender.rc'),
+                 os.path.expanduser('app_recommender.cfg')])
         except (MissingSectionHeaderError), err:
             logging.error("Error in config file syntax: %s", str(err))
             os.abort()
         if not hasattr(self, 'initialized'):
-            # general options
-            self.debug = 0
-            self.verbose = 1
-            self.output = "apprec.log"
-
             # data_source options
             self.base_dir = os.path.expanduser('~/.app-recommender')
             self.user_data_dir = os.path.join(self.base_dir, "user_data/")
+            # general options
+            self.debug = 0
+            self.verbose = 1
+            self.output = os.path.join(self.base_dir, "apprec.log")
             # filters for valid packages
             self.filters_dir = os.path.join(self.base_dir, "filters")
             self.pkgs_filter = os.path.join(self.filters_dir, "desktopapps")
@@ -119,47 +119,44 @@ class Config(Singleton):
         """
         config.debug = int(self.read_option('general', 'debug'))
         config.debug = int(self.read_option('general', 'verbose'))
-        config.base_dir = os.path.expanduser(self.read_option('data_sources',
-                                           'base_dir'))
-        config.user_data_dir = os.path.join(config.base_dir,
-                                          self.read_option('data_sources',
-                                                           'user_data_dir'))
-        config.output = os.path.join(config.base_dir,
-                                   self.read_option('general', 'output'))
-        config.filters_dir = os.path.join(config.base_dir,
-                                        self.read_option('data_sources',
-                                                         'filters_dir'))
-        config.pkgs_filter = os.path.join(config.filters_dir,
-                                        self.read_option('data_sources',
-                                                         'pkgs_filter'))
+        config.base_dir = os.path.expanduser(
+            self.read_option('data_sources', 'base_dir'))
+        config.user_data_dir = os.path.join(
+            config.base_dir, self.read_option('data_sources',
+                                              'user_data_dir'))
+        config.output = os.path.join(
+            config.base_dir, self.read_option('general', 'output'))
+        config.filters_dir = os.path.join(
+            config.base_dir, self.read_option('data_sources',
+                                              'filters_dir'))
+        config.pkgs_filter = os.path.join(
+            config.filters_dir, self.read_option('data_sources',
+                                                 'pkgs_filter'))
         config.axi = self.read_option('data_sources', 'axi')
-        config.axi_programs = os.path.join(config.base_dir,
-                                         self.read_option('data_sources',
-                                                          'axi_programs'))
-        config.axi_desktopapps = os.path.join(config.base_dir,
-                                            self.read_option(
-                                                'data_sources',
-                                                'axi_desktopapps'))
+        config.axi_programs = os.path.join(
+            config.base_dir, self.read_option('data_sources',
+                                              'axi_programs'))
+        config.axi_desktopapps = os.path.join(
+            config.base_dir, self.read_option('data_sources',
+                                              'axi_desktopapps'))
         # config.index_mode = self.read_option('data_sources', 'index_mode')
         config.popcon = int(self.read_option('data_sources', 'popcon'))
-        config.popcon_programs = os.path.join(config.base_dir,
-                                            self.read_option(
-                                                'data_sources',
-                                                'popcon_programs'))
-        config.popcon_desktopapps = os.path.join(config.base_dir,
-                                               self.read_option(
-                                                   'data_sources',
-                                                   'popcon_desktopapps'))
-        config.popcon_index = os.path.join(config.base_dir,
-                                         self.read_option('data_sources',
-                                                          'popcon_index'))
-        config.popcon_dir = os.path.join(config.base_dir,
-                                       self.read_option('data_sources',
-                                                        'popcon_dir'))
+        config.popcon_programs = os.path.join(
+            config.base_dir, self.read_option('data_sources',
+                                              'popcon_programs'))
+        config.popcon_desktopapps = os.path.join(
+            config.base_dir, self.read_option('data_sources',
+                                              'popcon_desktopapps'))
+        config.popcon_index = os.path.join(
+            config.base_dir, self.read_option('data_sources',
+                                              'popcon_index'))
+        config.popcon_dir = os.path.join(
+            config.base_dir, self.read_option('data_sources',
+                                              'popcon_dir'))
         config.max_popcon = int(self.read_option('data_sources', 'max_popcon'))
-        config.clusters_dir = os.path.join(config.base_dir,
-                                         self.read_option('data_sources',
-                                                          'clusters_dir'))
+        config.clusters_dir = os.path.join(
+            config.base_dir, self.read_option('data_sources',
+                                              'clusters_dir'))
         config.k_medoids = int(self.read_option('data_sources', 'k_medoids'))
         config.dde_url = self.read_option('data_sources', 'dde_url')
         config.dde_server = self.read_option('data_sources', 'dde_server')
@@ -172,12 +169,12 @@ class Config(Singleton):
         config.bm25_b = float(self.read_option('recommender', 'bm25_b'))
         config.bm25_nl = float(self.read_option('recommender', 'bm25_nl'))
         config.strategy = self.read_option('recommender', 'strategy')
-        config.profile_size = int(self.read_option('recommender',
-                                                 'profile_size'))
-        config.k_neighbors = int(self.read_option('recommender',
-                                                'k_neighbors'))
-        config.popcon_profiling = self.read_option('recommender',
-                                                 'popcon_profiling')
+        config.profile_size = int(
+            self.read_option('recommender', 'profile_size'))
+        config.k_neighbors = int(
+            self.read_option('recommender', 'k_neighbors'))
+        config.popcon_profiling = self.read_option(
+            'recommender', 'popcon_profiling')
 
     def set_logger(self):
         """
@@ -199,6 +196,8 @@ class Config(Singleton):
         console_handler.setLevel(log_level)
         self.logger.addHandler(console_handler)
 
+        if not os.path.exists(self.base_dir):
+            os.makedirs(self.base_dir)
         file_handler = logging.handlers.RotatingFileHandler(self.output,
                                                             maxBytes=50000000,
                                                             backupCount=5)

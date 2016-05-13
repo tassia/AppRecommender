@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 
+
 setup(
     name='apprecommender',
     description="Package recommender for GNU packages",
@@ -11,4 +12,9 @@ setup(
     packages=find_packages(),
     setup_requires=['nose>=1.3', 'mock'],
     test_suite='nose.collector',
-    )
+    entry_points={
+        'console_scripts': [
+            'apprec = bin.apprec:main',
+        ]
+    },
+)
