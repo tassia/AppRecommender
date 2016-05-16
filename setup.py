@@ -10,7 +10,7 @@ setup(
     author_email='tassia@acaia.ca',
     license='GPLv3.txt',
     packages=find_packages(),
-    setup_requires=['nose>=1.3', 'mock'],
+    setup_requires=['nose>=1.3'],
     test_suite='nose.collector',
     entry_points={
         'console_scripts': [
