@@ -30,8 +30,8 @@ from apprecommender.data import FilteredPopconXapianIndex
 
 if __name__ == '__main__':
     base_dir = os.path.expanduser("~/.app-recommender/")
-    axi_path = os.path.join(base_dir, "axi_XD")
-    path = os.path.join(base_dir, "popcon_XD")
+    axi_path = os.path.join(base_dir, "axi_desktopapps")
+    path = os.path.join(base_dir, "popcon_desktopapps")
     popcon_dir = os.path.join(base_dir, "popcon-entries")
     tags_filter = os.path.join(base_dir, "filters/debtags")
 
