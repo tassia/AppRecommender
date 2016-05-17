@@ -7,6 +7,7 @@ sys.path.insert(0, "{0}/../..".format(os.path.dirname(__file__)))
 
 from src.data_classification import get_time_from_package, get_alternative_pkg
 from src.config import Config
+from src.user import LocalSystem
 
 USER_DATA_DIR = Config().user_data_dir
 
@@ -17,8 +18,12 @@ class PkgTime:
         pass
 
     def create_pkg_data(self):
-        manual_pkgs = self.get_packages_from_apt_mark()
-        pkgs_time = self.get_packages_time(manual_pkgs)
+        user = LocalSystem()
+        user.maximal_pkg_profile()
+        user.no_auto_pkg_profile()
+        user_pkgs = user.pkg_profile
+
+        pkgs_time = self.get_packages_time(user_pkgs)
         self.save_package_time(pkgs_time)
         return pkgs_time
 
@@ -66,13 +71,3 @@ class PkgTime:
                 pkg_line = pkg_str.format(pkg=pkg, modify=times[0],
                                           access=times[1])
                 pkg_data.write(pkg_line)
-
-    def get_packages_from_apt_mark(self):
-        dpkg_output = commands.getoutput('apt-mark showmanual')
-        pkgs = []
-
-        for pkg in dpkg_output.splitlines():
-            if not re.match(r'^lib', pkg):
-                pkgs.append(pkg)
-
-        return pkgs
