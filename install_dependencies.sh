@@ -3,5 +3,4 @@ sudo apt-get install python python-xapian python-apt python-cluster python-webpy
 sudo update-apt-xapian-index
 
 pip install setuptools
-python -m nltk.downloader stopwords
 python -m nltk.downloader punkt
