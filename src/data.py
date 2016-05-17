@@ -34,12 +34,13 @@ import urllib
 import simplejson as json
 import socket
 import math
-import data_classification
 import commands
 
+from data_classification import time_weight
 from error import Error
 from config import Config
 from dissimilarity import JaccardDistance
+from singleton import Singleton
 
 
 def axi_get_pkgs(axi):
@@ -147,9 +148,8 @@ def get_tfidf_terms_weights(terms_doc, index, terms_package, time_context=0):
             weights[term.term] = tfidf
 
             if time_context:
-                weight = (data_classification
-                          .time_weight(term.term,
-                                       terms_package[term.term]))
+                weight = time_weight(term.term,
+                                     terms_package[term.term])
                 weights[term.term] *= weight
         except:
             pass
@@ -211,6 +211,24 @@ def split_pkg_data(user_pkg, partition_size):
         round_partition[random_key] = user_pkg.pop(random_key)
 
     return round_partition
+
+
+class StopWords(Singleton):
+
+    def __init__(self):
+        self._stopwords = set()
+
+    @property
+    def stopwords(self):
+        if not self._stopwords:
+            stopwords_path = Config().stopwords
+            with open(stopwords_path, 'r') as stopwords:
+                for word in stopwords:
+                    self._stopwords.add(word.strip())
+
+            return self._stopwords
+        else:
+            return self._stopwords
 
 
 class FilteredXapianIndex(xapian.WritableDatabase):

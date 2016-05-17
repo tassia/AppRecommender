@@ -33,7 +33,6 @@ import numpy as np
 
 from abc import ABCMeta, abstractmethod
 from os import path
-from nltk.corpus import stopwords
 
 from error import Error
 from config import Config

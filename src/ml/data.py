@@ -1,19 +1,19 @@
 from os import path
 from os import makedirs
 
+import apt
+import calendar
+import pickle
+import time
+import re
+import xapian
+
+import Stemmer
+
 from pkg_time import PkgTime
 from src.config import Config
 from src.decider import FilterTag, FilterDescription
 import src.data_classification as data_cl
-
-import apt
-import calendar
-import nltk
-import pickle
-import time
-import xapian
-
-from nltk.stem.snowball import SnowballStemmer
 
 
 class MachineLearningData():
@@ -32,7 +32,7 @@ class MachineLearningData():
 
     def __init__(self):
         self.axi = xapian.Database(MachineLearningData.XAPIAN_DATABASE_PATH)
-        self.stemmer = SnowballStemmer('english')
+        self.stemmer = Stemmer.Stemmer('english')
 
         valid_tags = []
         with open(path.join(Config().filters_dir, "debtags")) as tags:
@@ -130,12 +130,11 @@ class MachineLearningData():
         return self.get_pkg_data(axi, pkg_name, 'XT')
 
     def get_pkg_terms(self, cache, pkg_name):
-        description = cache[pkg_name].versions[0].description.strip()
+        description = cache[pkg_name].candidate.description.strip()
+        description = re.sub('[^a-zA-Z]', ' ', description)
 
-        tokens = [word for sent in nltk.sent_tokenize(description) for word in
-                  nltk.word_tokenize(sent)]
-
-        stems = [self.stemmer.stem(token) for token in tokens
+        tokens = description.lower().split()
+        stems = [self.stemmer.stemWord(token) for token in tokens
                  if self.filter_description(token)]
 
         return stems

@@ -22,7 +22,7 @@ class Initialize:
                      'x11::', 'TODO']
 
     def __init__(self):
-        pass
+        self.config = Config()
 
     def get_tags(self):
         command = "cat /var/lib/debtags/vocabulary" \
@@ -64,7 +64,7 @@ class Initialize:
     def indexer_axi(self, axi_sample, filters_path, terms=[]):
         axi_path = Initialize.DEFAULT_AXI_PATH
         axi = xapian.Database(axi_path)
-        base_dir = Config().base_dir
+        base_dir = self.config.base_dir
 
         begin_time = datetime.datetime.now()
 
@@ -97,22 +97,21 @@ class Initialize:
         print "Time elapsed: %d seconds." % delta.seconds
 
     def prepare_data(self):
-        config = Config()
-
-        if os.path.exists(config.base_dir):
-            shutil.rmtree(config.base_dir)
-        os.makedirs(config.base_dir)
-        os.makedirs(config.filters_dir)
+        if os.path.exists(self.config.base_dir):
+            shutil.rmtree(self.config.base_dir)
+        os.makedirs(self.config.base_dir)
+        os.makedirs(self.config.filters_dir)
 
         tags = self.get_tags()
-        tags_path = "{}/debtags".format(config.filters_dir)
+        tags_path = "{}/debtags".format(self.config.filters_dir)
         self.save_list(tags, tags_path)
 
         pkgs = self.get_axipkgs()
-        pkgs_path = "{}/desktopapps".format(config.filters_dir)
+        pkgs_path = "{}/desktopapps".format(self.config.filters_dir)
         self.save_list(pkgs, pkgs_path)
 
         self.indexer_axi('sample', pkgs_path)
+        self.move_stopwords()
 
     def get_role_program_pkgs(self):
         command = "cat /var/lib/debtags/package-tags | " \
@@ -125,3 +124,7 @@ class Initialize:
     def save_list(self, elements, path):
         with open(path, 'w') as text:
             text.write('\n'.join(elements) + '\n')
+
+    def move_stopwords(self):
+        filters_dir = self.config.filters_dir
+        shutil.copyfile('../data/stopwords', filters_dir + '/stopwords')
