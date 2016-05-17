@@ -88,7 +88,7 @@ def run():
         return SUCCESS
     elif call_training(load_options.options):
         print 'Downloading NLTK dependencies'
-        nltk_files = ['punkt', 'stopwords']
+        nltk_files = ['punkt']
         if not nltk_download(nltk_files):
             return ERROR_NLTK
 
