@@ -34,9 +34,9 @@ import urllib
 import simplejson as json
 import socket
 import math
-import data_classification
 import commands
 
+from data_classification import time_weight
 from error import Error
 from config import Config
 from dissimilarity import JaccardDistance
@@ -148,9 +148,8 @@ def get_tfidf_terms_weights(terms_doc, index, terms_package, time_context=0):
             weights[term.term] = tfidf
 
             if time_context:
-                weight = (data_classification
-                          .time_weight(term.term,
-                                       terms_package[term.term]))
+                weight = time_weight(term.term,
+                                     terms_package[term.term])
                 weights[term.term] *= weight
         except:
             pass

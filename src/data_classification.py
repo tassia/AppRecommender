@@ -6,11 +6,6 @@ import logging
 import math
 import operator
 import time
-import xapian
-import data
-import os
-
-from user import FilterTag, FilterDescription
 
 pkgs_times = {}
 pkgs_time_weight = {}
@@ -144,36 +139,6 @@ def time_weight(term, term_list):
     best_weight_terms[term] = time_weight
 
     return time_weight
-
-
-def generate_all_terms_tfidf():
-    global user_tfidf_weights
-
-    axipath = os.path.expanduser("~/.app-recommender/axi_desktopapps/")
-    axi_index = xapian.Database(axipath)
-
-    dpkg_output = commands.getoutput('apt-mark showmanual')
-    pkgs = [pkg for pkg in dpkg_output.splitlines()
-            if not pkg.startswith('lib')]
-
-    docs = data.axi_search_pkgs(axi_index, pkgs)
-
-    tags_weights = data.tfidf_weighting(axi_index, docs,
-                                        FilterTag(0), time_context=0)
-    description_weights = (data.tfidf_weighting(axi_index, docs,
-                           FilterDescription(), time_context=0))
-
-    user_tfidf_weights = dict(tags_weights + description_weights)
-
-
-def term_tfidf_weight_on_user(term):
-
-    try:
-        if len(user_tfidf_weights) == 0:
-            generate_all_terms_tfidf()
-        return user_tfidf_weights[term]
-    except Exception, e:
-        logging.info("ERROR: {0}".format(e))
 
 
 def print_best_weight_terms(terms_package):
