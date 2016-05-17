@@ -61,6 +61,7 @@ class Config(Singleton):
             self.axi_programs = os.path.join(self.base_dir, "axi_programs")
             self.axi_desktopapps = os.path.join(self.base_dir,
                                                 "axi_desktopapps")
+            self.stopwords = os.path.join(self.filters_dir, 'stopwords')
             # popcon indexes
             self.index_mode = "old"
             # check if there are popcon indexes available

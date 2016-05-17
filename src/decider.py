@@ -3,7 +3,7 @@
 import re
 import xapian
 
-from nltk.corpus import stopwords
+from src.data import StopWords
 
 
 class PkgMatchDecider(xapian.MatchDecider):
@@ -109,7 +109,7 @@ class FilterDescription(xapian.ExpandDecider):
 
     def __init__(self):
         xapian.ExpandDecider.__init__(self)
-        self.stop_words = set(stopwords.words('english'))
+        self.stop_words = StopWords().stopwords
 
     def __call__(self, term):
         """
