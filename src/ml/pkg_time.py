@@ -5,7 +5,7 @@ import commands
 
 sys.path.insert(0, "{0}/../..".format(os.path.dirname(__file__)))
 
-from src.data_classification import get_time_from_package, get_alternative_pkg
+from src.data_classification import get_time_from_package
 from src.config import Config
 from src.user import LocalSystem
 
@@ -27,6 +27,22 @@ class PkgTime:
         self.save_package_time(pkgs_time)
         return pkgs_time
 
+    def get_best_time(self, pkg):
+        valid_regex = re.compile(
+            r'/usr/bin/|/usr/sbin|/usr/game/|/usr/lib/.+/')
+        pkg_files = commands.getoutput('dpkg -L {}'.format(pkg))
+
+        bestatime, bestmtime = 0, 0
+        for pkg_file in pkg_files.splitlines():
+            if valid_regex.search(pkg_file):
+                access, modify = get_time_from_package(pkg_file, pkg_bin=False)
+
+                if access >= bestatime:
+                    bestatime = access
+                    bestmtime = modify
+
+        return (bestmtime, bestatime)
+
     def get_package_data(self, file_path=USER_DATA_DIR + 'pkg_data.txt'):
         if os.path.isfile(file_path):
             pkgs_time = {}
@@ -41,20 +57,22 @@ class PkgTime:
         else:
             return self.create_pkg_data()
 
-    def get_packages_time(self, pkgs):
+    def get_packages_time(self, pkgs, verbose=False):
         pkgs_time = {}
 
         for pkg in pkgs:
-            modify, access = get_time_from_package(pkg)
-
-            if not modify or not access:
-                pkg_tmp = get_alternative_pkg(pkg)
-                modify, access = get_time_from_package(pkg_tmp)
+            modify, access = self.get_best_time(pkg)
 
             if modify and access:
+                if verbose:
+                    print 'ADD: {}'.format(pkg)
+
                 pkgs_time[pkg] = []
                 pkgs_time[pkg].append(modify)
                 pkgs_time[pkg].append(access)
+            else:
+                if verbose:
+                    print 'NOT: {} {} {}'.format(pkg, modify, access)
 
         return pkgs_time
 

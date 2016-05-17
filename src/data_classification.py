@@ -13,12 +13,12 @@ best_weight_terms = {}
 user_tfidf_weights = {}
 
 
-def get_time_from_package(pkg):
+def get_time_from_package(pkg, pkg_bin=True):
     if pkg in pkgs_times:
         modify, access = pkgs_times[pkg]
     else:
-        modify = get_time('Z', pkg)
-        access = get_time('X', pkg)
+        modify = get_time('Z', pkg, pkg_bin)
+        access = get_time('X', pkg, pkg_bin)
         pkgs_times[pkg] = [modify, access]
 
     return pkgs_times[pkg]
@@ -39,8 +39,9 @@ def get_alternative_pkg(pkg):
     return None
 
 
-def get_time(option, pkg):
-    stat_base = "stat -c '%{option}' `which {package}`"
+def get_time(option, pkg, pkg_bin=True):
+    stat_base = "stat -c '%{option}'"
+    stat_base += " `which {package}`" if pkg_bin else " {package}"
     stat_error = 'stat:'
     stat_time = stat_base.format(option=option, package=pkg)
 
