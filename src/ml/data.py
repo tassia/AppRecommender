@@ -3,9 +3,9 @@ from os import makedirs
 
 import apt
 import calendar
-import nltk
 import pickle
 import time
+import re
 import xapian
 
 import Stemmer
@@ -130,11 +130,10 @@ class MachineLearningData():
         return self.get_pkg_data(axi, pkg_name, 'XT')
 
     def get_pkg_terms(self, cache, pkg_name):
-        description = cache[pkg_name].versions[0].description.strip()
+        description = cache[pkg_name].candidate.description.strip()
+        description = re.sub('[^a-zA-Z]', ' ', description)
 
-        tokens = [word for sent in nltk.sent_tokenize(description) for word in
-                  nltk.word_tokenize(sent)]
-
+        tokens = description.lower().split()
         stems = [self.stemmer.stemWord(token) for token in tokens
                  if self.filter_description(token)]
 

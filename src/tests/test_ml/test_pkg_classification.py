@@ -31,12 +31,12 @@ class PkgClassificationTests(unittest.TestCase):
     def test_get_pkg_terms(self):
         vim_terms = [u'almost', u'compat', u'version', u'editor', u'new',
                      u'featur', u'ad', u'multi', u'level', u'undo', u'syntax',
-                     u'highlight', u'command', u'line', u'histori', u'on-lin',
+                     u'highlight', u'command', u'line', u'histori',
                      u'help', u'filenam', u'complet', u'block', u'oper',
                      u'fold', u'support', u'etc', u'packag', u'contain',
                      u'version', u'vim', u'compil', u'rather', u'standard',
                      u'set', u'featur', u'packag', u'provid', u'version',
-                     u'vim-*', u'packag', u'need', u'less']
+                     u'packag', u'need', u'less']
         vim_terms_result = self.ml_data.get_pkg_terms(self.cache, 'vim')
 
         for term in vim_terms:
