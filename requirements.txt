@@ -1,0 +1,7 @@
+cluster==1.1.1b3
+matplotlib==1.4.2
+nltk==3.0.0
+simplejson==3.6.5
+web.py==0.37
+pyxdg==0.25
+PyStemmer==1.2.0
