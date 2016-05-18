@@ -27,6 +27,7 @@ import logging
 import os
 import pickle
 import random
+import re
 import xapian
 
 from error import Error
@@ -242,17 +243,17 @@ class User:
         """
         cache = apt.Cache()
         old_profile_size = len(self.pkg_profile)
+
         for p in self.pkg_profile[:]:  # iterate list copy
-            try:
-                if p in cache:
-                    pkg = cache[p]
-                    if pkg.candidate:
-                        for dep in pkg.candidate.dependencies:
-                            for or_dep in dep.or_dependencies:
-                                if or_dep.name in self.pkg_profile:
-                                    self.pkg_profile.remove(or_dep.name)
-            except:
-                logging.debug("Package not found in cache: %s" % p)
+            if p in cache:
+                pkg = cache[p]
+
+                if pkg.candidate:
+                    for dep in pkg.candidate.dependencies:
+                        for or_dep in dep.or_dependencies:
+                            if or_dep.name in self.pkg_profile:
+                                self.pkg_profile.remove(or_dep.name)
+
         profile_size = len(self.pkg_profile)
         logging.debug("Maximal package profile: reduced packages profile size \
                        from %d to %d." % (old_profile_size, profile_size))
@@ -362,19 +363,15 @@ class LocalSystem(User):
         cache = apt.Cache()
         old_profile_size = len(self.pkg_profile)
 
-        manual_installed = commands.getoutput('apt-mark showmanual')
-        manual_installed = manual_installed.splitlines()
+        manual_installed = self.get_manual_installed_pkgs()
         system_pkgs = self.get_system_pkgs()
 
         for p in self.pkg_profile[:]:  # iterate list copy
-            try:
-                if p in cache:
-                    if (p not in manual_installed or
-                       p in system_pkgs or
-                       p.startswith('lib')):
-                        self.pkg_profile.remove(p)
-            except:
-                logging.debug("Package not found in cache: %s" % p)
+            if p in cache:
+                if (p not in manual_installed or
+                   p in system_pkgs or
+                   p.startswith('lib')):
+                    self.pkg_profile.remove(p)
         profile_size = len(self.pkg_profile)
         logging.debug("No auto-intalled package profile: reduced packages"
                       "profile size from %d to %d." %
@@ -399,3 +396,14 @@ class LocalSystem(User):
                 system_pkgs.append(pkg_name)
 
         return system_pkgs
+
+    def get_manual_installed_pkgs(self):
+        dpkg_output = commands.getoutput('apt-mark showmanual')
+        pkgs = set()
+
+        for pkg in dpkg_output.splitlines():
+
+            if not re.match(r'^lib', pkg):
+                pkgs.add(pkg)
+
+        return pkgs
