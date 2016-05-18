@@ -13,7 +13,14 @@ best_weight_terms = {}
 user_tfidf_weights = {}
 
 
+def pkg_name_with_error(pkg):
+    return len(pkg.split()) > 1
+
+
 def get_time_from_package(pkg, pkg_bin=True):
+    if pkg_name_with_error(pkg):
+        pkgs_times[pkg] = [None, None]
+
     if pkg in pkgs_times:
         modify, access = pkgs_times[pkg]
     else:
