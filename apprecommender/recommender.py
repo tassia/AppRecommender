@@ -149,16 +149,16 @@ class Recommender:
         elif strategy_str == "cbtm":
             self.strategy = strategy.ContentBased("time", profile_size)
         elif strategy_str == "mlbva":
-            self.strategy = strategy.MachineLearningBVA("mix",
+            self.strategy = strategy.MachineLearningBVA("mlbva_mix",
                                                         profile_size)
         elif strategy_str == "mlbow":
-            self.strategy = strategy.MachineLearningBOW("mix",
+            self.strategy = strategy.MachineLearningBOW("mlbow_mix",
                                                         profile_size)
         elif strategy_str == "mlbva_eset":
-            self.strategy = strategy.MachineLearningBVA("mix_eset",
+            self.strategy = strategy.MachineLearningBVA("mlbva_mix_eset",
                                                         profile_size)
         elif strategy_str == "mlbow_eset":
-            self.strategy = strategy.MachineLearningBOW("mix_eset",
+            self.strategy = strategy.MachineLearningBOW("mlbow_mix_eset",
                                                         profile_size)
         elif strategy_str == "cb_eset":
             self.strategy = strategy.ContentBased("mix_eset", profile_size)

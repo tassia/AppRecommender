@@ -118,6 +118,11 @@ class User:
             profile = self.tfidf_profile(items_repository,
                                          size, FilterDescription(),
                                          time_context)
+        elif content == 'mlbow_mix' or content == 'mlbva_mix':
+            self.pkg_profile = self.get_most_usefull_pkgs()
+            profile = self.tfidf_profile(items_repository, size,
+                                         FilterTag_or_Description(valid_tags),
+                                         time_context)
         elif content == "mix":
             profile = self.tfidf_profile(items_repository, size,
                                          FilterTag_or_Description(valid_tags),
@@ -144,6 +149,10 @@ class User:
         elif content == "desc_eset":
             profile = self.eset_profile(items_repository, size,
                                         FilterDescription())
+        elif content == 'mlbow_mix_eset' or content == 'mlbva_mix_eset':
+            self.pkg_profile = self.get_most_usefull_pkgs()
+            profile = self.eset_profile(items_repository, size,
+                                        FilterTag_or_Description(valid_tags))
         elif content == "mix_eset":
             profile = self.eset_profile(items_repository, size,
                                         FilterTag_or_Description(valid_tags))
@@ -261,6 +270,22 @@ class User:
         logging.debug("Maximal package profile: reduced packages profile size \
                        from %d to %d." % (old_profile_size, profile_size))
         return self.pkg_profile
+
+    def get_most_usefull_pkgs(self):
+        classification_path = os.path.expanduser(
+            '~/.app-recommender/user_data/pkgs_classifications.txt')
+
+        if not os.path.exists(classification_path):
+            return -1
+
+        with open(classification_path, 'ra') as data:
+            pkg_classification = pickle.load(data)
+
+        classifications = {'RU': [], 'U': [], 'NU': []}
+        for pkg, values in pkg_classification.iteritems():
+            classifications[values[-1]].append(pkg)
+
+        return classifications['RU']
 
 
 class RandomPopcon(User):
