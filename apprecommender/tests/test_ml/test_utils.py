@@ -1,7 +1,7 @@
 import unittest
 from numpy import array
 
-from src.ml.utils import create_binary_matrix
+from apprecommender.ml.utils import create_binary_matrix
 
 
 class MLUtilsTest(unittest.TestCase):

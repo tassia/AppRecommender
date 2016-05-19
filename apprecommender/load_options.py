@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import getopt
-import os
 import sys
 import logging
 
-from config import Config
-from singleton import Singleton
+from apprecommender.config import Config
+from apprecommender.singleton import Singleton
 
 
 class LoadOptions(Singleton):

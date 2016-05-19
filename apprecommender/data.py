@@ -36,11 +36,11 @@ import socket
 import math
 import commands
 
-from data_classification import time_weight
-from error import Error
-from config import Config
-from dissimilarity import JaccardDistance
-from singleton import Singleton
+from apprecommender.data_classification import time_weight
+from apprecommender.error import Error
+from apprecommender.config import Config
+from apprecommender.dissimilarity import JaccardDistance
+from apprecommender.singleton import Singleton
 
 
 def axi_get_pkgs(axi):

@@ -22,16 +22,16 @@ __license__ = """
 import unittest
 import xapian
 
-from src.user import User, LocalSystem, FilterTag, FilterDescription
-from src.config import Config
-from src.data import SampleAptXapianIndex
+from apprecommender.user import User, LocalSystem, FilterTag, FilterDescription
+from apprecommender.config import Config
+from apprecommender.data import SampleAptXapianIndex
 
 
 class FilterTagTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
 
-        tags_filter = "src/tests/test_data/tags_filter"
+        tags_filter = "apprecommender/tests/test_data/tags_filter"
         self.debtag = "use::searching"
 
         with open(tags_filter) as valid_tags:
@@ -59,7 +59,7 @@ class UserTests(unittest.TestCase):
         self.axi = xapian.Database(cfg.axi)
         packages = ["gimp", "aaphoto", "eog", "emacs", "dia", "ferret",
                     "festival", "file", "inkscape", "xpdf"]
-        path = "src/tests/test_data/.sample_axi"
+        path = "apprecommender/tests/test_data/.sample_axi"
         self.sample_axi = SampleAptXapianIndex(packages, self.axi, path)
         self.user = User({"gimp": 1, "aaphoto": 1, "eog": 1, "emacs": 1})
 

@@ -4,9 +4,9 @@ import os
 import logging
 import datetime
 
-from config import Config
-from recommender import Recommender
-from user import LocalSystem
+from apprecommender.config import Config
+from apprecommender.recommender import Recommender
+from apprecommender.user import LocalSystem
 
 
 class AppRecommender:

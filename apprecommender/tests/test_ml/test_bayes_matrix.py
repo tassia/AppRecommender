@@ -3,7 +3,7 @@
 import unittest
 import numpy as np
 
-from src.ml.bayes_matrix import BayesMatrix
+from apprecommender.ml.bayes_matrix import BayesMatrix
 
 
 class PkgClassificationTests(unittest.TestCase):

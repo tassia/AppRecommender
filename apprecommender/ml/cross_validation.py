@@ -4,12 +4,12 @@ import xapian
 from abc import ABCMeta
 from collections import defaultdict
 
-from src.evaluation import CrossValidation, Metric
-from src.strategy import XAPIAN_DATABASE_PATH
+from apprecommender.evaluation import CrossValidation, Metric
+from apprecommender.strategy import XAPIAN_DATABASE_PATH
 
-from bag_of_words import BagOfWords
-from bayes_matrix import BayesMatrix
-from utils import create_column_matrix, create_binary_matrix
+from apprecommender.ml.bag_of_words import BagOfWords
+from apprecommender.ml.bayes_matrix import BayesMatrix
+from apprecommender.ml.utils import create_column_matrix, create_binary_matrix
 
 NOT_NECESSARY = 1
 

@@ -30,10 +30,12 @@ import random
 import re
 import xapian
 
-from error import Error
-from singleton import Singleton
-from decider import FilterTag, FilterDescription, FilterTag_or_Description
-import data
+import apprecommender.data as data
+
+from apprecommender.error import Error
+from apprecommender.singleton import Singleton
+from apprecommender.decider import (FilterTag, FilterDescription,
+                                    FilterTag_or_Description)
 
 
 class DemographicProfile(Singleton):

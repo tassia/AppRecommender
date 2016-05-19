@@ -2,7 +2,7 @@
 
 import unittest
 
-from src.data_classification import linear_percent_function
+from apprecommender.data_classification import linear_percent_function
 
 
 class DataClassificationTests(unittest.TestCase):

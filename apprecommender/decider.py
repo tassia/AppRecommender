@@ -3,7 +3,7 @@
 import re
 import xapian
 
-from src.data import StopWords
+from apprecommender.data import StopWords
 
 
 class PkgMatchDecider(xapian.MatchDecider):

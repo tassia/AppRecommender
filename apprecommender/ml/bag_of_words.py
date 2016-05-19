@@ -5,8 +5,8 @@ from apt import Cache
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import GaussianNB
 
-from src.config import Config
-from src.ml.data import MachineLearningData
+from apprecommender.config import Config
+from apprecommender.ml.data import MachineLearningData
 
 
 class BagOfWords():

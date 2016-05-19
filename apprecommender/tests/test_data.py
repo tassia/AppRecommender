@@ -22,8 +22,8 @@ __license__ = """
 import unittest
 import xapian
 
-from src.data import PopconSubmission, axi_search_pkg_tags
-from src.config import Config
+from apprecommender.data import PopconSubmission, axi_search_pkg_tags
+from apprecommender.config import Config
 
 
 class AxiSearchTests(unittest.TestCase):
@@ -44,7 +44,7 @@ class AxiSearchTests(unittest.TestCase):
 class PopconSubmissionTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.submission_path = "src/tests/test_data/test_popcon"
+        self.submission_path = "apprecommender/tests/test_data/test_popcon"
         self.submission = PopconSubmission(self.submission_path)
 
     def test_user_id(self):

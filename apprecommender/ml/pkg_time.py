@@ -1,13 +1,10 @@
 import os
 import re
-import sys
 import commands
 
-sys.path.insert(0, "{0}/../..".format(os.path.dirname(__file__)))
-
-from src.data_classification import get_time_from_package
-from src.config import Config
-from src.user import LocalSystem
+from apprecommender.data_classification import get_time_from_package
+from apprecommender.config import Config
+from apprecommender.user import LocalSystem
 
 USER_DATA_DIR = Config().user_data_dir
 

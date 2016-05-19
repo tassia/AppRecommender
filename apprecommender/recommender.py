@@ -25,7 +25,7 @@ import xapian
 import operator
 import strategy
 
-from config import Config
+from apprecommender.config import Config
 
 
 class RecommendationResult:

@@ -2,11 +2,11 @@ import unittest
 from collections import OrderedDict
 from numpy import array, matrix
 
-from src.ml.cross_validation import (ConfusionMatrix,
-                                     CrossValidationBVA,
-                                     Evaluation)
-from src.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
-                            F_score, MCC, Accuracy)
+from apprecommender.ml.cross_validation import (ConfusionMatrix,
+                                                CrossValidationBVA,
+                                                Evaluation)
+from apprecommender.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
+                                       F_score, MCC, Accuracy)
 
 
 class ConfusionMatrixTest(unittest.TestCase):

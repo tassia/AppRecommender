@@ -24,14 +24,17 @@ import os
 import logging
 import logging.handlers
 
-from singleton import Singleton
 from ConfigParser import ConfigParser, MissingSectionHeaderError
+
+from apprecommender.singleton import Singleton
 
 
 class Config(Singleton):
+
     """
     Class to handle configuration options.
     """
+
     def __init__(self):
         """
         Set default configuration options.
@@ -99,6 +102,7 @@ class Config(Singleton):
             # popcon profiling method: full, voted
             self.popcon_profiling = "full"
 
+            self.load_config_file()
             self.set_logger()
             self.initialized = 1
             logging.info("Basic config")
@@ -118,63 +122,63 @@ class Config(Singleton):
         """
         Load options from configuration file and command line arguments.
         """
-        config.debug = int(self.read_option('general', 'debug'))
-        config.debug = int(self.read_option('general', 'verbose'))
-        config.base_dir = os.path.expanduser(
+        self.debug = int(self.read_option('general', 'debug'))
+        self.debug = int(self.read_option('general', 'verbose'))
+        self.base_dir = os.path.expanduser(
             self.read_option('data_sources', 'base_dir'))
-        config.user_data_dir = os.path.join(
-            config.base_dir, self.read_option('data_sources',
-                                              'user_data_dir'))
-        config.output = os.path.join(
-            config.base_dir, self.read_option('general', 'output'))
-        config.filters_dir = os.path.join(
-            config.base_dir, self.read_option('data_sources',
-                                              'filters_dir'))
-        config.pkgs_filter = os.path.join(
-            config.filters_dir, self.read_option('data_sources',
-                                                 'pkgs_filter'))
-        config.axi = self.read_option('data_sources', 'axi')
-        config.axi_programs = os.path.join(
-            config.base_dir, self.read_option('data_sources',
-                                              'axi_programs'))
-        config.axi_desktopapps = os.path.join(
-            config.base_dir, self.read_option('data_sources',
-                                              'axi_desktopapps'))
-        # config.index_mode = self.read_option('data_sources', 'index_mode')
-        config.popcon = int(self.read_option('data_sources', 'popcon'))
-        config.popcon_programs = os.path.join(
-            config.base_dir, self.read_option('data_sources',
-                                              'popcon_programs'))
-        config.popcon_desktopapps = os.path.join(
-            config.base_dir, self.read_option('data_sources',
-                                              'popcon_desktopapps'))
-        config.popcon_index = os.path.join(
-            config.base_dir, self.read_option('data_sources',
-                                              'popcon_index'))
-        config.popcon_dir = os.path.join(
-            config.base_dir, self.read_option('data_sources',
-                                              'popcon_dir'))
-        config.max_popcon = int(self.read_option('data_sources', 'max_popcon'))
-        config.clusters_dir = os.path.join(
-            config.base_dir, self.read_option('data_sources',
-                                              'clusters_dir'))
-        config.k_medoids = int(self.read_option('data_sources', 'k_medoids'))
-        config.dde_url = self.read_option('data_sources', 'dde_url')
-        config.dde_server = self.read_option('data_sources', 'dde_server')
-        config.dde_port = self.read_option('data_sources', 'dde_port')
+        self.user_data_dir = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'user_data_dir'))
+        self.output = os.path.join(
+            self.base_dir, self.read_option('general', 'output'))
+        self.filters_dir = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'filters_dir'))
+        self.pkgs_filter = os.path.join(
+            self.filters_dir, self.read_option('data_sources',
+                                               'pkgs_filter'))
+        self.axi = self.read_option('data_sources', 'axi')
+        self.axi_programs = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'axi_programs'))
+        self.axi_desktopapps = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'axi_desktopapps'))
+        # self.index_mode = self.read_option('data_sources', 'index_mode')
+        self.popcon = int(self.read_option('data_sources', 'popcon'))
+        self.popcon_programs = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'popcon_programs'))
+        self.popcon_desktopapps = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'popcon_desktopapps'))
+        self.popcon_index = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'popcon_index'))
+        self.popcon_dir = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'popcon_dir'))
+        self.max_popcon = int(self.read_option('data_sources', 'max_popcon'))
+        self.clusters_dir = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'clusters_dir'))
+        self.k_medoids = int(self.read_option('data_sources', 'k_medoids'))
+        self.dde_url = self.read_option('data_sources', 'dde_url')
+        self.dde_server = self.read_option('data_sources', 'dde_server')
+        self.dde_port = self.read_option('data_sources', 'dde_port')
 
-        config.weight = self.read_option('recommender', 'weight')
-        config.bm25_k1 = float(self.read_option('recommender', 'bm25_k1'))
-        config.bm25_k2 = float(self.read_option('recommender', 'bm25_k2'))
-        config.bm25_k3 = float(self.read_option('recommender', 'bm25_k3'))
-        config.bm25_b = float(self.read_option('recommender', 'bm25_b'))
-        config.bm25_nl = float(self.read_option('recommender', 'bm25_nl'))
-        config.strategy = self.read_option('recommender', 'strategy')
-        config.profile_size = int(
+        self.weight = self.read_option('recommender', 'weight')
+        self.bm25_k1 = float(self.read_option('recommender', 'bm25_k1'))
+        self.bm25_k2 = float(self.read_option('recommender', 'bm25_k2'))
+        self.bm25_k3 = float(self.read_option('recommender', 'bm25_k3'))
+        self.bm25_b = float(self.read_option('recommender', 'bm25_b'))
+        self.bm25_nl = float(self.read_option('recommender', 'bm25_nl'))
+        self.strategy = self.read_option('recommender', 'strategy')
+        self.profile_size = int(
             self.read_option('recommender', 'profile_size'))
-        config.k_neighbors = int(
+        self.k_neighbors = int(
             self.read_option('recommender', 'k_neighbors'))
-        config.popcon_profiling = self.read_option(
+        self.popcon_profiling = self.read_option(
             'recommender', 'popcon_profiling')
 
     def set_logger(self):

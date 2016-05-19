@@ -4,7 +4,7 @@ import apt
 import unittest
 import xapian
 
-from src.ml.data import MachineLearningData
+from apprecommender.ml.data import MachineLearningData
 
 
 class PkgClassificationTests(unittest.TestCase):

@@ -7,7 +7,7 @@ import os
 import xapian
 import shutil
 
-from config import Config
+from apprecommender.config import Config
 
 
 class Initialize:

@@ -34,12 +34,13 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 from os import path
 
-from error import Error
-from config import Config
-from ml.bag_of_words import BagOfWords
-from ml.bayes_matrix import BayesMatrix
-from ml.data import MachineLearningData
-from decider import PkgMatchDecider, PkgExpandDecider, TagExpandDecider
+from apprecommender.error import Error
+from apprecommender.config import Config
+from apprecommender.ml.bag_of_words import BagOfWords
+from apprecommender.ml.bayes_matrix import BayesMatrix
+from apprecommender.ml.data import MachineLearningData
+from apprecommender.decider import (PkgMatchDecider, PkgExpandDecider,
+                                    TagExpandDecider)
 
 XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
 USER_DATA_DIR = Config().user_data_dir

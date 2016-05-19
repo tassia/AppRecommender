@@ -25,11 +25,12 @@ import logging
 
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from error import Error
-from singleton import Singleton
-from recommender import RecommendationResult
-from user import User
-from data import split_pkg_data
+
+from apprecommender.error import Error
+from apprecommender.singleton import Singleton
+from apprecommender.recommender import RecommendationResult
+from apprecommender.user import User
+from apprecommender.data import split_pkg_data
 
 
 class Metric(Singleton):

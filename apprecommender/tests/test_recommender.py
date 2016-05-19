@@ -21,10 +21,11 @@ __license__ = """
 
 import unittest
 
-from src.recommender import RecommendationResult, Recommender
-from src.user import User
-from src.config import Config
-from src.strategy import ContentBased, MachineLearningBVA, MachineLearningBOW
+from apprecommender.recommender import RecommendationResult, Recommender
+from apprecommender.user import User
+from apprecommender.config import Config
+from apprecommender.strategy import (ContentBased, MachineLearningBVA,
+                                     MachineLearningBOW)
 
 
 class RecommendationResultTests(unittest.TestCase):

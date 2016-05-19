@@ -7,13 +7,13 @@ import pickle
 import time
 import re
 import xapian
-
 import Stemmer
 
-from pkg_time import PkgTime
-from src.config import Config
-from src.decider import FilterTag, FilterDescription
-import src.data_classification as data_cl
+import apprecommender.data_classification as data_cl
+
+from apprecommender.ml.pkg_time import PkgTime
+from apprecommender.config import Config
+from apprecommender.decider import FilterTag, FilterDescription
 
 
 class MachineLearningData():

@@ -2,7 +2,7 @@
 
 import unittest
 
-from src.initialize import Initialize
+from apprecommender.initialize import Initialize
 
 
 class InitializeTests(unittest.TestCase):
