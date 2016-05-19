@@ -18,34 +18,29 @@ __license__ = """
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
 import sys
-sys.path.insert(0,'../')
+sys.path.insert(0, '../')
 import logging
 import datetime
-from datetime import timedelta
 
-from config import *
-from data import *
-from dissimilarity import *
-from error import Error
+from apprecommender.config import Config
+from apprecommender.data import PopconXapianIndex
+from apprecommender.error import Error
 
 if __name__ == '__main__':
     try:
         cfg = Config()
         begin_time = datetime.datetime.now()
-        logging.info("Popcon indexing started at %s" % begin_time)
+        logging.info("Clustering computation started at %s" % begin_time)
 
         pxi = PopconXapianIndex(cfg)
 
         end_time = datetime.datetime.now()
-        logging.info("Popcon indexing completed at %s" % end_time)
+        logging.info("Clustering computation completed at %s" % end_time)
         delta = end_time - begin_time
         logging.info("Time elapsed: %d seconds." % delta.seconds)
-        if cfg.index_mode=="cluster" or cfg.index_mode=="recluster":
-            logging.info("Medoids: %d\tDispersion:%f" %
-                         (cfg.k_medoids,pxi.cluster_dispersion))
+        logging.info("Medoids: %d\tDispersion:%f" %
+                     (cfg.k_medoids, pxi.cluster_dispersion))
 
     except Error:
         logging.critical("Aborting proccess. Use '--debug' for more details.")
-
