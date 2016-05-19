@@ -34,7 +34,6 @@ class AxiSearchTests(unittest.TestCase):
 
     def test_search_pkg_tags(self):
         tags = axi_search_pkg_tags(self.axi, 'apticron')
-        print tags
         self.assertEqual(set(tags), set(['XTadmin::package-management',
                                          'XTnetwork::server',
                                          'XTimplemented-in::shell',
