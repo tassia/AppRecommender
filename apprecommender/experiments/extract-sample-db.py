@@ -20,30 +20,30 @@ __license__ = """
 """
 
 import xapian
-import os
-import random
 import sys
 
 if __name__ == '__main__':
     try:
         sample_file = sys.argv[1]
-    	popcon = xapian.WritableDatabase(sys.argv[2],xapian.DB_OPEN)
+        popcon = xapian.WritableDatabase(sys.argv[2], xapian.DB_OPEN)
     except:
         print "Usage: extract-sample-db sample_file popcon_index"
         exit(1)
     enquire = xapian.Enquire(popcon)
     print sample_file.split("/")
-    new_popcon = xapian.WritableDatabase(sys.argv[2]+"-"+sample_file.split("/")[-1],xapian.DB_CREATE_OR_OVERWRITE)
+    new_popcon = xapian.WritableDatabase(
+        sys.argv[2] + "-" + sample_file.split("/")[-1],
+        xapian.DB_CREATE_OR_OVERWRITE)
     print ("Popcon repository size: %d" % popcon.get_doccount())
     for submission in open(sample_file):
-        print "ID"+submission.strip()
-        query = xapian.Query("ID"+submission.strip())
+        print "ID" + submission.strip()
+        query = xapian.Query("ID" + submission.strip())
         enquire.set_query(query)
-        mset = enquire.get_mset(0,20)
+        mset = enquire.get_mset(0, 20)
         for m in mset:
-            print "Adding doc %s"%m.docid
+            print "Adding doc %s" % m.docid
             new_popcon.add_document(popcon.get_document(m.docid))
-            print "Removing doc %s"%m.docid
+            print "Removing doc %s" % m.docid
             popcon.delete_document(m.docid)
     print ("Popcon repository size: %d" % popcon.get_doccount())
     print ("Popcon repository size: %d" % new_popcon.get_doccount())

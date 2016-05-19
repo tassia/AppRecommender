@@ -19,11 +19,9 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-sys.path.insert(0,'../')
-import xapian
-import os
-import random
-import sys
+
+sys.path.insert(0, '../')
+
 from user import RandomPopcon
 
 if __name__ == '__main__':
@@ -36,9 +34,9 @@ if __name__ == '__main__':
         print "Usage: sample-popcon-arch size arch popcon_dir pkgs_filter"
         exit(1)
 
-    sample_file = ("results/misc-popcon/sample-%s-%d" % (arch,size))
-    with open(sample_file,'w') as f:
-        for n in range(1,size+1):
-            user = RandomPopcon(popcon_dir,arch,pkgs_filter)
-            f.write(user.user_id+'\n')
-            print "sample",n
+    sample_file = ("results/misc-popcon/sample-%s-%d" % (arch, size))
+    with open(sample_file, 'w') as f:
+        for n in range(1, size + 1):
+            user = RandomPopcon(popcon_dir, arch, pkgs_filter)
+            f.write(user.user_id + '\n')
+            print "sample", n

@@ -22,47 +22,51 @@ __license__ = """
 import Gnuplot
 import xapian
 
+
 def profile_population():
-    popcon = xapian.Database("/home/tassia/.app-recommender/popcon_desktopapps")
+    popcon = xapian.Database(
+        "/home/tassia/.app-recommender/popcon_desktopapps")
     popcon_size = popcon.get_doccount()
     print "User repository size: %d" % popcon_size
     profiles_size = []
-    for n in range(1,popcon_size):
+    for n in range(1, popcon_size):
         user = popcon.get_document(n)
         profile = [t.term for t in user.termlist()]
         profiles_size.append(len(profile))
-    profile_population = [(n,profiles_size.count(n))
-                          for n in range(max(profiles_size)+1)
-                          if profiles_size.count(n)>0 ]
+    profile_population = [(n, profiles_size.count(n))
+                          for n in range(max(profiles_size) + 1)
+                          if profiles_size.count(n) > 0]
     ranges_population = []
     ranges_percentage = []
-    ranges = range(0,601,50)
+    ranges = range(0, 601, 50)
     for maximum in ranges[1:]:
-        minimum = ranges[ranges.index(maximum)-1]
+        minimum = ranges[ranges.index(maximum) - 1]
         valid = [x[1] for x in profile_population
-                 if x[0]>minimum and x[0]<=maximum]
-        ranges_population.append((maximum,sum(valid)))
-        ranges_percentage.append((maximum,sum(valid)/float(popcon_size)))
+                 if x[0] > minimum and x[0] <= maximum]
+        ranges_population.append((maximum, sum(valid)))
+        ranges_percentage.append((maximum, sum(valid) / float(popcon_size)))
 
     g = Gnuplot.Gnuplot()
-    g('set style data points') # give gnuplot an arbitrary command
+    g('set style data points')  # give gnuplot an arbitrary command
     g.xlabel('Desktop profile size')
     g.ylabel('Population size')
     g.plot(profile_population)
     g.hardcopy('profile_population.png', terminal="png")
-    g.hardcopy('profile_population.ps', terminal="postscript", enhanced=1, color=1)
+    g.hardcopy('profile_population.ps',
+               terminal="postscript", enhanced=1, color=1)
     g.reset()
     g.xlabel('Range Desktop profile size')
     g.ylabel('Population size')
     g.plot(ranges_population)
     g.hardcopy('ranges_profile_population.png', terminal="png")
-    g.hardcopy('ranges_profile_population.ps', terminal="postscript", enhanced=1, color=1)
+    g.hardcopy('ranges_profile_population.ps',
+               terminal="postscript", enhanced=1, color=1)
     g.reset()
     g.xlabel('Range Desktop profile size')
     g.ylabel('Population percentage')
     g.plot(ranges_percentage)
     g.hardcopy('ranges_profile_percentage.png', terminal="png")
-    g.hardcopy('ranges_profile_percentage.ps', terminal="postscript", enhanced=1, color=1)
+    g.hardcopy('ranges_profile_percentage.ps',
+               terminal="postscript", enhanced=1, color=1)
 if __name__ == '__main__':
     profile_population()
-
