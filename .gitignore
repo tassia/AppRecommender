@@ -14,3 +14,4 @@ apprecommender.egg-info/
 apprecommender/tests/test_data/.sample_axi/
 apprecommender/tests/test_data/.sample_axi/
 apprecommender/web/submissions/
+.travis.yml.container

@@ -81,17 +81,26 @@ class MachineLearningData():
         pkgs = sorted(pkgs, key=lambda pkg: pkgs_percent[pkg])
         pkgs = list(reversed(pkgs))
 
-        size = len(pkgs) / len(labels)
-        for index, label in enumerate(labels):
-            index_begin = size * index
-            index_end = index_begin + size
-            classifications = dict.fromkeys(pkgs[index_begin:index_end], label)
-            pkgs_classification.update(classifications)
+        if len(pkgs) > len(labels):
+            size = len(pkgs) / len(labels)
+            for index, label in enumerate(labels):
+                index_begin = size * index
+                index_end = index_begin + size
+                classifications = dict.fromkeys(pkgs[index_begin:index_end],
+                                                label)
+                pkgs_classification.update(classifications)
 
-        index_begin = size * len(labels)
-        if index_begin < len(labels):
-            classifications = dict.fromkeys(pkgs[index_begin], label[-1])
-            pkgs_classification.update(classifications)
+            index_begin = size * len(labels)
+            if index_begin < len(labels):
+                classifications = dict.fromkeys(pkgs[index_begin], label[-1])
+                pkgs_classification.update(classifications)
+        else:
+            for index, pkg in enumerate(pkgs):
+                pkgs_classification[pkg] = labels[index]
+
+        print '='*80
+        print pkgs_classification
+        print '='*80
 
         return pkgs_classification
 

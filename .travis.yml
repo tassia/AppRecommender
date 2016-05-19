@@ -8,6 +8,7 @@ addons:
       - python-apt
       - python-scipy
       - python-sklearn
+      - python-stemmer
 
 virtualenv:
   system_site_packages: true
@@ -17,8 +18,6 @@ install:
   - pip install -r requirements.txt
   - pip install -U scikit-learn
   - sudo update-apt-xapian-index
-  - python -m nltk.downloader stopwords
-  - python -m nltk.downloader punkt
 
 before_script:
   - pushd bin
