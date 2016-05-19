@@ -23,6 +23,7 @@ __license__ = """
 import apt
 import commands
 import datetime
+import glob
 import logging
 import os
 import pickle
@@ -399,13 +400,43 @@ class LocalSystem(User):
 
         return system_pkgs
 
+    def __get_apt_installed_pkgs(self):
+        apt_pkgs = set()
+
+        dpkg_log = glob.glob('/var/log/dpkg.log*')
+
+        for log in dpkg_log:
+            command = 'zcat' if log.endswith('gz') else 'cat'
+            log_files = commands.getoutput(
+                '{} {} | grep "[0-9] install"'.format(command, log))
+
+            '''
+            The log_files will hold packages with this format:
+            2016-05-18 15:16:40 install liblmdb0:amd64 <none> 0.9.18-1
+            Therefore it is necessary to perform another filter on it
+            to only get the package name.
+            '''
+
+            for pkg in log_files.splitlines():
+                pkg = pkg.split()[3]
+                pkg = pkg.split(':')[0]
+                apt_pkgs.add(pkg)
+
+        return apt_pkgs
+
+    def __get_manual_marked_pkgs(self):
+        list_manual = commands.getoutput('apt-mark showmanual | sort')
+        list_manual = list_manual.splitlines()
+
+        return set([pkg for pkg in list_manual])
+
+    def __remove_lib_packages(self, pkgs):
+        return set([pkg for pkg in pkgs if not re.match(r'^lib', pkg)])
+
     def get_manual_installed_pkgs(self):
-        dpkg_output = commands.getoutput('apt-mark showmanual')
-        pkgs = set()
+        apt_pkgs = self.__get_apt_installed_pkgs()
+        manual_pkgs = self.__get_manual_marked_pkgs()
 
-        for pkg in dpkg_output.splitlines():
-
-            if not re.match(r'^lib', pkg):
-                pkgs.add(pkg)
-
+        pkgs = manual_pkgs.intersection(apt_pkgs)
+        pkgs = self.__remove_lib_packages(pkgs)
         return pkgs
