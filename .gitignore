@@ -7,9 +7,10 @@ popcon-data/
 psql-out
 udd-import.log
 udd.sql.gz
-src/web/submissions/
 *.log
 .vagrant/
 *.swp
 apprecommender.egg-info/
-src/tests/test_data/.sample_axi/
+apprecommender/tests/test_data/.sample_axi/
+apprecommender/tests/test_data/.sample_axi/
+apprecommender/web/submissions/
