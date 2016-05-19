@@ -23,6 +23,7 @@ __license__ = """
 import apt
 import commands
 import datetime
+import glob
 import logging
 import os
 import pickle
@@ -117,6 +118,11 @@ class User:
             profile = self.tfidf_profile(items_repository,
                                          size, FilterDescription(),
                                          time_context)
+        elif content == 'mlbow_mix' or content == 'mlbva_mix':
+            self.pkg_profile = self.get_most_usefull_pkgs()
+            profile = self.tfidf_profile(items_repository, size,
+                                         FilterTag_or_Description(valid_tags),
+                                         time_context)
         elif content == "mix":
             profile = self.tfidf_profile(items_repository, size,
                                          FilterTag_or_Description(valid_tags),
@@ -143,6 +149,10 @@ class User:
         elif content == "desc_eset":
             profile = self.eset_profile(items_repository, size,
                                         FilterDescription())
+        elif content == 'mlbow_mix_eset' or content == 'mlbva_mix_eset':
+            self.pkg_profile = self.get_most_usefull_pkgs()
+            profile = self.eset_profile(items_repository, size,
+                                        FilterTag_or_Description(valid_tags))
         elif content == "mix_eset":
             profile = self.eset_profile(items_repository, size,
                                         FilterTag_or_Description(valid_tags))
@@ -260,6 +270,22 @@ class User:
         logging.debug("Maximal package profile: reduced packages profile size \
                        from %d to %d." % (old_profile_size, profile_size))
         return self.pkg_profile
+
+    def get_most_usefull_pkgs(self):
+        classification_path = os.path.expanduser(
+            '~/.app-recommender/user_data/pkgs_classifications.txt')
+
+        if not os.path.exists(classification_path):
+            return -1
+
+        with open(classification_path, 'ra') as data:
+            pkg_classification = pickle.load(data)
+
+        classifications = {'RU': [], 'U': [], 'NU': []}
+        for pkg, values in pkg_classification.iteritems():
+            classifications[values[-1]].append(pkg)
+
+        return classifications['RU']
 
 
 class RandomPopcon(User):
@@ -399,13 +425,43 @@ class LocalSystem(User):
 
         return system_pkgs
 
+    def __get_apt_installed_pkgs(self):
+        apt_pkgs = set()
+
+        dpkg_log = glob.glob('/var/log/dpkg.log*')
+
+        for log in dpkg_log:
+            command = 'zcat' if log.endswith('gz') else 'cat'
+            log_files = commands.getoutput(
+                '{} {} | grep "[0-9] install"'.format(command, log))
+
+            '''
+            The log_files will hold packages with this format:
+            2016-05-18 15:16:40 install liblmdb0:amd64 <none> 0.9.18-1
+            Therefore it is necessary to perform another filter on it
+            to only get the package name.
+            '''
+
+            for pkg in log_files.splitlines():
+                pkg = pkg.split()[3]
+                pkg = pkg.split(':')[0]
+                apt_pkgs.add(pkg)
+
+        return apt_pkgs
+
+    def __get_manual_marked_pkgs(self):
+        list_manual = commands.getoutput('apt-mark showmanual | sort')
+        list_manual = list_manual.splitlines()
+
+        return set([pkg for pkg in list_manual])
+
+    def __remove_lib_packages(self, pkgs):
+        return set([pkg for pkg in pkgs if not re.match(r'^lib', pkg)])
+
     def get_manual_installed_pkgs(self):
-        dpkg_output = commands.getoutput('apt-mark showmanual')
-        pkgs = set()
+        apt_pkgs = self.__get_apt_installed_pkgs()
+        manual_pkgs = self.__get_manual_marked_pkgs()
 
-        for pkg in dpkg_output.splitlines():
-
-            if not re.match(r'^lib', pkg):
-                pkgs.add(pkg)
-
+        pkgs = manual_pkgs.intersection(apt_pkgs)
+        pkgs = self.__remove_lib_packages(pkgs)
         return pkgs
