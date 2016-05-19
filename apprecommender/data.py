@@ -312,3 +312,62 @@ class PopconSubmission():
                             # Recently installed packages
                             elif data[4] == '<RECENT-CTIME>':
                                 self.packages[pkg] = 8
+
+
+class FilteredKnnXapianIndex(xapian.WritableDatabase):
+
+    def __init__(self, path, submissions, axi_path, tags_filter):
+        self.axi = xapian.Database(axi_path)
+        self.path = os.path.expanduser(path)
+        self.submissions = submissions
+        self.valid_pkgs = axi_get_pkgs(self.axi)
+        logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
+        with open(tags_filter) as valid_tags:
+            self.valid_tags = [line.strip() for line in valid_tags
+                               if not line.startswith("#")]
+        logging.debug("Considering %d valid tags" % len(self.valid_tags))
+        if len(self.submissions) == 0:
+            logging.critical("Knn submissions can't be empty")
+            raise Error
+
+        # set up directory
+        shutil.rmtree(self.path, 1)
+        os.makedirs(self.path)
+        try:
+            logging.info("Creating new xapian index at \'%s\'" %
+                         self.path)
+            xapian.WritableDatabase.__init__(self, self.path,
+                                             xapian.DB_CREATE_OR_OVERWRITE)
+        except xapian.DatabaseError as e:
+            logging.critical("Could not create popcon xapian index.")
+            logging.critical(str(e))
+            raise Error
+
+        # build new index
+        doc_count = 0
+        for submission in submissions:
+            doc = xapian.Document()
+            submission_pkgs = [pkg for pkg in submission
+                               if pkg in self.valid_pkgs]
+
+            for pkg in submission_pkgs:
+                tags = axi_search_pkg_tags(self.axi, pkg)
+                # if the package was found in axi
+                if tags:
+                    doc.add_term("XP" + pkg)
+                    # if the package has tags associated with it
+                    if not tags == "notags":
+                        for tag in tags:
+                            if tag.lstrip("XT") in self.valid_tags:
+                                doc.add_term(tag)
+            doc_id = self.add_document(doc)
+            doc_count += 1
+            logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
+            # python garbage collector
+            gc.collect()
+        # flush to disk database changes
+        try:
+            self.commit()
+        except:
+            # deprecated function, used for compatibility with old lib version
+            self.flush()

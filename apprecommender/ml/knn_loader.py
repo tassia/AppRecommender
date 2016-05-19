@@ -55,6 +55,22 @@ class KnnLoader:
         cluster = self.clusters[query]
         self.user_cluster_index = np.where(self.clusters == cluster)[0][0]
 
+    def create_users_submissions_by_user_cluster(self):
+        np_users_clusters = np.array(self.users_clusters)
+        index = self.user_cluster_index
+        users_indices = np.where(np_users_clusters == index)[0].tolist()
+        users = np.matrix(self.users_pkgs)[users_indices, :].tolist()
+
+        self.submissions = []
+        for user in users:
+            submission = []
+            for index, pkg in enumerate(self.all_pkgs):
+                if user[index] is 1:
+                    submission.append(pkg)
+
+            self.submissions.append(submission)
+
     def load_user_popcon_file(self, popcon_file_path):
         self.create_user(popcon_file_path)
         self.create_user_cluster_index()
+        self.create_users_submissions_by_user_cluster()
