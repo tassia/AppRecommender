@@ -27,8 +27,9 @@ import sys
 sys.path.insert(0, '../')
 
 import xapian
-from debian import debtags # ???
-from src.strategy import PkgMatchDecider
+from debian import debtags  # ???
+
+from apprecommender.strategy import PkgMatchDecider
 
 DB_PATH = "/var/lib/debtags/package-tags"
 INDEX_PATH = os.path.expanduser("~/.app-recommender/debtags_index")

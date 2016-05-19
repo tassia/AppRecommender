@@ -23,12 +23,12 @@ import xapian
 
 sys.path.insert(0, '../')
 
-from src.app_recommender import AppRecommender
-from src.initialize import Initialize
-from src.load_options import LoadOptions
-from src.config import Config
-from src.strategy import (MachineLearning, MachineLearningBVA,
-                          MachineLearningBOW)
+from apprecommender.app_recommender import AppRecommender
+from apprecommender.initialize import Initialize
+from apprecommender.load_options import LoadOptions
+from apprecommender.config import Config
+from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
+                                     MachineLearningBOW)
 
 SUCCESS = 0
 ERROR_INIT = 1

@@ -20,9 +20,11 @@ __license__ = """
 """
 
 import sys
-sys.path.insert(0, '../')
-import src.user as user
 import xapian
+
+sys.path.insert(0, '../')
+
+import apprecommender.user as user
 
 repo = xapian.Database("~/.app-recommender/axi_programs")
 user = user.LocalSystem()

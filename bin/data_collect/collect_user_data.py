@@ -12,16 +12,16 @@ import time
 sys.path.insert(0, '../../')
 
 from multiprocessing import Process
+from subprocess import Popen, PIPE
 
 from bin.ml_cross_validation import ml_cross_validation
-from src.app_recommender import AppRecommender
-from src.data import get_user_installed_pkgs
-from src.data_classification import get_alternative_pkg
-from src.ml.data import MachineLearningData
-from src.ml.pkg_time import PkgTime
-from src.strategy import (MachineLearning, MachineLearningBVA,
-                          MachineLearningBOW)
-from subprocess import Popen, PIPE
+from apprecommender.app_recommender import AppRecommender
+from apprecommender.data import get_user_installed_pkgs
+from apprecommender.data_classification import get_alternative_pkg
+from apprecommender.ml.data import MachineLearningData
+from apprecommender.ml.pkg_time import PkgTime
+from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
+                                     MachineLearningBOW)
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 SUFIX = dt.datetime.now().strftime('%Y%m%d%H%M')

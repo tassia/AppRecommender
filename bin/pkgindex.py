@@ -25,10 +25,10 @@ import sys
 sys.path.insert(0, '../')
 import logging
 import datetime
-
-from src.config import Config
-import src.data as data
 import xapian
+
+from apprecommender.config import Config
+import apprecommender.data as data
 
 if __name__ == '__main__':
     cfg = Config()
