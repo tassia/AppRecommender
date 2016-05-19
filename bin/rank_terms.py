@@ -2,9 +2,10 @@
 #
 # rank_terms.py - rank index terms by frequency
 
-import xapian
-from operator import itemgetter
 import sys
+import xapian
+
+from operator import itemgetter
 
 if __name__ == '__main__':
     if "-h" in sys.argv or not len(sys.argv) == 4:

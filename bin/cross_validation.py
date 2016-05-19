@@ -27,11 +27,11 @@ import sys
 
 sys.path.insert(0, '../')
 
-from src.config import Config
-from src.evaluation import (CrossValidation, Precision, Recall,
-                            F_score, FPR, Accuracy)
-from src.recommender import Recommender
-from src.user import PopconSystem
+from apprecommender.config import Config
+from apprecommender.evaluation import (CrossValidation, Precision, Recall,
+                                       F_score, FPR, Accuracy)
+from apprecommender.recommender import Recommender
+from apprecommender.user import PopconSystem
 
 if __name__ == '__main__':
     cfg = Config()

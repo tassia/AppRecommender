@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import argparse
 import datetime as dt
 import logging
 import os
@@ -10,12 +9,13 @@ import getopt
 
 sys.path.insert(0, "{0}/../".format(os.path.dirname(__file__)))
 
-from src.ml.cross_validation import (CrossValidationBVA, CrossValidationBOW)
-from src.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
-                            F_score)
-from src.ml.data import MachineLearningData
-from src.ml.bag_of_words import BagOfWords
-from src.config import Config
+from apprecommender.ml.cross_validation import (CrossValidationBVA,
+                                                CrossValidationBOW)
+from apprecommender.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
+                                       F_score)
+from apprecommender.ml.data import MachineLearningData
+from apprecommender.ml.bag_of_words import BagOfWords
+from apprecommender.config import Config
 
 
 BASE_DIR = Config().base_dir

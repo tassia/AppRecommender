@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """
-    popindex.py - generate a popcon index to be used by the recommender as the
-                  users repository, based on filters provided by config
+    Clustering - A python script to perform clustering of popcon data.
 """
 __author__ = "Tassia Camoes Araujo <tassia@gmail.com>"
 __copyright__ = "Copyright (C) 2011 Tassia Camoes Araujo"
@@ -26,22 +25,22 @@ import datetime
 
 from apprecommender.config import Config
 from apprecommender.data import PopconXapianIndex
+from apprecommender.error import Error
 
 if __name__ == '__main__':
-    cfg = Config()
-    begin_time = datetime.datetime.now()
-    logging.info("Popcon indexing started at %s" % begin_time)
+    try:
+        cfg = Config()
+        begin_time = datetime.datetime.now()
+        logging.info("Clustering computation started at %s" % begin_time)
 
-    # use config file or command line options
-    popindex = PopconXapianIndex(cfg)
+        pxi = PopconXapianIndex(cfg)
 
-    end_time = datetime.datetime.now()
-    logging.info("Popcon indexing completed at %s" % end_time)
-    logging.info("Number of documents (submissions): %d" %
-                 popindex.get_doccount())
-
-    delta = end_time - begin_time
-    logging.info("Time elapsed: %d seconds." % delta.seconds)
-    if cfg.index_mode == "cluster" or cfg.index_mode == "recluster":
+        end_time = datetime.datetime.now()
+        logging.info("Clustering computation completed at %s" % end_time)
+        delta = end_time - begin_time
+        logging.info("Time elapsed: %d seconds." % delta.seconds)
         logging.info("Medoids: %d\tDispersion:%f" %
-                     (cfg.k_medoids, popindex.cluster_dispersion))
+                     (cfg.k_medoids, pxi.cluster_dispersion))
+
+    except Error:
+        logging.critical("Aborting proccess. Use '--debug' for more details.")

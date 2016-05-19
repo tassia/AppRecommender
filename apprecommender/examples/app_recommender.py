@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """
-    popindex.py - generate a popcon index to be used by the recommender as the
-                  users repository, based on filters provided by config
+    AppRecommender - A GNU/Linux application recommender
 """
 __author__ = "Tassia Camoes Araujo <tassia@gmail.com>"
 __copyright__ = "Copyright (C) 2011 Tassia Camoes Araujo"
@@ -19,29 +18,34 @@ __license__ = """
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 import sys
 sys.path.insert(0, '../')
 import logging
 import datetime
 
 from apprecommender.config import Config
-from apprecommender.data import PopconXapianIndex
+from apprecommender.recommender import Recommender
+from apprecommender.user import LocalSystem
+from apprecommender.error import Error
 
 if __name__ == '__main__':
-    cfg = Config()
-    begin_time = datetime.datetime.now()
-    logging.info("Popcon indexing started at %s" % begin_time)
+    try:
+        cfg = Config()
+        rec = Recommender(cfg)
+        user = LocalSystem()
+        user.no_auto_pkg_profile()
+        # user.maximal_pkg_profile()
 
-    # use config file or command line options
-    popindex = PopconXapianIndex(cfg)
+        begin_time = datetime.datetime.now()
+        logging.debug("Recommendation computation started at %s" % begin_time)
 
-    end_time = datetime.datetime.now()
-    logging.info("Popcon indexing completed at %s" % end_time)
-    logging.info("Number of documents (submissions): %d" %
-                 popindex.get_doccount())
+        print rec.get_recommendation(user)
 
-    delta = end_time - begin_time
-    logging.info("Time elapsed: %d seconds." % delta.seconds)
-    if cfg.index_mode == "cluster" or cfg.index_mode == "recluster":
-        logging.info("Medoids: %d\tDispersion:%f" %
-                     (cfg.k_medoids, popindex.cluster_dispersion))
+        end_time = datetime.datetime.now()
+        logging.debug("Recommendation computation completed at %s" % end_time)
+        delta = end_time - begin_time
+        logging.info("Time elapsed: %d seconds." % delta.seconds)
+
+    except Error:
+        logging.critical("Aborting proccess. Use '--debug' for more details.")

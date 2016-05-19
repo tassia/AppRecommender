@@ -20,14 +20,12 @@ __license__ = """
 """
 
 import os
+import sys
 import commands
 import re
 
-import sys
-sys.path.insert(0, '../')
-
 import xapian
-from debian import debtags  # ???
+from debian import debtags
 
 from apprecommender.strategy import PkgMatchDecider
 

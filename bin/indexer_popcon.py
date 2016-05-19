@@ -25,8 +25,8 @@ sys.path.insert(0, '../')
 import logging
 import datetime
 
-from src.config import Config
-from src.data import FilteredPopconXapianIndex
+from apprecommender.config import Config
+from apprecommender.data import FilteredPopconXapianIndex
 
 if __name__ == '__main__':
     base_dir = os.path.expanduser("~/.app-recommender/")
