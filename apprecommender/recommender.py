@@ -122,7 +122,10 @@ class Recommender:
         if self.cfg.popcon:
             self.popcon_desktopapps = xapian.Database(
                 self.cfg.popcon_desktopapps)
-
+        if self.cfg.knn:
+            # self.popcon_programs = xapian.Database(cfg.popcon_programs)
+            self.knn_desktopapps = xapian.Database(
+                self.cfg.knn_desktopapps)
         # Load valid programs, desktopapps and tags
         # format: one package or tag name per line
         self.valid_desktopapps = []

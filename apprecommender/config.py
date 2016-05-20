@@ -71,7 +71,7 @@ class Config(Singleton):
             # popcon indexes
             self.index_mode = "old"
             # check if there are popcon indexes available
-            self.popcon = 1
+            self.popcon = 0
             self.popcon_programs = os.path.join(self.base_dir,
                                                 "popcon_programs")
             self.popcon_desktopapps = os.path.join(self.base_dir,
@@ -82,6 +82,10 @@ class Config(Singleton):
             # popcon clustering
             self.clusters_dir = os.path.join(self.base_dir, "clusters-dir")
             self.k_medoids = 100
+            # check if there are knn indexes available
+            self.knn = 1
+            self.knn_desktopapps = os.path.join(self.base_dir,
+                                                "knn_desktopapps")
             # self.dde_url = "http://dde.debian.net/dde/" \
             #                "q/udd/packs/all/%s?t=json"
 
@@ -168,6 +172,11 @@ class Config(Singleton):
         self.clusters_dir = os.path.join(
             self.base_dir, self.read_option('data_sources',
                                             'clusters_dir'))
+        self.knn = int(self.read_option('data_sources', 'knn'))
+        print "knn: {}".format(self.knn)
+        self.knn_desktopapps = os.path.join(
+            self.base_dir, self.read_option('data_sources',
+                                            'knn_desktopapps'))
         self.k_medoids = int(self.read_option('data_sources', 'k_medoids'))
         self.dde_url = self.read_option('data_sources', 'dde_url')
         self.dde_server = self.read_option('data_sources', 'dde_server')
