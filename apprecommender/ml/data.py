@@ -98,10 +98,6 @@ class MachineLearningData():
             for index, pkg in enumerate(pkgs):
                 pkgs_classification[pkg] = labels[index]
 
-        print '='*80
-        print pkgs_classification
-        print '='*80
-
         return pkgs_classification
 
     def get_pkg_data(self, axi, pkg_name, data_type):

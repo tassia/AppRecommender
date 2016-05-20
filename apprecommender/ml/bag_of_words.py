@@ -38,7 +38,7 @@ class BagOfWords():
         self.vectorizer = TfidfVectorizer(
             max_df=0.8,
             max_features=5000,
-            min_df=5,
+            min_df=2,
             stop_words='english',
             use_idf=True)
 

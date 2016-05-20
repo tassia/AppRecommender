@@ -34,7 +34,6 @@ class PkgTime:
 
         bestatime, bestmtime = 0, 0
         for pkg_file in pkg_files.splitlines():
-
             if invalid_path_regex.search(pkg_file):
                 continue
 
