@@ -9,7 +9,8 @@ import xapian
 
 from apprecommender.config import Config
 from apprecommender.decider import PkgInitDecider
-
+from apprecommender.data import FilteredKnnXapianIndex
+from apprecommender.ml.knn_loader import KnnLoader
 
 class Initialize:
 
@@ -98,6 +99,42 @@ class Initialize:
         print "Indexing completed at %s" % end_time
         delta = end_time - begin_time
         print "Time elapsed: %d seconds." % delta.seconds
+
+    def indexer_knn(self):
+        base_dir = self.config.base_dir
+        axi_path = Initialize.DEFAULT_AXI_PATH
+        path = self.config.knn_desktopapps
+        tags_filter = os.path.join(base_dir, "filters/debtags")
+        knn_file = os.path.join(base_dir, "knn_data")
+        user_popcon_file = os.path.join(base_dir, "my_popcon")
+
+        error = False
+        if os.path.isfile(knn_file):
+            print "knn_data not founded on: {}".format(base_dir)
+            error = True
+        if os.path.isfile(user_popcon_file):
+            print "user_popcon_submission not founded on: {}".format(base_dir)
+            error = True
+
+        if error:
+            exit(1)
+
+        cfg = Config()
+        knn = KnnLoader.load(knn_file, user_popcon_file)
+        submissions = knn.submissions
+
+        begin_time = datetime.datetime.now()
+        print("Knn indexing started at %s" % begin_time)
+        index = FilteredKnnXapianIndex(path, submissions, axi_path,
+                                       tags_filter)
+
+        end_time = datetime.datetime.now()
+        print("Knn indexing completed at %s" % end_time)
+        print("Number of documents (submissions): %d" %
+                     index.get_doccount())
+
+        delta = end_time - begin_time
+        print("Time elapsed: %d seconds." % delta.seconds)
 
     def prepare_data(self):
 

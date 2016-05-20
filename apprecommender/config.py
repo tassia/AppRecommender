@@ -173,7 +173,6 @@ class Config(Singleton):
             self.base_dir, self.read_option('data_sources',
                                             'clusters_dir'))
         self.knn = int(self.read_option('data_sources', 'knn'))
-        print "knn: {}".format(self.knn)
         self.knn_desktopapps = os.path.join(
             self.base_dir, self.read_option('data_sources',
                                             'knn_desktopapps'))

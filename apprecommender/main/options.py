@@ -37,6 +37,11 @@ def get_parser():
         action='store_true')
 
     parser.add_argument(
+        '-k', '--init-knn',
+        help='train machine learning algorithms',
+        action='store_true')
+
+    parser.add_argument(
         '-b', '--because',
         help="display which user's packages generated a recommendation",
         action='store_true')
