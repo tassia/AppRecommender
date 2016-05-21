@@ -16,8 +16,6 @@ class PkgTime:
 
     def create_pkg_data(self):
         user = LocalSystem()
-        user.maximal_pkg_profile()
-        user.no_auto_pkg_profile()
         user_pkgs = user.pkg_profile
 
         pkgs_time = self.get_packages_time(user_pkgs)

@@ -173,13 +173,11 @@ def get_pkg_binary(pkg):
     return get_alternative_pkg(pkg)
 
 
-def get_pkgs_of_recommendation(recommendation_size, strategy,
-                               no_auto_pkg_profile):
+def get_pkgs_of_recommendation(recommendation_size, strategy):
     app_recommender = AppRecommender()
 
     app_recommender.recommender.set_strategy(strategy)
-    recommender = (app_recommender.make_recommendation(recommendation_size,
-                                                       no_auto_pkg_profile))
+    recommender = (app_recommender.make_recommendation(recommendation_size))
     pkgs = [pkg.split(':')[1][1:]
             for pkg in str(recommender).splitlines()[1:]]
 
@@ -188,7 +186,6 @@ def get_pkgs_of_recommendation(recommendation_size, strategy,
 
 def collect_user_preferences():
     recommendation_size = 10
-    no_auto_pkg_profile = True
     strategies = ['cbh', 'cbtm', 'mlbva', 'mlbow']
 
     recommendations = {}
@@ -201,9 +198,8 @@ def collect_user_preferences():
     print percent_message.format(0.0)
     for index, strategy in enumerate(strategies):
         first_time = int(round(time.time() * 1000))
-        recommendations[strategy] = (get_pkgs_of_recommendation(
-                                     recommendation_size,
-                                     strategy, no_auto_pkg_profile))
+        recommendations[strategy] = get_pkgs_of_recommendation(
+            recommendation_size, strategy)
         last_time = int(round(time.time() * 1000))
         recommendations_time.append("{0}: {1}".format(strategy,
                                                       last_time - first_time))

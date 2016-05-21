@@ -73,7 +73,6 @@ class ContentBasedSuite(expsuite.PyExperimentSuite):
             self.repo_size = self.rec.items_repository.get_doccount()
             self.user = LocalSystem()
             self.user.app_pkg_profile(self.rec.items_repository)
-            self.user.no_auto_pkg_profile()
             self.sample_size = int(
                 len(self.user.pkg_profile) * params['sample'])
             # iteration should be set to 10 in config file
