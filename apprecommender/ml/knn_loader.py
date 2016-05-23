@@ -8,6 +8,39 @@ from scipy import spatial
 
 
 class KnnLoader:
+    '''
+    This class contains the implementation of load knn data on pickle format.
+    '''
+
+    '''
+    Loaded data:     The file to load data must have a pickle with a hash,
+                     this hash must have the following keys:
+                     all_pkgs, users, clusters and users_clusters
+
+    all_pkgs:        List with all packages of users, without duplication of
+                     the packages, exemple: ['vim', 'python', 'ruby'].
+
+    users:           Its a list when each element is a list, that the second
+                     list represents an user, where each element of the second
+                     list is a binary value which indicates if the user has a
+                     package in the same column of the 'all_pkgs' list.
+
+                     Exemple:
+
+                     all_pkgs: ['vim', 'python', 'ruby', 'gedit', 'vagrant']
+
+                     users:  [ [  1  ,    0    ,   0   ,    1   ,     0    ]
+                               [  0  ,    1    ,   0   ,    1   ,     1    ]
+                               [  1  ,    0    ,   1   ,    0   ,     1    ] ]
+
+    clusters:        Its a list of clusters, where each cluster its a list
+                     with the same size of the 'all_pkgs' list, where the
+                     cluster list represents the cluster position on chart.
+
+    users_clusters:  List when each element represents a line of 'users', and
+                     each value its the index of cluster in the 'clusters'
+                     list.
+    '''
 
     @staticmethod
     def load(knn_file_path, user_popcon_file_path):
