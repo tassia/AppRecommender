@@ -29,8 +29,8 @@ class KnnLoader:
 
                      all_pkgs: ['vim', 'python', 'ruby', 'gedit', 'vagrant']
 
-                     users:  [ [  1  ,    0    ,   0   ,    1   ,     0    ]
-                               [  0  ,    1    ,   0   ,    1   ,     1    ]
+                     users:  [ [  1  ,    0    ,   0   ,    1   ,     0    ],
+                               [  0  ,    1    ,   0   ,    1   ,     1    ],
                                [  1  ,    0    ,   1   ,    0   ,     1    ] ]
 
     clusters:        Its a list of clusters, where each cluster its a list
@@ -111,9 +111,10 @@ class KnnLoader:
         return self.user
 
     def create_user_cluster_index(self):
-        query = spatial.KDTree(self.clusters).query(self.user)[1]
-        cluster = self.clusters[query]
-        self.user_cluster_index = np.where(self.clusters == cluster)[0][0]
+        np_clusters = np.array(self.clusters)
+        query = spatial.KDTree(np_clusters).query(self.user)[1]
+        cluster = np_clusters[query].tolist()
+        self.user_cluster_index = self.clusters.index(cluster)
 
     def create_users_submissions_by_user_cluster(self):
         np_users_clusters = np.array(self.users_clusters)

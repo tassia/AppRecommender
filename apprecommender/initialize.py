@@ -109,11 +109,11 @@ class Initialize:
         user_popcon_file = os.path.join(base_dir, "my_popcon")
 
         error = False
-        if os.path.isfile(knn_file):
-            print "knn_data not founded on: {}".format(base_dir)
+        if not os.path.isfile(knn_file):
+            print "File not founded: {}".format(knn_file)
             error = True
-        if os.path.isfile(user_popcon_file):
-            print "user_popcon_submission not founded on: {}".format(base_dir)
+        if not os.path.isfile(user_popcon_file):
+            print "File not founded: {}".format(user_popcon_file)
             error = True
 
         if error:
@@ -130,8 +130,7 @@ class Initialize:
 
         end_time = datetime.datetime.now()
         print("Knn indexing completed at %s" % end_time)
-        print("Number of documents (submissions): %d" %
-                     index.get_doccount())
+        print("Number of documents (submissions): %d" % index.get_doccount())
 
         delta = end_time - begin_time
         print("Time elapsed: %d seconds." % delta.seconds)

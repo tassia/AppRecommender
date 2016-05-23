@@ -83,7 +83,7 @@ class Config(Singleton):
             self.clusters_dir = os.path.join(self.base_dir, "clusters-dir")
             self.k_medoids = 100
             # check if there are knn indexes available
-            self.knn = 1
+            self.knn = 0
             self.knn_desktopapps = os.path.join(self.base_dir,
                                                 "knn_desktopapps")
             # self.dde_url = "http://dde.debian.net/dde/" \
