@@ -24,7 +24,7 @@ def get_time_from_package(pkg, pkg_bin=True):
     if pkg in pkgs_times:
         modify, access = pkgs_times[pkg]
     else:
-        modify = get_time('Z', pkg, pkg_bin)
+        modify = get_time('Y', pkg, pkg_bin)
         access = get_time('X', pkg, pkg_bin)
         pkgs_times[pkg] = [modify, access]
 

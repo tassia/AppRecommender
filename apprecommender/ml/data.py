@@ -45,7 +45,7 @@ class MachineLearningData():
         if not path.exists(MachineLearningData.USER_DATA_DIR):
             makedirs(MachineLearningData.USER_DATA_DIR)
 
-        pkgs = self.get_pkgs_classification(data_cl.square_percent_function,
+        pkgs = self.get_pkgs_classification(data_cl.linear_percent_function,
                                             labels)
 
         cache = apt.Cache()
@@ -80,8 +80,7 @@ class MachineLearningData():
         pkg_data = pkg_time.get_package_data()
 
         for name, time_values in pkg_data.iteritems():
-            modify = time_values[0]
-            access = time_values[1]
+            modify, access = time_values
 
             pkgs_percent[name] = percent_function(modify, access, time_now)
 
