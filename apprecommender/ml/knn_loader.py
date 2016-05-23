@@ -49,15 +49,42 @@ class KnnLoader:
         with open(knn_file_path, 'rb') as text:
             loaded_data = pickle.load(text)
 
-            knn.user = None
             knn.all_pkgs = loaded_data['all_pkgs']
             knn.clusters = loaded_data['clusters']
-            knn.users_pkgs = loaded_data['users']
+            knn.users = loaded_data['users']
             knn.users_clusters = loaded_data['users_clusters']
 
             knn.load_user_popcon_file(user_popcon_file_path)
 
         return knn
+
+    '''
+    user:            Binary list, like user of 'users' into the loaded data,
+                     but this is of the AppRecommender user
+
+    submissions:     List that elements is another lists with the packages of
+                     the users mentioned on 'users' of loaded data
+
+                     Exemple:
+
+                     all_pkgs: ['vim', 'python', 'ruby', 'gedit', 'vagrant']
+
+                     users:  [ [  1  ,    0    ,   0   ,    1   ,     0    ]
+                               [  0  ,    1    ,   0   ,    1   ,     1    ]
+                               [  1  ,    0    ,   1   ,    0   ,     1    ] ]
+
+                     submissions:
+                             [ ['vim', 'gedit']
+                               ['python', 'gedit', 'vagrant']
+                               ['vim', 'ruby', 'vagrant'] ]
+
+    user_cluster_index:  Its the index of cluster in which the user is it,
+                         into 'clusters' of the loaded data, t
+    '''
+    def __init__(self):
+        self.user = None
+        self.submissions = []
+        self.user_cluster_index = None
 
     def read_popcon_file(self, file_path):
         popcon_entry = []
@@ -92,10 +119,10 @@ class KnnLoader:
         np_users_clusters = np.array(self.users_clusters)
         index = self.user_cluster_index
         users_indices = np.where(np_users_clusters == index)[0].tolist()
-        users = np.matrix(self.users_pkgs)[users_indices, :].tolist()
+        np_users = np.matrix(self.users)[users_indices, :].tolist()
 
         self.submissions = []
-        for user in users:
+        for user in np_users:
             submission = []
             for index, pkg in enumerate(self.all_pkgs):
                 if user[index] is 1:
