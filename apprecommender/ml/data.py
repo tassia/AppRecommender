@@ -2,14 +2,10 @@ from os import path
 from os import makedirs
 
 import apt
-import calendar
 import pickle
-import time
 import re
 import xapian
 import Stemmer
-
-import apprecommender.data_classification as data_cl
 
 from apprecommender.ml.pkg_time import PkgTime
 from apprecommender.config import Config
@@ -45,8 +41,7 @@ class MachineLearningData():
         if not path.exists(MachineLearningData.USER_DATA_DIR):
             makedirs(MachineLearningData.USER_DATA_DIR)
 
-        pkgs = self.get_pkgs_classification(data_cl.linear_percent_function,
-                                            labels)
+        pkgs = self.get_pkgs_classification(labels)
 
         cache = apt.Cache()
 
@@ -72,18 +67,15 @@ class MachineLearningData():
 
         return pkgs_classifications
 
-    def get_pkgs_classification(self, percent_function, labels):
+    def get_pkgs_classification(self, labels):
         pkgs_percent = {}
         pkgs_classification = {}
-        time_now = calendar.timegm(time.gmtime())
         pkg_time = PkgTime()
         pkg_data = pkg_time.get_package_data()
 
         for name, time_values in pkg_data.iteritems():
-            modify, access = time_values
-
-            pkgs_percent[name] = percent_function(modify, access, time_now)
-            # pkgs_percent[name] = access
+            _, access = time_values
+            pkgs_percent[name] = access
 
         pkgs = pkgs_percent.keys()
         pkgs = sorted(pkgs, key=lambda pkg: pkgs_percent[pkg])

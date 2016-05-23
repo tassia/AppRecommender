@@ -30,9 +30,9 @@ class PkgTime:
         bestatime, bestmtime = 0, 0
         for pkg_file in pkg_files.splitlines():
             if valid_regex.search(pkg_file):
-                modify, access = get_time_from_package(pkg_file, pkg_bin=False)
-
-                if access >= bestatime:
+                modify, access = get_time_from_package(pkg_file,
+                                                       pkg_bin=False)
+                if access > bestatime:
                     bestatime = access
                     bestmtime = modify
 
