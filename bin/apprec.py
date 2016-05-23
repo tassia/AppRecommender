@@ -46,11 +46,9 @@ def call_initialize(options):
 def run_apprecommender(options):
     try:
         recommendation_size = 20
-        no_auto_pkg_profile = True
 
         app_recommender = AppRecommender()
-        app_recommender.make_recommendation(recommendation_size,
-                                            no_auto_pkg_profile)
+        app_recommender.make_recommendation(recommendation_size)
         return SUCCESS
     except xapian.DatabaseOpeningError:
         return ERROR_INIT

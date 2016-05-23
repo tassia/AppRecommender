@@ -38,8 +38,6 @@ if __name__ == '__main__':
         rec = Recommender(cfg)
         print "\nRecommender strategy: ", rec.strategy.description
         user = LocalSystem()
-        # user.app_pkg_profile(rec.items_repository)
-        user.no_auto_pkg_profile()
         begin_time = datetime.datetime.now()
         logging.debug("Cross-validation started at %s" % begin_time)
 

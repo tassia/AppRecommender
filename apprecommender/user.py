@@ -361,50 +361,12 @@ class LocalSystem(User):
         """
         Set initial parameters.
         """
-        item_score = {}
-        dpkg_output = commands.getoutput('/usr/bin/dpkg --get-selections')
-
-        for line in dpkg_output.splitlines():
-            pkg = line.split('\t')[0]
-            item_score[pkg] = 1
+        user_pkgs = self.get_manual_installed_pkgs()
+        item_score = {pkg: 1 for pkg in user_pkgs}
 
         self.user_id = "local-" + str(datetime.datetime.now())
 
         User.__init__(self, item_score)
-
-    def get_time_score(self, time_classification_path):
-        try:
-            with open(time_classification_path, 'rb') as time_pkg:
-                time_score = pickle.load(time_pkg)
-        except IOError as e:
-            logging.debug(
-                "File not found: {0} with error:\n{1}".format(
-                    time_classification_path, e.message))
-            return []
-
-        return time_score
-
-    def no_auto_pkg_profile(self):
-        """
-        Return list of packages voluntarily installed.
-        """
-        cache = apt.Cache()
-        old_profile_size = len(self.pkg_profile)
-
-        manual_installed = self.get_manual_installed_pkgs()
-        system_pkgs = self.get_system_pkgs()
-
-        for p in self.pkg_profile[:]:  # iterate list copy
-            if p in cache:
-                if (p not in manual_installed or
-                   p in system_pkgs or
-                   p.startswith('lib')):
-                    self.pkg_profile.remove(p)
-        profile_size = len(self.pkg_profile)
-        logging.debug("No auto-intalled package profile: reduced packages"
-                      "profile size from %d to %d." %
-                      (old_profile_size, profile_size))
-        return self.pkg_profile
 
     def get_system_pkgs(self):
         system_pkgs = []
@@ -412,45 +374,51 @@ class LocalSystem(User):
                                       '${Package;-40}${Priority}\n'")
 
         priority_terms = set(['important', 'required', 'standard'])
-        languages_terms = set(['python', 'perl'])
 
         for line in all_pkgs.splitlines():
             line_split = line.split(' ')
             pkg_name = line_split[0]
             pkg_priority = line_split[-1].strip()
 
-            if (pkg_priority in priority_terms and
-               pkg_name not in languages_terms):
+            if (pkg_priority in priority_terms):
                 system_pkgs.append(pkg_name)
 
         return system_pkgs
 
-    def __get_apt_installed_pkgs(self):
+    def get_apt_installed_pkgs(self):
         apt_pkgs = set()
 
-        dpkg_log = glob.glob('/var/log/dpkg.log*')
+        apt_log = glob.glob('/var/log/apt/history.log*')
+        print apt_log
 
-        for log in dpkg_log:
+        for log in apt_log:
             command = 'zcat' if log.endswith('gz') else 'cat'
-            log_files = commands.getoutput(
-                '{} {} | grep "[0-9] install"'.format(command, log))
+            history_files = commands.getoutput(
+                '{} {} | grep "Commandline:"'.format(command, log))
 
             '''
             The log_files will hold packages with this format:
-            2016-05-18 15:16:40 install liblmdb0:amd64 <none> 0.9.18-1
+
+            Commandline: apt install google-chrome-stable
+
             Therefore it is necessary to perform another filter on it
             to only get the package name.
             '''
 
-            for pkg in log_files.splitlines():
-                pkg = pkg.split()[3]
-                pkg = pkg.split(':')[0]
-                apt_pkgs.add(pkg)
+            for apt_command in history_files.splitlines():
+                apt_command = apt_command.split()
+                option = apt_command[2]
+
+                if option != 'install':
+                    continue
+
+                for pkg in apt_command[3:]:
+                    apt_pkgs.add(pkg)
 
         return apt_pkgs
 
     def __get_manual_marked_pkgs(self):
-        list_manual = commands.getoutput('apt-mark showmanual | sort')
+        list_manual = commands.getoutput('apt-mark showmanual')
         list_manual = list_manual.splitlines()
 
         return set([pkg for pkg in list_manual])
@@ -458,10 +426,16 @@ class LocalSystem(User):
     def __remove_lib_packages(self, pkgs):
         return set([pkg for pkg in pkgs if not re.match(r'^lib', pkg)])
 
-    def get_manual_installed_pkgs(self):
-        apt_pkgs = self.__get_apt_installed_pkgs()
-        manual_pkgs = self.__get_manual_marked_pkgs()
+    def __remove_apt_packages(self, pkgs):
+        return set([pkg for pkg in pkgs if not re.match(r'^apt', pkg)])
 
-        pkgs = manual_pkgs.intersection(apt_pkgs)
+    def get_manual_installed_pkgs(self):
+        apt_pkgs = self.get_apt_installed_pkgs()
+        manual_pkgs = self.__get_manual_marked_pkgs()
+        system_pkgs = self.get_system_pkgs()
+
+        pkgs = apt_pkgs.intersection(manual_pkgs)
         pkgs = self.__remove_lib_packages(pkgs)
-        return pkgs
+        pkgs = self.__remove_apt_packages(pkgs)
+
+        return set([pkg for pkg in pkgs if pkg not in system_pkgs])

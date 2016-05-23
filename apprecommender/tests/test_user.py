@@ -22,6 +22,8 @@ __license__ = """
 import unittest
 import xapian
 
+from mock import patch
+
 from apprecommender.user import User, LocalSystem, FilterTag, FilterDescription
 from apprecommender.config import Config
 from apprecommender.data import SampleAptXapianIndex
@@ -143,8 +145,22 @@ class LocalSystemTest(unittest.TestCase):
     def setUp(self):
         self.user = LocalSystem()
 
-    def test_get_time_score_invalid_file(self):
-        result = self.user.get_time_score('invalid_path')
+    @patch('commands.getoutput')
+    @patch('glob.glob', return_value=['test'])
+    def test_get_apt_installed_pkgs(self, mock_glob, mock_command):
+        mock_command.return_value = 'Commandline: apt install test1 test2\n'
+        apt_pkgs = self.user.get_apt_installed_pkgs()
 
-        self.assertFalse(result)
-        self.assertEqual(len(result), 0)
+        self.assertEqual(2, len(apt_pkgs))
+        self.assertIn('test1', apt_pkgs)
+        self.assertIn('test2', apt_pkgs)
+
+        mock_command.return_value = 'Commandline: apt remove test1 test2\n'
+        apt_pkgs = self.user.get_apt_installed_pkgs()
+
+        self.assertEqual(0, len(apt_pkgs))
+
+        mock_command.return_value = 'Commandline: apt upgrade\n'
+        apt_pkgs = self.user.get_apt_installed_pkgs()
+
+        self.assertEqual(0, len(apt_pkgs))
