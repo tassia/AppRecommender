@@ -83,6 +83,7 @@ class MachineLearningData():
             modify, access = time_values
 
             pkgs_percent[name] = percent_function(modify, access, time_now)
+            # pkgs_percent[name] = access
 
         pkgs = pkgs_percent.keys()
         pkgs = sorted(pkgs, key=lambda pkg: pkgs_percent[pkg])

@@ -6,6 +6,8 @@ import sys
 
 sys.path.insert(0, "{0}/../".format(os.path.dirname(__file__)))
 
+from apprecommender.ml.pkg_time import PkgTime
+
 
 def main():
     path = os.path.expanduser(
@@ -15,6 +17,9 @@ def main():
         print 'Could not find file pkgs_classification'
         print 'Have you run apprec --train ?'
         exit(-1)
+
+    pkg_time = PkgTime()
+    pkgs_times = pkg_time.get_package_data()
 
     with open(path, 'ra') as data:
         pkg_classification = pickle.load(data)
@@ -27,7 +32,14 @@ def main():
         print 'Classification: {}'.format(classification)
 
         for pkg in sorted(pkgs):
-            print pkg
+            pkg_text = '{} \t'
+            if len(pkg) < 15:
+                pkg_text += '\t'
+            if len(pkg) < 7:
+                pkg_text += '\t'
+            pkg_text += ' {}'
+
+            print pkg_text.format(pkg, pkgs_times[pkg][1])
 
         print '\n'
 
