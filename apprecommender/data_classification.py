@@ -24,7 +24,7 @@ def get_time_from_package(pkg, pkg_bin=True):
     if pkg in pkgs_times:
         modify, access = pkgs_times[pkg]
     else:
-        modify = get_time('Z', pkg, pkg_bin)
+        modify = get_time('Y', pkg, pkg_bin)
         access = get_time('X', pkg, pkg_bin)
         pkgs_times[pkg] = [modify, access]
 
@@ -67,34 +67,6 @@ def linear_percent_function(modify, access, time_now):
     time_actual = time_now - modify
 
     percent = float(time_access) / float(time_actual)
-
-    return percent
-
-
-def log_percent_function(modify, access, time_now):
-    modify, access = int(modify), int(access)
-
-    time_access = access - modify
-    time_actual = time_now - modify
-
-    if time_access == 0:
-        return 0.0
-
-    percent = math.log10(float(time_access) * 10.0 / float(time_actual))
-
-    return percent
-
-
-def square_percent_function(modify, access, time_now):
-    modify, access = int(modify), int(access)
-
-    time_access = access - modify
-    time_actual = time_now - modify
-
-    if time_access == 0:
-        return 0.0
-
-    percent = (float(time_access) / float(time_actual)) ** 2
 
     return percent
 

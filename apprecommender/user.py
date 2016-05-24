@@ -389,7 +389,6 @@ class LocalSystem(User):
         apt_pkgs = set()
 
         apt_log = glob.glob('/var/log/apt/history.log*')
-        print apt_log
 
         for log in apt_log:
             command = 'zcat' if log.endswith('gz') else 'cat'
