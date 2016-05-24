@@ -345,6 +345,7 @@ class FilteredKnnXapianIndex(xapian.WritableDatabase):
 
         # build new index
         doc_count = 0
+        len_submissions = len(submissions)
         for submission in submissions:
             doc = xapian.Document()
             submission_pkgs = [pkg for pkg in submission
@@ -362,9 +363,9 @@ class FilteredKnnXapianIndex(xapian.WritableDatabase):
                                 doc.add_term(tag)
             doc_id = self.add_document(doc)
             doc_count += 1
-            logging.debug("Popcon Xapian: Indexing doc %d" % doc_id)
             # python garbage collector
             gc.collect()
+            print_percentage(doc_count, len_submissions)
         # flush to disk database changes
         try:
             self.commit()

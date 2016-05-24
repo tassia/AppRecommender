@@ -125,8 +125,8 @@ class Initialize:
 
         begin_time = datetime.datetime.now()
         print("Knn indexing started at %s" % begin_time)
-        index = FilteredKnnXapianIndex(path, submissions, axi_path,
-                                       tags_filter)
+        index = data.FilteredKnnXapianIndex(path, submissions, axi_path,
+                                            tags_filter)
 
         end_time = datetime.datetime.now()
         print("Knn indexing completed at %s" % end_time)
