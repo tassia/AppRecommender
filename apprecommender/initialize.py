@@ -74,6 +74,7 @@ class Initialize:
                 pkgs_list = [line.strip() for line in valid]
             filter_str = 'axi_' + filters_path.split('/')[-1]
 
+            print"\nIndexing packages on xapian"
             index = data.SampleAptXapianIndex(pkgs_list, axi,
                                               os.path.join(base_dir,
                                                            filter_str))

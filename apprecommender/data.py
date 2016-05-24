@@ -213,6 +213,24 @@ def split_pkg_data(user_pkg, partition_size):
     return round_partition
 
 
+def print_percentage(number, n_numbers, message='Percent', bar_length=40):
+    percent = float(number) / float(n_numbers)
+    hashes = '#' * int(round(percent * bar_length))
+    spaces = ' ' * (bar_length - len(hashes))
+    percent = int(round(percent * 100))
+
+    percent_message = ("\r{}: [{}] [{} / {}] {}%".format(message,
+                                                         hashes + spaces,
+                                                         number, n_numbers,
+                                                         percent))
+
+    sys.stdout.write(percent_message)
+    sys.stdout.flush()
+
+    if number == n_numbers:
+        print '\n'
+
+
 class StopWords(Singleton):
 
     def __init__(self):
@@ -276,8 +294,11 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
         xapian.WritableDatabase.__init__(self, path,
                                          xapian.DB_CREATE_OR_OVERWRITE)
         self.sample = axi_search_pkgs(axi, pkgs_list)
-        for package in self.sample:
+        len_sample = len(self.sample)
+
+        for index, package in enumerate(self.sample):
             self.doc_id = self.add_document(axi.get_document(package.docid))
+            print_percentage(index + 1, len_sample)
 
     def __str__(self):
         return print_index(self)
