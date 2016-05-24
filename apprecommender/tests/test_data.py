@@ -19,10 +19,13 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import unittest
 import xapian
 
-from apprecommender.data import PopconSubmission, axi_search_pkg_tags
+from apprecommender.data import (PopconSubmission, SampleAptXapianIndex,
+                                 FilteredKnnXapianIndex, axi_search_pkg_tags,
+                                 axi_get_pkgs)
 from apprecommender.config import Config
 
 
@@ -68,3 +71,44 @@ class PopconSubmissionTests(unittest.TestCase):
         output += "dash: 1\n perl-base: 1\n libusbmuxd1: 1\n "
         output += "libc6-i686: 1\n libc6: 1"
         self.assertEqual(self.submission.__str__(), output)
+
+
+class SampleAptXapianIndexTest(unittest.TestCase):
+
+    def test_index_data(self):
+        axi_path = Config().axi
+        axi = xapian.Database(axi_path)
+        path = "apprecommender/tests/test_data/.test_sample_axi"
+        packages = ['gedit', 'git', 'terminator', 'vagrant', 'vim']
+        sample_axi = SampleAptXapianIndex(packages, axi, path)
+
+        self.assertEqual(5, sample_axi.get_doccount())
+        self.assertEqual(packages, list(sorted(axi_get_pkgs(sample_axi))))
+
+
+class FilteredKnnXapianIndexTest(unittest.TestCase):
+
+    def test_index_data(self):
+        config = Config()
+        base_dir = config.base_dir
+        axi_path = config.axi
+        path = "apprecommender/tests/test_data/.test_knn_axi"
+        tags_filter = os.path.join(base_dir, "filters/debtags")
+
+        submissions = []
+        submissions.append(['gedit', 'git', 'terminator', 'vagrant', 'vim'])
+        submissions.append(['inkscape', 'git', 'gem2deb', 'vagrant', 'vim'])
+        submissions.append(['inkscape', 'git', 'ipython', 'python', 'vim'])
+        submissions.append(['python', 'git', 'terminator', 'ipython', 'vim'])
+
+        filtered_index = FilteredKnnXapianIndex(path, submissions, axi_path,
+                                                tags_filter)
+
+        self.assertEqual(4, filtered_index.get_doccount())
+
+        for index, submission in enumerate(submissions):
+            doc = filtered_index.get_document(index + 1)
+            doc_pkgs = [terms.term.lstrip('XP') for terms in doc.termlist()
+                        if terms.term.startswith('XP')]
+
+            self.assertEqual(sorted(submission), sorted(doc_pkgs))

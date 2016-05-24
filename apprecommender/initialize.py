@@ -15,7 +15,7 @@ from apprecommender.ml.knn_loader import KnnLoader
 class Initialize:
 
     AXI_SAMPLES = ['sample', 'filter']
-    DEFAULT_AXI_PATH = "/var/lib/apt-xapian-index/index"
+    DEFAULT_AXI_PATH = Config().axi
     EXCLUDED_TAGS = ['culture::', 'devel::lang', 'hardware::',
                      'implemented-in::', 'interface::', 'iso15924::',
                      'made-of::', 'network::', 'protocol::', 'role::',
