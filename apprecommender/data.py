@@ -351,17 +351,15 @@ class FilteredKnnXapianIndex(xapian.WritableDatabase):
             submission_pkgs = [pkg for pkg in submission
                                if pkg in self.valid_pkgs]
 
-            for pkg in submission_pkgs:
-                tags = axi_search_pkg_tags(self.axi, pkg)
-                # if the package was found in axi
-                if tags:
-                    doc.add_term("XP" + pkg)
-                    # if the package has tags associated with it
-                    if not tags == "notags":
-                        for tag in tags:
-                            if tag.lstrip("XT") in self.valid_tags:
-                                doc.add_term(tag)
-            doc_id = self.add_document(doc)
+            doc.sample = axi_search_pkgs(self.axi, submission_pkgs)
+            len_sample = len(doc.sample)
+
+            for index, package in enumerate(doc.sample):
+                pkg_doc = self.axi.get_document(package.docid)
+                for terms in pkg_doc.termlist():
+                    doc.add_term(terms.term)
+
+            self.add_document(doc)
             doc_count += 1
             # python garbage collector
             gc.collect()

@@ -101,13 +101,13 @@ class FilteredKnnXapianIndexTest(unittest.TestCase):
         submissions.append(['inkscape', 'git', 'ipython', 'python', 'vim'])
         submissions.append(['python', 'git', 'terminator', 'ipython', 'vim'])
 
-        filtered_index = FilteredKnnXapianIndex(path, submissions, axi_path,
+        filtered_axi = FilteredKnnXapianIndex(path, submissions, axi_path,
                                                 tags_filter)
 
-        self.assertEqual(4, filtered_index.get_doccount())
+        self.assertEqual(4, filtered_axi.get_doccount())
 
         for index, submission in enumerate(submissions):
-            doc = filtered_index.get_document(index + 1)
+            doc = filtered_axi.get_document(index + 1)
             doc_pkgs = [terms.term.lstrip('XP') for terms in doc.termlist()
                         if terms.term.startswith('XP')]
 
