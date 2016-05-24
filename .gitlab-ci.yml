@@ -1,0 +1,10 @@
+before_script:
+  - ./install_dependencies.sh
+  - pushd bin
+  - ./apprec.py --init
+  - ./apprec.py --train
+  - popd
+
+test:
+  script:
+    - python setup.py test
