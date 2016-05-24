@@ -33,15 +33,27 @@ from apprecommender.error import Error
 
 def axi_get_pkgs(axi):
     pkgs_names = []
+    pkgs_terms = {}
+
     for docid in range(1, axi.get_lastdocid() + 1):
         try:
             doc = axi.get_document(docid)
         except:
-            pass
-        docterms_XP = [t.term for t in doc.termlist()
-                       if t.term.startswith("XP")]
-        pkgs_names.append(docterms_XP[0].lstrip('XP'))
-    return pkgs_names
+            continue
+
+        docterms_XP, docterms_XT = [], []
+        for terms in doc.termlist():
+            if terms.term.startswith('XP'):
+                docterms_XP.append(terms.term)
+            elif terms.term.startswith('XT'):
+                docterms_XT.append(terms.term)
+
+        pkg_name = docterms_XP[0].lstrip('XP')
+        pkgs_names.append(pkg_name)
+
+        pkgs_terms[pkg_name] = docterms_XT
+
+    return pkgs_names, pkgs_terms
 
 
 def axi_search_pkgs(axi, pkgs_list):
@@ -320,12 +332,8 @@ class FilteredKnnXapianIndex(xapian.WritableDatabase):
         self.axi = xapian.Database(axi_path)
         self.path = os.path.expanduser(path)
         self.submissions = submissions
-        self.valid_pkgs = axi_get_pkgs(self.axi)
+        self.valid_pkgs, self.pkgs_terms = axi_get_pkgs(self.axi)
         logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
-        with open(tags_filter) as valid_tags:
-            self.valid_tags = [line.strip() for line in valid_tags
-                               if not line.startswith("#")]
-        logging.debug("Considering %d valid tags" % len(self.valid_tags))
         if len(self.submissions) == 0:
             logging.critical("Knn submissions can't be empty")
             raise Error
@@ -351,21 +359,18 @@ class FilteredKnnXapianIndex(xapian.WritableDatabase):
             submission_pkgs = [pkg for pkg in submission
                                if pkg in self.valid_pkgs]
 
-            doc.sample = axi_search_pkgs(self.axi, submission_pkgs)
-            len_sample = len(doc.sample)
-
-            for index, package in enumerate(doc.sample):
-                pkg_doc = self.axi.get_document(package.docid)
-                for terms in pkg_doc.termlist():
-                    doc.add_term(terms.term)
+            for pkg_name in submission_pkgs:
+                pkg_terms = self.pkgs_terms[pkg_name]
+                doc.add_term('XP' + pkg_name)
+                for term in pkg_terms:
+                    doc.add_term(term)
 
             self.add_document(doc)
             doc_count += 1
-            # python garbage collector
             gc.collect()
             print_progress(doc_count, len_submissions)
-        # flush to disk database changes
         try:
+            # flush to disk database changes
             self.commit()
         except:
             # deprecated function, used for compatibility with old lib version

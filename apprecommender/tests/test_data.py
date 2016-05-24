@@ -81,9 +81,11 @@ class SampleAptXapianIndexTest(unittest.TestCase):
         path = "apprecommender/tests/test_data/.test_sample_axi"
         packages = ['gedit', 'git', 'terminator', 'vagrant', 'vim']
         sample_axi = SampleAptXapianIndex(packages, axi, path)
+        sample_axi_pkgs, _ = axi_get_pkgs(sample_axi)
+        sample_axi_pkgs = sorted(sample_axi_pkgs)
 
         self.assertEqual(5, sample_axi.get_doccount())
-        self.assertEqual(packages, list(sorted(axi_get_pkgs(sample_axi))))
+        self.assertEqual(packages, sample_axi_pkgs)
 
 
 class FilteredKnnXapianIndexTest(unittest.TestCase):
