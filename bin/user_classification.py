@@ -29,7 +29,9 @@ def main():
         classifications[values[-1]].append(pkg)
 
     for classification, pkgs in classifications.iteritems():
+        print '\n'
         print 'Classification: {}'.format(classification)
+        print '\n'
 
         for pkg in sorted(pkgs):
             pkg_text = '{} \t'
@@ -39,11 +41,9 @@ def main():
                 pkg_text += '\t'
             pkg_text += ' {}'
 
-            print pkg_text.format(pkg, pkgs_times[pkg][1])
+            print pkg_text.format(pkg, pkgs_times[pkg][1].strip())
 
-        print '\n'
-
-    print 'Num pkgs: {}'.format(len(pkg_classification))
+    print '\nNum pkgs: {}'.format(len(pkg_classification))
 
 
 if __name__ == '__main__':
