@@ -365,7 +365,7 @@ class FilteredKnnXapianIndex(xapian.WritableDatabase):
             doc_count += 1
             # python garbage collector
             gc.collect()
-            print_percentage(doc_count, len_submissions)
+            print_progress(doc_count, len_submissions)
         # flush to disk database changes
         try:
             self.commit()
