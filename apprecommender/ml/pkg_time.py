@@ -1,6 +1,6 @@
+import commands
 import os
 import re
-import commands
 
 from apprecommender.data_classification import get_time_from_package
 from apprecommender.config import Config
@@ -11,9 +11,6 @@ USER_DATA_DIR = Config().user_data_dir
 
 class PkgTime:
 
-    def __init__(self):
-        pass
-
     def create_pkg_data(self):
         user = LocalSystem()
         user_pkgs = user.pkg_profile
@@ -23,15 +20,34 @@ class PkgTime:
         return pkgs_time
 
     def get_best_time(self, pkg):
-        valid_regex = re.compile(
-            r'/usr/bin/|/usr/sbin|/usr/game/|/usr/lib/.+/')
+        valid_path_regex = re.compile(
+            r'/usr/bin/|/usr/game/|/usr/lib/.+/')
+        invalid_path_regex = re.compile(
+            r'(.+-){2,}|/usr/lib/mime/packages/|/init.d/|/media/')
+        invalid_files_regex = re.compile(
+            r'\.desktop|\.conf|\.egg-info|\.txt')
+
         pkg_files = commands.getoutput('dpkg -L {}'.format(pkg))
 
         bestatime, bestmtime = 0, 0
         for pkg_file in pkg_files.splitlines():
-            if valid_regex.search(pkg_file):
+
+            if invalid_path_regex.search(pkg_file):
+                continue
+
+            if invalid_files_regex.search(pkg_file):
+                continue
+
+            if os.path.isdir(pkg_file):
+                continue
+
+            if valid_path_regex.search(pkg_file):
                 modify, access = get_time_from_package(pkg_file,
                                                        pkg_bin=False)
+
+                modify = int(modify) if modify else 0
+                access = int(access) if access else 0
+
                 if access > bestatime:
                     bestatime = access
                     bestmtime = modify
