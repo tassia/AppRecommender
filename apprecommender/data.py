@@ -213,7 +213,7 @@ def split_pkg_data(user_pkg, partition_size):
     return round_partition
 
 
-def print_percentage(number, n_numbers, message='Percent', bar_length=40):
+def print_progress(number, n_numbers, message='Progress', bar_length=40):
     percent = float(number) / float(n_numbers)
     hashes = '#' * int(round(percent * bar_length))
     spaces = ' ' * (bar_length - len(hashes))
@@ -223,7 +223,6 @@ def print_percentage(number, n_numbers, message='Percent', bar_length=40):
                                                          hashes + spaces,
                                                          number, n_numbers,
                                                          percent))
-
     sys.stdout.write(percent_message)
     sys.stdout.flush()
 
@@ -298,7 +297,7 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
 
         for index, package in enumerate(self.sample):
             self.doc_id = self.add_document(axi.get_document(package.docid))
-            print_percentage(index + 1, len_sample)
+            print_progress(index + 1, len_sample)
 
     def __str__(self):
         return print_index(self)
