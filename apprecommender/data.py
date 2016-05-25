@@ -36,10 +36,11 @@ import socket
 import math
 import commands
 
-from apprecommender.data_classification import time_weight
-from apprecommender.error import Error
+from apprecommender.utils import print_progress_bar
 from apprecommender.config import Config
+from apprecommender.data_classification import time_weight
 from apprecommender.dissimilarity import JaccardDistance
+from apprecommender.error import Error
 from apprecommender.singleton import Singleton
 
 
@@ -213,23 +214,6 @@ def split_pkg_data(user_pkg, partition_size):
     return round_partition
 
 
-def print_progress(number, n_numbers, message='Progress', bar_length=40):
-    percent = float(number) / float(n_numbers)
-    hashes = '#' * int(round(percent * bar_length))
-    spaces = ' ' * (bar_length - len(hashes))
-    percent = int(round(percent * 100))
-
-    percent_message = ("\r{}: [{}] [{} / {}] {}%".format(message,
-                                                         hashes + spaces,
-                                                         number, n_numbers,
-                                                         percent))
-    sys.stdout.write(percent_message)
-    sys.stdout.flush()
-
-    if number == n_numbers:
-        print '\n'
-
-
 class StopWords(Singleton):
 
     def __init__(self):
@@ -297,7 +281,7 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
 
         for index, package in enumerate(self.sample):
             self.doc_id = self.add_document(axi.get_document(package.docid))
-            print_progress(index + 1, len_sample)
+            print_progress_bar(index + 1, len_sample)
 
     def __str__(self):
         return print_index(self)

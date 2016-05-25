@@ -4,8 +4,9 @@ import commands
 import data
 import datetime
 import os
-import xapian
 import shutil
+import sys
+import xapian
 
 from apprecommender.config import Config
 

@@ -1,11 +1,13 @@
+#!/usr/bin/env python
+
 import commands
 import os
 import re
 
-from apprecommender.data_classification import get_time_from_package
 from apprecommender.config import Config
+from apprecommender.data_classification import get_time_from_package
 from apprecommender.user import LocalSystem
-from apprecommender.data import print_progress
+from apprecommender.utils import print_progress_bar
 
 USER_DATA_DIR = Config().user_data_dir
 
@@ -87,7 +89,7 @@ class PkgTime:
                 if verbose:
                     print 'NOT: {} {} {}'.format(pkg, modify, access)
 
-            print_progress(index + 1, len_pkgs)
+            print_progress_bar(index + 1, len_pkgs)
 
         return pkgs_time
 
