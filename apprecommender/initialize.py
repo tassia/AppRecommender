@@ -4,8 +4,9 @@ import commands
 import data
 import datetime
 import os
-import xapian
 import shutil
+import sys
+import xapian
 
 from apprecommender.config import Config
 
@@ -74,6 +75,7 @@ class Initialize:
                 pkgs_list = [line.strip() for line in valid]
             filter_str = 'axi_' + filters_path.split('/')[-1]
 
+            print"\nIndexing packages on xapian"
             index = data.SampleAptXapianIndex(pkgs_list, axi,
                                               os.path.join(base_dir,
                                                            filter_str))

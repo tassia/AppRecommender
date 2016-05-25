@@ -1,10 +1,13 @@
+#!/usr/bin/env python
+
 import commands
 import os
 import re
 
-from apprecommender.data_classification import get_time_from_package
 from apprecommender.config import Config
+from apprecommender.data_classification import get_time_from_package
 from apprecommender.user import LocalSystem
+from apprecommender.utils import print_progress_bar
 
 USER_DATA_DIR = Config().user_data_dir
 
@@ -71,7 +74,8 @@ class PkgTime:
     def get_packages_time(self, pkgs, verbose=False):
         pkgs_time = {}
 
-        for pkg in pkgs:
+        len_pkgs = len(pkgs)
+        for index, pkg in enumerate(pkgs):
             modify, access = self.get_best_time(pkg)
 
             if modify and access:
@@ -84,6 +88,8 @@ class PkgTime:
             else:
                 if verbose:
                     print 'NOT: {} {} {}'.format(pkg, modify, access)
+
+            print_progress_bar(index + 1, len_pkgs)
 
         return pkgs_time
 

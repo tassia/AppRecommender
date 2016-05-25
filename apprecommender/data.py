@@ -36,10 +36,11 @@ import socket
 import math
 import commands
 
-from apprecommender.data_classification import time_weight
-from apprecommender.error import Error
+from apprecommender.utils import print_progress_bar
 from apprecommender.config import Config
+from apprecommender.data_classification import time_weight
 from apprecommender.dissimilarity import JaccardDistance
+from apprecommender.error import Error
 from apprecommender.singleton import Singleton
 
 
@@ -276,8 +277,11 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
         xapian.WritableDatabase.__init__(self, path,
                                          xapian.DB_CREATE_OR_OVERWRITE)
         self.sample = axi_search_pkgs(axi, pkgs_list)
-        for package in self.sample:
+        len_sample = len(self.sample)
+
+        for index, package in enumerate(self.sample):
             self.doc_id = self.add_document(axi.get_document(package.docid))
+            print_progress_bar(index + 1, len_sample)
 
     def __str__(self):
         return print_index(self)
