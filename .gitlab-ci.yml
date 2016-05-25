@@ -8,3 +8,5 @@ before_script:
 test:
   script:
     - python setup.py test
+    - python setup.py build
+    - sudo python setup.py install
