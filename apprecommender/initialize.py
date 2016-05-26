@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
+import apt
 import commands
 import data
 import datetime
 import os
 import shutil
-import sys
 import xapian
 
 from apprecommender.config import Config
@@ -13,7 +13,6 @@ from apprecommender.config import Config
 
 class Initialize:
 
-    TAGS = ['XP', 'XT', 'Z']
     AXI_SAMPLES = ['sample', 'filter']
     DEFAULT_AXI_PATH = "/var/lib/apt-xapian-index/index"
     EXCLUDED_TAGS = ['culture::', 'devel::lang', 'hardware::',
@@ -24,6 +23,7 @@ class Initialize:
 
     def __init__(self):
         self.config = Config()
+        self.cache = apt.Cache()
 
     def get_tags(self):
         command = "cat /var/lib/debtags/vocabulary" \
@@ -35,9 +35,12 @@ class Initialize:
 
         return tags
 
-    def get_axipkgs(self, axi_tag=TAGS[0], axi_path=DEFAULT_AXI_PATH):
+    def get_axipkgs(self, axi_tag='XP', axi_path=DEFAULT_AXI_PATH):
         axi = xapian.Database(axi_path)
         all_terms = set()
+
+        user_pkgs = self.get_user_installed_packages()
+        user_role_programs = self.get_user_role_programs(user_pkgs)
 
         for n in range(1, axi.get_lastdocid()):
             doc = 0
@@ -54,13 +57,84 @@ class Initialize:
                         break
 
                 if xp_terms:
-                    xp_terms = xp_terms.lstrip(axi_tag)
-                    if xp_terms.startswith('M'):
-                        xp_terms = xp_terms.lstrip('M')
+                    pkg_name = xp_terms.lstrip(axi_tag)
+                    if pkg_name.startswith('M'):
+                        pkg_name = pkg_name.lstrip('M')
 
-                    all_terms.add(xp_terms.lstrip(axi_tag))
+                    if pkg_name not in self.cache:
+                        continue
+
+                    pkg = self.cache[pkg_name].candidate
+
+                    if not self.is_section_valid(pkg.section):
+                        continue
+
+                    pkg_dependencies = self.get_package_dependencies(pkg)
+                    is_dep_installed = self.is_program_dependencies_installed(
+                        pkg_dependencies, user_role_programs)
+
+                    if is_dep_installed:
+                        all_terms.add(pkg_name)
 
         return all_terms
+
+    def is_section_valid(self, pkg_section):
+        if pkg_section == 'doc':
+            return False
+
+        return True
+
+    def is_valid_dependency(self, pkg_tags, pkg_section):
+        tags_dep = 'role::program' in pkg_tags or 'devel::editor' in pkg_tags
+        section_dep = pkg_section == 'interpreters'
+
+        return tags_dep or section_dep
+
+    def is_program_dependencies_installed(self, pkg_dependencies,
+                                          user_role_programs):
+        dep_programs = set()
+
+        for dep in pkg_dependencies:
+            if dep in self.cache:
+                pkg = self.cache[dep].candidate
+
+                if pkg is not None:
+                    pkg_tags = pkg.record.get('Tag', None)
+                    pkg_section = pkg.section
+
+                    if pkg_tags is None:
+                        continue
+
+                    is_valid_dependency = self.is_valid_dependency(
+                        pkg_tags, pkg_section)
+
+                    if is_valid_dependency:
+                        dep_programs.add(dep)
+
+        return len(dep_programs - user_role_programs) == 0
+
+    def get_package_dependencies(self, pkg):
+        return [dep[0].name for dep in pkg.dependencies]
+
+    def get_user_installed_packages(self):
+        manual_installed = commands.getoutput('apt-mark showmanual')
+        return manual_installed.splitlines()
+
+    def get_user_role_programs(self, user_pkgs):
+        user_programs = set()
+
+        for pkg in user_pkgs:
+            if pkg in self.cache:
+                pkg_candidate = self.cache[pkg].candidate
+                pkg_tags = pkg_candidate.record.get('Tag', None)
+
+                if not pkg_tags:
+                    continue
+
+                if 'role::program' in pkg_tags:
+                    user_programs.add(pkg)
+
+        return user_programs
 
     def indexer_axi(self, axi_sample, filters_path, terms=[]):
         axi_path = Initialize.DEFAULT_AXI_PATH
