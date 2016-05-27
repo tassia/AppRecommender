@@ -19,10 +19,6 @@ class InitializeTests(unittest.TestCase):
 
     def test_get_axipkgs(self):
         initialize = Initialize()
-        pkgs = initialize.get_axipkgs(Initialize.TAGS[0])
-        tags = initialize.get_axipkgs(Initialize.TAGS[1])
-        terms = initialize.get_axipkgs(Initialize.TAGS[2])
+        pkgs = initialize.get_axipkgs()
 
         self.assertTrue(len(pkgs) > 0)
-        self.assertTrue(len(tags) > 0)
-        self.assertTrue(len(terms) > 0)
