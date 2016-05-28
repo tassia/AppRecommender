@@ -3,7 +3,7 @@
 import re
 import xapian
 
-from apprecommender.data import StopWords
+from sklearn.feature_extraction.stop_words import ENGLISH_STOP_WORDS
 
 
 class PkgMatchDecider(xapian.MatchDecider):
@@ -109,7 +109,7 @@ class FilterDescription(xapian.ExpandDecider):
 
     def __init__(self):
         xapian.ExpandDecider.__init__(self)
-        self.stop_words = StopWords().stopwords
+        self.stop_words = ENGLISH_STOP_WORDS
 
     def __call__(self, term):
         """
