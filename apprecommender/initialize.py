@@ -187,7 +187,6 @@ class Initialize:
         self.save_list(pkgs, pkgs_path)
 
         self.indexer_axi('sample', pkgs_path)
-        self.move_stopwords()
 
     def get_role_program_pkgs(self):
         command = "cat /var/lib/debtags/package-tags | " \
@@ -200,7 +199,3 @@ class Initialize:
     def save_list(self, elements, path):
         with open(path, 'w') as text:
             text.write('\n'.join(elements) + '\n')
-
-    def move_stopwords(self):
-        filters_dir = self.config.filters_dir
-        shutil.copyfile('../data/stopwords', filters_dir + '/stopwords')
