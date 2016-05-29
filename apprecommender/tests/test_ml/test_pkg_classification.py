@@ -29,15 +29,17 @@ class PkgClassificationTests(unittest.TestCase):
             self.assertTrue(debtag in vim_debtags_result)
 
     def test_get_pkg_terms(self):
-        vim_terms = [u'almost', u'compat', u'version', u'editor', u'new',
-                     u'featur', u'ad', u'multi', u'level', u'undo', u'syntax',
-                     u'highlight', u'command', u'line', u'histori',
-                     u'help', u'filenam', u'complet', u'block', u'oper',
-                     u'fold', u'support', u'etc', u'packag', u'contain',
-                     u'version', u'vim', u'compil', u'rather', u'standard',
-                     u'set', u'featur', u'packag', u'provid', u'version',
-                     u'packag', u'need', u'less']
+        vim_terms = [u'vim', u'compat', u'version', u'unix', u'editor', u'vi',
+                     u'new', u'featur', u'ad', u'multi', u'level', u'undo',
+                     u'syntax', u'highlight', u'command', u'line', u'histori',
+                     u'line', u'help', u'filenam', u'complet', u'block',
+                     u'oper', u'fold', u'unicod', u'support', u'packag',
+                     u'contain', u'version', u'vim', u'compil', u'standard',
+                     u'set', u'featur', u'packag', u'doe', u'provid', u'gui',
+                     u'version', u'vim', u'vim', u'packag', u'need']
         vim_terms_result = self.ml_data.get_pkg_terms(self.cache, 'vim')
+
+        print vim_terms_result
 
         for term in vim_terms:
             self.assertTrue(term in vim_terms_result)

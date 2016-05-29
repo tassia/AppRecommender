@@ -41,7 +41,6 @@ from apprecommender.config import Config
 from apprecommender.data_classification import time_weight
 from apprecommender.dissimilarity import JaccardDistance
 from apprecommender.error import Error
-from apprecommender.singleton import Singleton
 
 
 def axi_get_pkgs(axi):
@@ -212,24 +211,6 @@ def split_pkg_data(user_pkg, partition_size):
         round_partition[random_key] = user_pkg.pop(random_key)
 
     return round_partition
-
-
-class StopWords(Singleton):
-
-    def __init__(self):
-        self._stopwords = set()
-
-    @property
-    def stopwords(self):
-        if not self._stopwords:
-            stopwords_path = Config().stopwords
-            with open(stopwords_path, 'r') as stopwords:
-                for word in stopwords:
-                    self._stopwords.add(word.strip())
-
-            return self._stopwords
-        else:
-            return self._stopwords
 
 
 class FilteredXapianIndex(xapian.WritableDatabase):
