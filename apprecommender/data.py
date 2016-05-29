@@ -326,7 +326,7 @@ class PopconSubmission():
                                 self.packages[pkg] = 8
 
 
-class FilteredKnnXapianIndex(xapian.WritableDatabase):
+class KnnXapianIndex(xapian.WritableDatabase):
 
     def __init__(self, path, submissions, axi_path, tags_filter):
         self.axi = xapian.Database(axi_path)

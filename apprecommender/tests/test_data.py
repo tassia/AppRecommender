@@ -24,7 +24,7 @@ import unittest
 import xapian
 
 from apprecommender.data import (PopconSubmission, SampleAptXapianIndex,
-                                 FilteredKnnXapianIndex, axi_search_pkg_tags,
+                                 KnnXapianIndex, axi_search_pkg_tags,
                                  axi_get_pkgs)
 from apprecommender.config import Config
 
@@ -88,7 +88,7 @@ class SampleAptXapianIndexTest(unittest.TestCase):
         self.assertEqual(packages, sample_axi_pkgs)
 
 
-class FilteredKnnXapianIndexTest(unittest.TestCase):
+class KnnXapianIndexTest(unittest.TestCase):
 
     def test_index_data(self):
         config = Config()
@@ -103,7 +103,7 @@ class FilteredKnnXapianIndexTest(unittest.TestCase):
         submissions.append(['inkscape', 'git', 'ipython', 'python', 'vim'])
         submissions.append(['python', 'git', 'terminator', 'ipython', 'vim'])
 
-        filtered_axi = FilteredKnnXapianIndex(path, submissions, axi_path,
+        filtered_axi = KnnXapianIndex(path, submissions, axi_path,
                                                 tags_filter)
 
         self.assertEqual(4, filtered_axi.get_doccount())
