@@ -47,6 +47,9 @@ def ml_cross_validation(folder_path, ml_strategy_str):
     logger = logging.getLogger('')
     logger.setLevel(logging.CRITICAL)
 
+    if folder_path[-1] != '/':
+        folder_path += '/'
+
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
 
