@@ -151,32 +151,6 @@ def collect_pkgs_time():
         pkg_time.save_package_time(pkgs_time, PKGS_TIME_PATH)
 
 
-def collect_pkgs_binary():
-    print "Collecting binary of packages"
-
-    if create_file(PKGS_BINARY):
-        pkgs = []
-        pkgs_binary = {}
-
-        with open(ALL_INSTALLED_PKGS, 'r') as text:
-            pkgs = [line.strip() for line in text]
-
-        len_pkgs = len(pkgs)
-        for index, pkg in enumerate(pkgs):
-            pkg_binary = get_pkg_binary(pkg)
-            if pkg_binary:
-                pkgs_binary[pkg] = pkg_binary
-
-            print_progress_bar(index + 1, len_pkgs)
-
-        write_text = "{0} {1}"
-
-        formated_list = [write_text.format(pkg, binary)
-                         for pkg, binary in pkgs_binary.iteritems()]
-
-        save_list(formated_list, PKGS_BINARY)
-
-
 def get_pkg_binary(pkg):
     stat_command = "which {0}".format(pkg)
     pkg_bin = commands.getoutput(stat_command.format(pkg))
@@ -334,7 +308,6 @@ def collect_user_data():
     collect_all_user_pkgs()
     collect_manual_installed_pkgs()
     collect_pkgs_time()
-    collect_pkgs_binary()
     collect_popcon_submission()
 
 
@@ -344,7 +317,6 @@ def initial_prints():
     print " - All user packages"
     print " - Manual installed packages"
     print " - Packages modify and access time"
-    print " - Binary of packages"
     print " - popularity-contest submission"
 
 
