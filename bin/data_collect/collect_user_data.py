@@ -207,6 +207,7 @@ def collect_user_preferences():
     message += "2 - Redundant\n"
     message += "3 - Useful\n"
     message += "4 - Useful Surprise\n\n"
+    message += "exit - Cancel collect data\n\n"
     message += "Rank: "
 
     message_error = "\nPlease use digits 1-4 to rank a package: "
@@ -239,13 +240,16 @@ def collect_user_preferences():
                 rank = raw_input(raw_message)
 
                 if rank == 'exit':
-                    exit(2)
+                    break
 
                 rank = int(rank)
             except:
                 rank = -2
 
             raw_message = message_error
+
+        if rank == 'exit':
+            exit(2)
 
         user_preferences[pkg] = rank
         index += 1
