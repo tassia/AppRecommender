@@ -8,13 +8,12 @@ import logging
 import os
 import sys
 import time
+import xapian
 
 sys.path.insert(0, '../../')
 
-from multiprocessing import Process
 from subprocess import Popen, PIPE
 
-from bin.ml_cross_validation import ml_cross_validation
 from apprecommender.app_recommender import AppRecommender
 from apprecommender.data import get_user_installed_pkgs
 from apprecommender.data_classification import get_alternative_pkg
@@ -22,6 +21,8 @@ from apprecommender.ml.data import MachineLearningData
 from apprecommender.ml.pkg_time import PkgTime
 from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
                                      MachineLearningBOW)
+from apprecommender.utils import print_progress_bar
+from bin.ml_cross_validation import ml_cross_validation
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 SUFIX = dt.datetime.now().strftime('%Y%m%d%H%M')
@@ -94,6 +95,8 @@ def create_popularity_contest_file():
 
 
 def collect_popcon_submission():
+    print "Collecting popularity-contest submission"
+
     create_popularity_contest_file()
 
     popcon = Popen('./popularity-contest',
@@ -115,6 +118,8 @@ def collect_popcon_submission():
 
 
 def collect_manual_installed_pkgs():
+    print "Collecting manual installed pkgs"
+
     if create_file(MANUAL_INSTALLED_PKGS_PATH):
         packages = commands.getoutput('apt-mark showmanual')
 
@@ -124,12 +129,16 @@ def collect_manual_installed_pkgs():
 
 
 def collect_all_user_pkgs():
+    print "Collecting all user packages"
+
     if create_file(ALL_INSTALLED_PKGS):
         packages = get_user_installed_pkgs()
         save_list(packages, ALL_INSTALLED_PKGS)
 
 
 def collect_pkgs_time():
+    print "Collecting packages time"
+
     pkg_time = PkgTime()
 
     if create_file(PKGS_TIME_PATH):
@@ -140,27 +149,6 @@ def collect_pkgs_time():
         pkgs_time = pkg_time.get_packages_time(manual_pkgs)
 
         pkg_time.save_package_time(pkgs_time, PKGS_TIME_PATH)
-
-
-def collect_pkgs_binary():
-    if create_file(PKGS_BINARY):
-        pkgs = []
-        pkgs_binary = {}
-
-        with open(ALL_INSTALLED_PKGS, 'r') as text:
-            pkgs = [line.strip() for line in text]
-
-        for pkg in pkgs:
-            pkg_binary = get_pkg_binary(pkg)
-            if pkg_binary:
-                pkgs_binary[pkg] = pkg_binary
-
-        write_text = "{0} {1}"
-
-        formated_list = [write_text.format(pkg, binary)
-                         for pkg, binary in pkgs_binary.iteritems()]
-
-        save_list(formated_list, PKGS_BINARY)
 
 
 def get_pkg_binary(pkg):
@@ -185,17 +173,16 @@ def get_pkgs_of_recommendation(recommendation_size, strategy):
 
 
 def collect_user_preferences():
-    recommendation_size = 10
-    strategies = ['cbh', 'cbtm', 'mlbva', 'mlbow']
+    recommendation_size = 6
+    strategies = ['cb', 'cb_eset', 'cbtm', 'mlbva', 'mlbva_eset', 'mlbow',
+                  'mlbow_eset']
 
     recommendations = {}
     recommendations_time = []
 
-    percent_message = "Preparing recommendations...\n"
-    percent_message += "[{}%]"
+    print "Preparing recommendations..."
 
-    os.system('clear')
-    print percent_message.format(0.0)
+    len_strategies = len(strategies)
     for index, strategy in enumerate(strategies):
         first_time = int(round(time.time() * 1000))
         recommendations[strategy] = get_pkgs_of_recommendation(
@@ -203,9 +190,8 @@ def collect_user_preferences():
         last_time = int(round(time.time() * 1000))
         recommendations_time.append("{0}: {1}".format(strategy,
                                                       last_time - first_time))
-        percent = (index + 1.0) * 100.0 / len(strategies)
-        os.system('clear')
-        print percent_message.format(percent)
+
+        print_progress_bar(index + 1, len_strategies)
 
     all_recommendations = set(sum(recommendations.values(), []))
     all_recommendations = sorted(list(all_recommendations))
@@ -221,6 +207,7 @@ def collect_user_preferences():
     message += "2 - Redundant\n"
     message += "3 - Useful\n"
     message += "4 - Useful Surprise\n\n"
+    message += "exit - Cancel collect data\n\n"
     message += "Rank: "
 
     message_error = "\nPlease use digits 1-4 to rank a package: "
@@ -253,13 +240,16 @@ def collect_user_preferences():
                 rank = raw_input(raw_message)
 
                 if rank == 'exit':
-                    exit(2)
+                    break
 
                 rank = int(rank)
             except:
                 rank = -2
 
             raw_message = message_error
+
+        if rank == 'exit':
+            exit(2)
 
         user_preferences[pkg] = rank
         index += 1
@@ -299,6 +289,7 @@ def check_dependencies():
 
 
 def collect_pc_informations():
+    print "Collecting PC informations"
     informations = []
     linux_kernel_version = commands.getoutput('uname -s -r')
 
@@ -321,7 +312,6 @@ def collect_user_data():
     collect_all_user_pkgs()
     collect_manual_installed_pkgs()
     collect_pkgs_time()
-    collect_pkgs_binary()
     collect_popcon_submission()
 
 
@@ -331,7 +321,6 @@ def initial_prints():
     print " - All user packages"
     print " - Manual installed packages"
     print " - Packages modify and access time"
-    print " - Binary of packages"
     print " - popularity-contest submission"
 
 
@@ -348,42 +337,45 @@ def clear_prints():
     os.system('clear')
 
 
+def train_machine_learning():
+    try:
+        print "Training machine learning"
+        MachineLearning.train(MachineLearningBVA)
+        MachineLearning.train(MachineLearningBOW)
+
+        os.system("cp {} {}".format(
+            MachineLearningData.PKGS_CLASSIFICATIONS, LOG_PATH))
+    except xapian.DatabaseOpeningError:
+        print "\n\nPlease check if you prepared the AppRecommender data"
+        print "Try to run the following commands:"
+        print "  $ cd .."
+        print "  $ apprec --init\n"
+        exit(1)
+
+
+def run_cross_validation():
+    print "Collecting cross validations"
+
+    strategies = ['mlbva', 'mlbva_eset', 'mlbow', 'mlbow_eset']
+    len_strategies = len(strategies)
+
+    for index, strategy in enumerate(strategies):
+        ml_cross_validation(LOG_PATH, strategy)
+        print_progress_bar(index + 1, len_strategies)
+
+
 def main():
     logging.getLogger().disabled = True
-
-    # print "Checking dependencies"
-    # unistalled_dependencies = check_dependencies()
-    # if len(unistalled_dependencies) > 0:
-    #     print 'These packages need to be installed:', unistalled_dependencies
-    #     return
 
     initial_prints()
     if not user_accept_collect_data():
         exit(1)
 
     create_log_folder()
-    MachineLearning.train(MachineLearningBVA)
-    MachineLearning.train(MachineLearningBOW)
-    os.system("cp {} {}".format(
-        MachineLearningData.PKGS_CLASSIFICATIONS, LOG_PATH))
-
-    collect_data = Process(target=collect_user_data)
-    cross_validation_mlbva = Process(
-        target=ml_cross_validation, args=(LOG_PATH + '/', 'mlbva'))
-    cross_validation_mlbow = Process(
-        target=ml_cross_validation, args=(LOG_PATH + '/', 'mlbow'))
-    collect_data.start()
-    cross_validation_mlbva.start()
-    cross_validation_mlbow.start()
-
-    os.system('clear')
-    print "Preparing recommendations..."
+    train_machine_learning()
+    run_cross_validation()
     collect_user_preferences()
-
-    print "\n\nWaiting for data collection complete"
-    collect_data.join()
-    cross_validation_mlbva.join()
-    cross_validation_mlbow.join()
+    collect_user_data()
 
     print "\n\nFinished: All files and recommendations were collected"
     print "Collect data folder: {0}".format(LOG_PATH)
