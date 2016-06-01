@@ -368,7 +368,7 @@ class KnnXapianIndex(xapian.WritableDatabase):
             self.add_document(doc)
             doc_count += 1
             gc.collect()
-            print_progress(doc_count, len_submissions)
+            print_progress_bar(doc_count, len_submissions)
         try:
             # flush to disk database changes
             self.commit()

@@ -9,8 +9,7 @@ import xapian
 
 from apprecommender.config import Config
 from apprecommender.decider import PkgInitDecider
-from apprecommender.data import FilteredKnnXapianIndex
-from apprecommender.ml.knn_loader import KnnLoader
+from apprecommender.ml.knn import Knn
 
 class Initialize:
 
@@ -105,12 +104,12 @@ class Initialize:
         axi_path = Initialize.DEFAULT_AXI_PATH
         path = self.config.knn_desktopapps
         tags_filter = os.path.join(base_dir, "filters/debtags")
-        knn_file = os.path.join(base_dir, "knn_data")
+        load_data_path = os.path.join(base_dir, "popcon_clusters/")
         user_popcon_file = os.path.join(base_dir, "my_popcon")
 
         error = False
-        if not os.path.isfile(knn_file):
-            print "File not founded: {}".format(knn_file)
+        if not os.path.exists(load_data_path):
+            print "Folder not founded: {}".format(load_data_path)
             error = True
         if not os.path.isfile(user_popcon_file):
             print "File not founded: {}".format(user_popcon_file)
@@ -120,13 +119,13 @@ class Initialize:
             exit(1)
 
         cfg = Config()
-        knn = KnnLoader.load(knn_file, user_popcon_file)
+        knn = Knn.load(load_data_path, user_popcon_file)
         submissions = knn.submissions
 
         begin_time = datetime.datetime.now()
         print("Knn indexing started at %s" % begin_time)
         index = data.KnnXapianIndex(path, submissions, axi_path,
-                                            tags_filter)
+                                    tags_filter)
 
         end_time = datetime.datetime.now()
         print("Knn indexing completed at %s" % end_time)

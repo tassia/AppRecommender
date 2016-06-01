@@ -8,130 +8,46 @@ from scipy import spatial
 
 
 class KnnLoader:
-    '''
-    This class contains the implementation of load knn data on pickle format.
-    '''
 
-    '''
-    Loaded data:     The file to load data must have a pickle with a hash,
-                     this hash must have the following keys:
-                     all_pkgs, users, clusters and users_clusters
+    def __init__(self, popcon_clusters_path):
+        self.file_path = popcon_clusters_path
+        self.all_pkgs_path = self.file_path + 'all_pkgs.txt'
+        self.clusters_path = self.file_path + 'clusters.txt'
+        self.users_clusters_path = self.file_path + 'users_clusters.txt'
+        self.users_path = self.file_path + 'users/user_{}.txt'
 
-    all_pkgs:        List with all packages of users, without duplication of
-                     the packages, exemple: ['vim', 'python', 'ruby'].
+    def all_pkgs(self):
+        all_pkgs = []
+        with open(self.all_pkgs_path, 'r') as text:
+            all_pkgs = [line.strip() for line in text]
 
-    users:           Its a list when each element is a list, that the second
-                     list represents an user, where each element of the second
-                     list is a binary value which indicates if the user has a
-                     package in the same column of the 'all_pkgs' list.
+        return all_pkgs
 
-                     Exemple:
+    def clusters(self):
+        clusters = []
+        with open(self.clusters_path, 'r') as text:
+            clusters = [map(float, line.strip().split(';')) for line in text]
 
-                     all_pkgs: ['vim', 'python', 'ruby', 'gedit', 'vagrant']
+        return clusters
 
-                     users:  [ [  1  ,    0    ,   0   ,    1   ,     0    ],
-                               [  0  ,    1    ,   0   ,    1   ,     1    ],
-                               [  1  ,    0    ,   1   ,    0   ,     1    ] ]
+    def users_clusters(self):
+        users_clusters = {}
+        with open(self.users_clusters_path, 'r') as text:
+            users_clusters = [int(cluster_index) for _, cluster_index in
+                              (line.split(':') for line in text)]
 
-    clusters:        Its a list of clusters, where each cluster its a list
-                     with the same size of the 'all_pkgs' list, where the
-                     cluster list represents the cluster position on chart.
+        return users_clusters
 
-    users_clusters:  List when each element represents a line of 'users', and
-                     each value its the index of cluster in the 'clusters'
-                     list.
-    '''
+    def users(self, indices):
+        users_paths = []
+        for index in indices:
+            user_path = self.users_path.format(index)
+            users_paths.append(user_path)
 
-    @staticmethod
-    def load(knn_file_path, user_popcon_file_path):
-        knn = KnnLoader()
+        users = []
+        for user_path in users_paths:
+            with open(user_path, 'r') as text:
+                user = [line.strip() for line in text]
+                users.append(user)
 
-        with open(knn_file_path, 'rb') as text:
-            loaded_data = pickle.load(text)
-
-            knn.all_pkgs = loaded_data['all_pkgs']
-            knn.clusters = loaded_data['clusters']
-            knn.users = loaded_data['users']
-            knn.users_clusters = loaded_data['users_clusters']
-
-            knn.load_user_popcon_file(user_popcon_file_path)
-
-        return knn
-
-    '''
-    user:            Binary list, like user of 'users' into the loaded data,
-                     but this is of the AppRecommender user
-
-    submissions:     List that elements is another lists with the packages of
-                     the users mentioned on 'users' of loaded data
-
-                     Exemple:
-
-                     all_pkgs: ['vim', 'python', 'ruby', 'gedit', 'vagrant']
-
-                     users:  [ [  1  ,    0    ,   0   ,    1   ,     0    ]
-                               [  0  ,    1    ,   0   ,    1   ,     1    ]
-                               [  1  ,    0    ,   1   ,    0   ,     1    ] ]
-
-                     submissions:
-                             [ ['vim', 'gedit']
-                               ['python', 'gedit', 'vagrant']
-                               ['vim', 'ruby', 'vagrant'] ]
-
-    user_cluster_index:  Its the index of cluster in which the user is it,
-                         into 'clusters' of the loaded data, t
-    '''
-    def __init__(self):
-        self.user = None
-        self.submissions = []
-        self.user_cluster_index = None
-
-    def read_popcon_file(self, file_path):
-        popcon_entry = []
-        with open(file_path, 'r') as text:
-            lines = text.readlines()
-            for line in lines[1:-1]:
-                pkg = line.split()[2]
-
-                if (not re.match(r'^lib.*', pkg) and
-                   not re.match(r'.*doc$', pkg) and
-                   '/' not in line.split()[2]):
-                    popcon_entry.append(pkg)
-
-        return popcon_entry
-
-    def create_user(self, popcon_file_path):
-        popcon_entry = self.read_popcon_file(popcon_file_path)
-        self.user = [0 for x in range(len(self.all_pkgs))]
-
-        for pkg_index, pkg in enumerate(self.all_pkgs):
-            if pkg in popcon_entry:
-                self.user[pkg_index] = 1
-
-        return self.user
-
-    def create_user_cluster_index(self):
-        np_clusters = np.array(self.clusters)
-        query = spatial.KDTree(np_clusters).query(self.user)[1]
-        cluster = np_clusters[query].tolist()
-        self.user_cluster_index = self.clusters.index(cluster)
-
-    def create_users_submissions_by_user_cluster(self):
-        np_users_clusters = np.array(self.users_clusters)
-        index = self.user_cluster_index
-        users_indices = np.where(np_users_clusters == index)[0].tolist()
-        np_users = np.matrix(self.users)[users_indices, :].tolist()
-
-        self.submissions = []
-        for user in np_users:
-            submission = []
-            for index, pkg in enumerate(self.all_pkgs):
-                if user[index] is 1:
-                    submission.append(pkg)
-
-            self.submissions.append(submission)
-
-    def load_user_popcon_file(self, popcon_file_path):
-        self.create_user(popcon_file_path)
-        self.create_user_cluster_index()
-        self.create_users_submissions_by_user_cluster()
+        return users
