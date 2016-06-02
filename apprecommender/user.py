@@ -406,6 +406,10 @@ class LocalSystem(User):
 
             for apt_command in history_files.splitlines():
                 apt_command = apt_command.split()
+
+                if len(apt_command) < 3:
+                    continue
+
                 option = apt_command[2]
 
                 if option != 'install':
