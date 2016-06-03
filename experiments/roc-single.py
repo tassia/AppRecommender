@@ -26,12 +26,11 @@ import Gnuplot
 import numpy
 import shutil
 
-sys.path.insert(0, '../')
-
-from config import Config
-from recommender import Recommender, RecommendationResult
-from evaluation import Evaluation, Precision, Recall, F_score, FPR
-from user import User, PopconSystem
+from apprecommender.config import Config
+from apprecommender.recommender import Recommender, RecommendationResult
+from apprecommender.evaluation import (Evaluation, Precision,
+                                       Recall, F_score, FPR)
+from apprecommender.user import User, PopconSystem
 
 
 def write_recall_log(label, n, sample, recommendation, profile_size, repo_size,

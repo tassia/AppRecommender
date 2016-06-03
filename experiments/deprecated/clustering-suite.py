@@ -25,8 +25,8 @@ import logging
 
 sys.path.insert(0, '../')
 
-from config import Config
-from data import PopconXapianIndex
+from apprecommender.config import Config
+from apprecommender.data import PopconXapianIndex
 
 if __name__ == '__main__':
 

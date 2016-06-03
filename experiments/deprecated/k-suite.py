@@ -26,10 +26,11 @@ import Gnuplot
 
 sys.path.insert(0, '../')
 
-from config import Config
-from recommender import Recommender, RecommendationResult
-from user import User, PopconSystem
-from evaluation import Evaluation, Precision, Recall, FPR, F_score, MCC
+from apprecommender.config import Config
+from apprecommender.recommender import Recommender, RecommendationResult
+from apprecommender.user import User, PopconSystem
+from apprecommender.evaluation import (Evaluation, Precision,
+                                       Recall, FPR, F_score, MCC)
 
 
 def plot_roc(k, roc_points, log_file):

@@ -25,12 +25,10 @@ import random
 import Gnuplot
 import numpy
 
-sys.path.insert(0, '../')
-
-from config import Config
-from evaluation import Evaluation, Precision, F_score
-from recommender import Recommender, RecommendationResult
-from user import User, PopconSystem
+from apprecommender.config import Config
+from apprecommender.evaluation import Evaluation, Precision, F_score
+from apprecommender.recommender import Recommender, RecommendationResult
+from apprecommender.user import User, PopconSystem
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
