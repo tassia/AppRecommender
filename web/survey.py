@@ -3,6 +3,7 @@
 import os
 import web
 import tempfile
+import logging
 import sys
 import csv
 import datetime
@@ -11,11 +12,10 @@ import random
 
 sys.path.insert(0, "/var/www/AppRecommender/src/")
 
-import logging
-from config import Config
-from recommender import Recommender
-from user import PopconSystem, PkgsListSystem
-from data import DebianPackage
+from apprecommender.config import Config
+from apprecommender.recommender import Recommender
+from apprecommender.user import PopconSystem, PkgsListSystem
+from apprecommender.data import DebianPackage
 
 # avoid "RuntimeError: maximum recursion depth exceeded"
 sys.setrecursionlimit(50000)
