@@ -27,11 +27,12 @@ import Gnuplot
 
 sys.path.insert(0, '../')
 
-from config import Config
-from data import PopconXapianIndex
-from recommender import Recommender, RecommendationResult
-from evaluation import Evaluation, Accuracy, Precision, Recall, F1
-from user import LocalSystem, User
+from apprecommender.config import Config
+from apprecommender.data import PopconXapianIndex
+from apprecommender.recommender import Recommender, RecommendationResult
+from apprecommender.evaluation import (Evaluation, Accuracy,
+                                       Precision, Recall, F1)
+from apprecommender.user import LocalSystem, User
 
 
 class ClusteringSuite(expsuite.PyExperimentSuite):

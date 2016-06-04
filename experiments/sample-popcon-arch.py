@@ -20,9 +20,7 @@ __license__ = """
 """
 import sys
 
-sys.path.insert(0, '../')
-
-from user import RandomPopcon
+from apprecommender.user import RandomPopcon
 
 if __name__ == '__main__':
     try:

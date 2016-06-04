@@ -25,12 +25,11 @@ import random
 import Gnuplot
 import numpy
 
-sys.path.insert(0, '../')
-
-from config import Config
-from recommender import Recommender, RecommendationResult
-from user import User, PopconSystem
-from evaluation import Evaluation, Precision, F_score, FPR, Recall
+from apprecommender.config import Config
+from apprecommender.recommender import Recommender, RecommendationResult
+from apprecommender.user import User, PopconSystem
+from apprecommender.evaluation import (Evaluation, Precision,
+                                       F_score, FPR, Recall)
 
 
 def plot_roc(results, log_file, mean=0):

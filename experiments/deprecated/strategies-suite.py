@@ -25,10 +25,11 @@ import Gnuplot
 
 sys.path.insert(0, '../')
 
-from config import Config
-from recommender import Recommender, RecommendationResult
-from user import User, PopconSystem
-from evaluation import Evaluation, Accuracy, Precision, Recall, F_score
+from apprecommender.config import Config
+from apprecommender.recommender import Recommender, RecommendationResult
+from apprecommender.user import User, PopconSystem
+from apprecommender.evaluation import (Evaluation, Accuracy,
+                                       Precision, Recall, F_score)
 
 # iterations = 3
 # sample_proportions = [0.9]
