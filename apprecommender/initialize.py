@@ -66,7 +66,7 @@ class Initialize:
 
                     pkg = self.cache[pkg_name].candidate
 
-                    if not self.is_section_valid(pkg.section):
+                    if not pkg or not self.is_section_valid(pkg.section):
                         continue
 
                     pkg_dependencies = self.get_package_dependencies(pkg)
