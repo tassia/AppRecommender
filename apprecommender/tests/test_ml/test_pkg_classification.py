@@ -61,7 +61,7 @@ class PkgClassificationTests(unittest.TestCase):
         pkgs = {'vim': 'EX'}
         debtags_name = ['devel::editor', 'implemented-in::c',
                         'devel::interpreter', 'devel::lang:python']
-        terms_name = ['contain', 'syntax', 'python']
+        terms_name = ['vim', 'editor', 'python']
 
         assert_pkgs_classification = {'vim': [1, 1, 0, 0, 1, 1, 0, 'EX']}
 

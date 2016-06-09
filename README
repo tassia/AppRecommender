@@ -11,17 +11,6 @@ sudo update-apt-xapian-index
 pip install setuptools
 
 
-Run AppRecommender web UI
---------------------------
-
-$ cd ./src/web
-$ ./server.py
-
-Open a browser and access http://localhost:8080
-
-More info at https://github.com/tassia/AppRecommender/wiki
-
-
 Run AppRecommender in Terminal
 ------------------------------
 
