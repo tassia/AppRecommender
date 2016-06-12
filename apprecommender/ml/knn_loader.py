@@ -3,51 +3,55 @@
 import numpy as np
 import pickle
 import re
+import os
 
 from scipy import spatial
 
 
 class KnnLoader:
 
-    def __init__(self, popcon_clusters_path):
-        self.file_path = popcon_clusters_path
-        self.all_pkgs_path = self.file_path + 'all_pkgs.txt'
-        self.clusters_path = self.file_path + 'clusters.txt'
-        self.users_clusters_path = self.file_path + 'users_clusters.txt'
-        self.users_path = self.file_path + 'users/user_{}.txt'
+    def __init__(self, folder_path):
+        self.set_folder(folder_path)
 
-    def all_pkgs(self):
-        all_pkgs = []
-        with open(self.all_pkgs_path, 'r') as text:
-            all_pkgs = [line.strip() for line in text]
+    def set_folder(self, folder_path):
+        if folder_path[-1] != '/':
+            folder_path += '/'
+
+        self.folder_path = os.path.expanduser(folder_path)
+        self.pkgs_clusters_path = self.folder_path + 'pkgs_clusters.txt'
+        self.clusters_path = self.folder_path + 'clusters.txt'
+
+    def load_all_pkgs(self):
+        match = re.compile(r'^(.*)-', re.MULTILINE)
+        ifile = open(self.pkgs_clusters_path)
+        text = ifile.read()
+        ifile.close()
+
+        all_pkgs = match.findall(text)
 
         return all_pkgs
 
-    def clusters(self):
+    def load_clusters(self):
         clusters = []
         with open(self.clusters_path, 'r') as text:
             clusters = [map(float, line.strip().split(';')) for line in text]
 
         return clusters
 
-    def users_clusters(self):
-        users_clusters = {}
-        with open(self.users_clusters_path, 'r') as text:
-            users_clusters = [int(cluster_index) for _, cluster_index in
-                              (line.split(':') for line in text)]
+    def load_pkgs_clusters(self):
+        pkgs_match = re.compile(r'^(.*)-', re.MULTILINE)
+        clusters_match = re.compile(r'^.*-(.*)', re.MULTILINE)
 
-        return users_clusters
+        ifile = open(self.pkgs_clusters_path)
+        text = ifile.read()
+        ifile.close()
 
-    def users(self, indices):
-        users_paths = []
-        for index in indices:
-            user_path = self.users_path.format(index)
-            users_paths.append(user_path)
+        pkgs = pkgs_match.findall(text)
+        clusters_list = clusters_match.findall(text)
 
-        users = []
-        for user_path in users_paths:
-            with open(user_path, 'r') as text:
-                user = [line.strip() for line in text]
-                users.append(user)
+        pkgs_clusters = dict()
+        for index, pkg in enumerate(pkgs):
+            clusters_times = clusters_list[index].split(';')
+            pkgs_clusters[pkg] = {int(cluster): int(times) for cluster, times in (cluster_time.split(':') for cluster_time in clusters_times)}
 
-        return users
+        return pkgs_clusters
