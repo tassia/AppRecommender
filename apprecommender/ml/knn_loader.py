@@ -49,7 +49,7 @@ class KnnLoader:
         pkgs = pkgs_match.findall(text)
         clusters_list = clusters_match.findall(text)
 
-        pkgs_clusters = dict()
+        pkgs_clusters = {}
         for index, pkg in enumerate(pkgs):
             clusters_times = clusters_list[index].split(';')
             pkgs_clusters[pkg] = {int(cluster): int(times) for cluster, times in (cluster_time.split(':') for cluster_time in clusters_times)}
