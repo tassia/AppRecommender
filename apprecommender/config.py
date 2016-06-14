@@ -115,6 +115,12 @@ class Config(Singleton):
             self.initialized = 1
             logging.info("Basic config")
 
+    def use_knn_desktopapps(self):
+        knn_folder = os.path.join(self.base_dir, "knn_desktopapps")
+
+        if os.path.exists(knn_folder):
+            self.axi_desktopapps = knn_folder
+
     def read_option(self, section, option):
         """
         Read option from configuration file if it is defined there or return

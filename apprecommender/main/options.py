@@ -12,6 +12,11 @@ def get_parser():
         type=str)
 
     parser.add_argument(
+        '-w', '--withknn',
+        help='Run strategy with collaborative data',
+        action='store_true')
+
+    parser.add_argument(
         '-d', '--debug',
         help='run apprecommender on debug mode',
         type=int)
@@ -37,8 +42,8 @@ def get_parser():
         action='store_true')
 
     parser.add_argument(
-        '-k', '--init-knn',
-        help='train machine learning algorithms',
+        '-k', '--load-knn',
+        help='Load collaborative data',
         action='store_true')
 
     parser.add_argument(

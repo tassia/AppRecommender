@@ -73,7 +73,7 @@ def run():
         return SUCCESS
     elif check_for_flag(options, '-c', '--contribute'):
         collect_user_data.main()
-    elif check_for_flag(options, '-k', '--initknn'):
+    elif check_for_flag(options, '-l', '--loadknn'):
         print "Initializing collaborative data"
         initialize = Initialize()
         initialize.indexer_knn()
