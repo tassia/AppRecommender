@@ -12,28 +12,11 @@ class KnnTests(unittest.TestCase):
     KNN_DATA_DIR = "apprecommender/tests/test_data/.popcon_clusters_tests/"
     USER_POPCON_FILE = 'popcon_for_test'
 
-    def create_KNN_DATA_DIRs(self):
+    def create_knn_data_dir(self):
         dir_name = KnnTests.KNN_DATA_DIR
         if os.path.exists(dir_name):
             shutil.rmtree(dir_name)
         os.mkdir(dir_name)
-
-        all_pkgs = ['vim', 'python', 'ruby', 'gedit', 'vagrant']
-        all_pkgs_file = dir_name + 'all_pkgs.txt'
-        with open(all_pkgs_file, 'w') as text:
-            for pkg in all_pkgs:
-                text.write(pkg + '\n')
-
-        users = [['vim', 'gedit'],
-                 ['python', 'gedit', 'vagrant'],
-                 ['vim', 'ruby', 'vagrant']]
-        users_dir = dir_name + 'users/'
-        os.mkdir(users_dir)
-        user_file = users_dir + 'user_{}.txt'
-        for index, user_pkgs in enumerate(users):
-            with open(user_file.format(index), 'w') as text:
-                for pkg in user_pkgs:
-                    text.write(pkg + '\n')
 
         clusters = [[1.0, 0.0, 1.0, 0.0, 1.0],
                     [0.0, 1.0, 0.0, 1.0, 1.0],
@@ -44,12 +27,14 @@ class KnnTests(unittest.TestCase):
                 line = '; '.join([str(value) for value in cluster])
                 text.write(line + '\n')
 
-        users_clusters = [2, 1, 0]
-        users_clusters_file = dir_name + 'users_clusters.txt'
-        with open(users_clusters_file, 'w') as text:
-            for index, user_cluster in enumerate(users_clusters):
-                line = "{}: {}".format(index, user_cluster)
-                text.write(line + '\n')
+        pkgs_clusters = "vim-0:1;2:1\n" \
+                        "python-1:1\n" \
+                        "ruby-2:1\n" \
+                        "gedit-0:1;1:1\n" \
+                        "vagrant-1:1;2:1"
+        pkgs_clusters_file = dir_name + 'pkgs_clusters.txt'
+        with open(pkgs_clusters_file, 'w') as text:
+            text.write(pkgs_clusters)
 
     def create_user_popcon_file(self):
         popcon_header = 'POPULARITY-CONTEST-0 TIME:370542026 ID:1popcon' \
@@ -62,7 +47,7 @@ class KnnTests(unittest.TestCase):
             text.write('END-POPULARITY-CONTEST-0 TIME:1464009355\n')
 
     def test_load_knn_by_files(self):
-        self.create_KNN_DATA_DIRs()
+        self.create_knn_data_dir()
         self.create_user_popcon_file()
 
         knn = Knn.load(KnnTests.KNN_DATA_DIR,
@@ -70,6 +55,7 @@ class KnnTests(unittest.TestCase):
         shutil.rmtree(KnnTests.KNN_DATA_DIR)
         os.remove(KnnTests.USER_POPCON_FILE)
 
-        self.assertEqual([['vim', 'gedit']], knn.submissions)
+        self.assertEqual(['ruby', 'vagrant', 'vim'],
+                         sorted(knn.user_cluster_pkgs))
         self.assertEqual([1, 0, 0, 1, 0], knn.user)
         self.assertEqual(2, knn.user_cluster_index)

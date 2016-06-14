@@ -33,7 +33,7 @@ from apprecommender.error import Error
 
 def axi_get_pkgs(axi):
     pkgs_names = []
-    pkgs_terms = {}
+    pkgs_doc = {}
 
     for docid in range(1, axi.get_lastdocid() + 1):
         try:
@@ -45,15 +45,13 @@ def axi_get_pkgs(axi):
         for terms in doc.termlist():
             if terms.term.startswith('XP'):
                 docterms_XP.append(terms.term)
-            elif terms.term.startswith('XT'):
-                docterms_XT.append(terms.term)
 
         pkg_name = docterms_XP[0].lstrip('XP')
         pkgs_names.append(pkg_name)
 
-        pkgs_terms[pkg_name] = docterms_XT
+        pkgs_doc[pkg_name] = doc
 
-    return pkgs_names, pkgs_terms
+    return pkgs_names, pkgs_doc
 
 
 def axi_search_pkgs(axi, pkgs_list):
@@ -328,13 +326,13 @@ class PopconSubmission():
 
 class KnnXapianIndex(xapian.WritableDatabase):
 
-    def __init__(self, path, submissions, axi_path, tags_filter):
+    def __init__(self, path, pkgs, axi_path, tags_filter):
         self.axi = xapian.Database(axi_path)
         self.path = os.path.expanduser(path)
-        self.submissions = submissions
-        self.valid_pkgs, self.pkgs_terms = axi_get_pkgs(self.axi)
+        self.pkgs = pkgs
+        self.valid_pkgs, self.pkgs_doc = axi_get_pkgs(self.axi)
         logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
-        if len(self.submissions) == 0:
+        if len(self.pkgs) == 0:
             logging.critical("Knn submissions can't be empty")
             raise Error
 
@@ -351,24 +349,17 @@ class KnnXapianIndex(xapian.WritableDatabase):
             logging.critical(str(e))
             raise Error
 
-        # build new index
+        pkgs = [pkg for pkg in self.pkgs
+                           if pkg in self.valid_pkgs]
         doc_count = 0
-        len_submissions = len(submissions)
-        for submission in submissions:
-            doc = xapian.Document()
-            submission_pkgs = [pkg for pkg in submission
-                               if pkg in self.valid_pkgs]
+        len_pkgs = len(pkgs)
 
-            for pkg_name in submission_pkgs:
-                pkg_terms = self.pkgs_terms[pkg_name]
-                doc.add_term('XP' + pkg_name)
-                for term in pkg_terms:
-                    doc.add_term(term)
+        for pkg in pkgs:
+            doc = self.pkgs_doc[pkg]
 
-            self.add_document(doc)
             doc_count += 1
-            gc.collect()
-            print_progress_bar(doc_count, len_submissions)
+            self.add_document(doc)
+            print_progress_bar(doc_count, len_pkgs)
         try:
             # flush to disk database changes
             self.commit()

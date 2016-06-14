@@ -97,20 +97,16 @@ class KnnXapianIndexTest(unittest.TestCase):
         path = "apprecommender/tests/test_data/.test_knn_axi"
         tags_filter = os.path.join(base_dir, "filters/debtags")
 
-        submissions = []
-        submissions.append(['gedit', 'git', 'terminator', 'vagrant', 'vim'])
-        submissions.append(['inkscape', 'git', 'gem2deb', 'vagrant', 'vim'])
-        submissions.append(['inkscape', 'git', 'ipython', 'python', 'vim'])
-        submissions.append(['python', 'git', 'terminator', 'ipython', 'vim'])
+        pkgs = ['git', 'python', 'gem2deb', 'vagrant', 'gedit', 'vim',
+                'terminator', 'ipython', 'inkscape']
 
-        filtered_axi = KnnXapianIndex(path, submissions, axi_path,
-                                                tags_filter)
+        filtered_axi = KnnXapianIndex(path, pkgs, axi_path, tags_filter)
 
-        self.assertEqual(4, filtered_axi.get_doccount())
+        self.assertEqual(len(pkgs), filtered_axi.get_doccount())
 
-        for index, submission in enumerate(submissions):
+        for index, pkg in enumerate(pkgs):
             doc = filtered_axi.get_document(index + 1)
-            doc_pkgs = [terms.term.lstrip('XP') for terms in doc.termlist()
-                        if terms.term.startswith('XP')]
+            doc_pkg = [terms.term.lstrip('XP') for terms in doc.termlist()
+                    if terms.term.startswith('XP')][0]
 
-            self.assertEqual(sorted(submission), sorted(doc_pkgs))
+            self.assertEqual(pkg, doc_pkg)

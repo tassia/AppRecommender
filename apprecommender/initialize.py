@@ -120,12 +120,11 @@ class Initialize:
 
         cfg = Config()
         knn = Knn.load(load_data_path, user_popcon_file)
-        submissions = knn.submissions
+        pkgs = knn.user_cluster_pkgs
 
         begin_time = datetime.datetime.now()
         print("Knn indexing started at %s" % begin_time)
-        index = data.KnnXapianIndex(path, submissions, axi_path,
-                                    tags_filter)
+        index = data.KnnXapianIndex(path, pkgs, axi_path, tags_filter)
 
         end_time = datetime.datetime.now()
         print("Knn indexing completed at %s" % end_time)
