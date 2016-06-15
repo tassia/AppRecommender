@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import commands
 import shutil
 import unittest
 
@@ -9,8 +10,9 @@ from apprecommender.ml.knn import Knn
 
 class KnnTests(unittest.TestCase):
 
-    KNN_DATA_DIR = "apprecommender/tests/test_data/.popcon_clusters_tests/"
-    USER_POPCON_FILE = 'popcon_for_test'
+    KNN_DATA_DIR = 'apprecommender/tests/test_data/.popcon_clusters_tests/'
+    USER_POPCON_FILE = KNN_DATA_DIR + 'popcon_for_test'
+    INRELEASE_FILE = KNN_DATA_DIR + 'InRelease'
 
     def create_knn_data_dir(self):
         dir_name = KnnTests.KNN_DATA_DIR
@@ -46,14 +48,19 @@ class KnnTests(unittest.TestCase):
             text.write('15019500 154428337 gedit /usr/bin/gedit\n')
             text.write('END-POPULARITY-CONTEST-0 TIME:1464009355\n')
 
+    def create_inrelease_file(self):
+        command = "sha256sum {}*.txt > {}".format(KnnTests.KNN_DATA_DIR,
+                                                  KnnTests.INRELEASE_FILE)
+        commands.getoutput(command)
+
     def test_load_knn_by_files(self):
         self.create_knn_data_dir()
         self.create_user_popcon_file()
+        self.create_inrelease_file()
 
         knn = Knn.load(KnnTests.KNN_DATA_DIR,
                        KnnTests.USER_POPCON_FILE)
         shutil.rmtree(KnnTests.KNN_DATA_DIR)
-        os.remove(KnnTests.USER_POPCON_FILE)
 
         self.assertEqual(['ruby', 'vagrant', 'vim'],
                          sorted(knn.user_cluster_pkgs))
