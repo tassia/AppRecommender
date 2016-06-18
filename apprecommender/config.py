@@ -185,7 +185,7 @@ class Config(Singleton):
         Configure application logger and log level.
         """
         self.logger = logging.getLogger('')  # root logger is used by default
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.INFO)
 
         if self.debug == 1:
             log_level = logging.DEBUG
