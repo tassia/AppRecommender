@@ -1,14 +1,15 @@
-image: python:2.7
+image: gabrielssilva/apprecommender:base
 
 before_script:
   - ./install_dependencies.sh
   - pushd bin
-  - ./apprec.py --init
-  - ./apprec.py --train
+  - python --version
+  - /usr/bin/python2 apprec.py --init
+  - /usr/bin/python2 apprec.py --train
   - popd
 
 test:
   script:
-    - python setup.py test
-    - python setup.py build
-    - sudo python setup.py install
+    - /usr/bin/python2 setup.py test
+    - /usr/bin/python2 setup.py build
+    - /usr/bin/python2 setup.py install
