@@ -1,7 +1,6 @@
-image: gabrielssilva/apprecommender:base
-
 before_script:
   - ./install_dependencies.sh
+  - sudo pip2 install flake8
   - pushd bin
   - python --version
   - /usr/bin/python2 apprec.py --init
@@ -10,6 +9,7 @@ before_script:
 
 test:
   script:
+    - flake8 .
     - /usr/bin/python2 setup.py test
     - /usr/bin/python2 setup.py build
-    - /usr/bin/python2 setup.py install
+    - sudo /usr/bin/python2 setup.py install

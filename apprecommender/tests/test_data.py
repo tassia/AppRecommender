@@ -45,6 +45,7 @@ class AxiSearchTests(unittest.TestCase):
                                          'XTuitoolkit::ncurses',
                                          'XTinterface::text-mode']))
 
+
 class PopconSubmissionTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
