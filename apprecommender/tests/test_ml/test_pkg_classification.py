@@ -4,6 +4,8 @@ import apt
 import unittest
 import xapian
 
+from mock import patch
+
 from apprecommender.ml.data import MachineLearningData
 
 
@@ -28,18 +30,11 @@ class PkgClassificationTests(unittest.TestCase):
         for debtag in vim_debtags:
             self.assertTrue(debtag in vim_debtags_result)
 
-    def test_get_pkg_terms(self):
-        vim_terms = [u'vim', u'compat', u'version', u'unix', u'editor', u'vi',
-                     u'new', u'featur', u'ad', u'multi', u'level', u'undo',
-                     u'syntax', u'highlight', u'command', u'line', u'histori',
-                     u'line', u'help', u'filenam', u'complet', u'block',
-                     u'oper', u'fold', u'unicod', u'support', u'packag',
-                     u'contain', u'version', u'vim', u'compil', u'standard',
-                     u'set', u'featur', u'packag', u'doe', u'provid', u'gui',
-                     u'version', u'vim', u'vim', u'packag', u'need']
+    @patch('apprecommender.ml.data.MachineLearningData.get_pkg_description')
+    def test_get_pkg_terms(self, mock_description):
+        mock_description.return_value = 'Vim is an text editor written in C'
+        vim_terms = [u'vim', u'text', u'editor']
         vim_terms_result = self.ml_data.get_pkg_terms(self.cache, 'vim')
-
-        print vim_terms_result
 
         for term in vim_terms:
             self.assertTrue(term in vim_terms_result)
@@ -55,7 +50,9 @@ class PkgClassificationTests(unittest.TestCase):
 
         self.assertEqual(row_list_to_assert, row_list)
 
-    def test_get_pkg_classification(self):
+    @patch('apprecommender.ml.data.MachineLearningData.get_pkg_description')
+    def test_get_pkg_classification(self, mock_description):
+        mock_description.return_value = 'vim is an text editor written in c'
         axi_path = "/var/lib/apt-xapian-index/index"
         axi = xapian.Database(axi_path)
         pkgs = {'vim': 'EX'}
