@@ -3,7 +3,6 @@ from os import makedirs
 
 import apt
 import pickle
-import re
 import xapian
 import Stemmer
 
@@ -122,8 +121,7 @@ class MachineLearningData():
         return self.get_pkg_data(axi, pkg_name, 'XT')
 
     def get_pkg_terms(self, cache, pkg_name):
-        description = cache[pkg_name].candidate.description.strip()
-        description = re.sub('[^a-zA-Z]', ' ', description)
+        description = self.get_pkg_description(cache, pkg_name)
 
         tokens = description.lower().split()
         stems = [self.stemmer.stemWord(token) for token in tokens
@@ -133,6 +131,13 @@ class MachineLearningData():
 
     def get_pkg_section(self, cache, pkg_name):
         return cache[pkg_name].section
+
+    def get_pkg_description(self, cache, pkg_name):
+        if pkg_name not in cache:
+            return []
+        else:
+            description = cache[pkg_name].candidate.description
+            return description.strip()
 
     def get_debtags_name(self, file_path):
         with open(file_path, 'r') as text:
