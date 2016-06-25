@@ -26,6 +26,7 @@ import logging
 import operator
 import os
 import pickle
+import re
 import recommender
 import xapian
 
@@ -70,7 +71,7 @@ class ContentBased(RecommendationStrategy):
         self.profile_size = profile_size
 
     def get_sugestion_from_profile(self, rec, user, profile,
-                                   recommendation_size):
+                                   recommendation_size, because=True):
         query = xapian.Query(xapian.Query.OP_OR, profile)
         enquire = xapian.Enquire(rec.items_repository)
         enquire.set_weighting_scheme(rec.weight)
@@ -89,7 +90,10 @@ class ContentBased(RecommendationStrategy):
             item_score[m.document.get_data()] = m.weight
             ranking.append(m.document.get_data())
 
-        result = recommender.RecommendationResult(item_score, ranking)
+        user_profile = user.pkg_profile if because else None
+
+        result = recommender.RecommendationResult(
+            item_score, ranking, user_profile=user_profile)
         return result
 
     def run(self, rec, user, rec_size):
@@ -412,12 +416,17 @@ class MachineLearning(ContentBased):
         profile = user.content_profile(rec.items_repository, self.content,
                                        self.suggestion_size, rec.valid_tags)
 
-        content_based = self.get_sugestion_from_profile(rec, user,
-                                                        profile,
-                                                        self.suggestion_size)
+        content_based = self.get_sugestion_from_profile(
+            rec, user, profile, self.suggestion_size, because=False)
         pkgs, pkgs_score = [], {}
+
         for pkg_line in str(content_based).splitlines()[1:]:
-            pkg = pkg_line.split(':')[1][1:]
+            pkg = re.search(r'\d+:\s([\w-]+)', pkg_line)
+
+            if not pkg.groups():
+                continue
+
+            pkg = pkg.groups()[0]
             pkg_score = int(pkg_line.split(':')[0].strip())
 
             pkgs.append(pkg)
@@ -435,7 +444,6 @@ class MachineLearning(ContentBased):
         kwargs['ml_strategy'] = ml_strategy
 
         for pkg in pkgs:
-
             if pkg not in self.cache:
                 continue
 
@@ -504,9 +512,8 @@ class MachineLearning(ContentBased):
                                                              debtags_name)
 
         item_score = self.get_item_score(pkgs_score, pkgs_classifications)
-        result = recommender.RecommendationResult(item_score, limit=rec_size)
-
-        return result
+        return recommender.RecommendationResult(
+            item_score, limit=rec_size, user_profile=user.pkg_profile)
 
 
 class MachineLearningBVA(MachineLearning):

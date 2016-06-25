@@ -19,11 +19,17 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import apt
+import heapq
 import logging
-import os
-import xapian
 import operator
+import os
 import strategy
+import xapian
+
+from collections import namedtuple
+from fuzzywuzzy import fuzz
+from operator import attrgetter
 
 from apprecommender.config import Config
 
@@ -32,29 +38,60 @@ class RecommendationResult:
     """
     Class designed to describe a recommendation result: items and scores.
     """
-    def __init__(self, item_score, ranking=0, limit=0):
+    def __init__(self, item_score, ranking=0, limit=0, user_profile=None):
         """
         Set initial parameters.
         """
         self.item_score = item_score
         self.size = len(item_score)
         self.limit = limit
+        self.cache = apt.Cache()
+        self.pkg_descriptions = {}
+
         if ranking:
             self.ranking = ranking
+
+        if user_profile:
+            self.fill_pkg_descriptions(user_profile)
+
+    def fill_pkg_descriptions(self, user_profile):
+        for pkg in user_profile:
+            description = self.cache[pkg].candidate.description
+            self.pkg_descriptions[pkg] = description.lower()
 
     def __str__(self):
         """
         String representation of the object.
         """
-        # [FIXME] try alternative way to get pkgs summarys (efficiency)
-        # cache = apt.Cache()
         result = self.get_prediction(self.limit)
-        str = "\n"
-        for i in range(len((list(result)))):
-            # summary = cache[result[i][0]].candidate.summary
-            # str += "%2d: %s\t\t- %s\n" % (i,result[i][0],summary)
-            str += "%2d: %s\n" % (i, result[i][0])
-        return str
+        rec_str = '\n'
+        index = 1
+
+        for pkg, _ in result:
+            summary = self.cache[pkg].candidate.summary
+            description = self.cache[pkg].candidate.description
+            rec_str += '{}: {} \t {}\n'.format(
+                index, pkg.ljust(20), summary)
+
+            if self.pkg_descriptions:
+                because_pkgs = self.get_because(description.lower())
+                rec_str += '   because you installed: \t {}\n\n'.format(
+                    ', '.join(because_pkgs))
+
+            index += 1
+
+        return rec_str
+
+    def get_because(self, rec_description):
+        because = []
+        PkgRatio = namedtuple('PkgRatio', ['pkg', 'ratio'])
+
+        for pkg, description in self.pkg_descriptions.iteritems():
+            ratio = fuzz.ratio(rec_description, description)
+            because.append(PkgRatio(pkg, ratio))
+
+        pkgs = heapq.nlargest(4, because, key=attrgetter('ratio'))
+        return [pkg for pkg, _ in pkgs]
 
     def get_prediction(self, limit=0):
         """
