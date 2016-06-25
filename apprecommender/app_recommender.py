@@ -21,7 +21,7 @@ class AppRecommender:
                                user, recommendation_size))
 
         logging.info("Recommending applications for user %s" % user.user_id)
-        logging.info(user_reccomendation)
+        print (user_reccomendation)
 
         end_time = datetime.datetime.now()
         logging.info("Computation completed at %s" % end_time)
