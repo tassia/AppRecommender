@@ -45,7 +45,7 @@ def call_initialize(options):
 
 def run_apprecommender(options):
     try:
-        recommendation_size = 20
+        recommendation_size = 8
 
         app_recommender = AppRecommender()
         app_recommender.make_recommendation(recommendation_size)
