@@ -76,6 +76,7 @@ class ContentBased(RecommendationStrategy):
         enquire = xapian.Enquire(rec.items_repository)
         enquire.set_weighting_scheme(rec.weight)
         enquire.set_query(query)
+        user_profile = None
         # Retrieve matching packages
         try:
             mset = enquire.get_mset(0, recommendation_size, None,
@@ -90,7 +91,8 @@ class ContentBased(RecommendationStrategy):
             item_score[m.document.get_data()] = m.weight
             ranking.append(m.document.get_data())
 
-        user_profile = user.pkg_profile if because else None
+        if because and Config().because:
+            user_profile = user.pkg_profile
 
         result = recommender.RecommendationResult(
             item_score, ranking, user_profile=user_profile)
@@ -504,6 +506,8 @@ class MachineLearning(ContentBased):
         raise NotImplementedError("Method not implemented.")
 
     def run(self, rec, user, rec_size):
+        user_profile = None
+
         terms_name, debtags_name = self.load_terms_and_debtags()
 
         pkgs, pkgs_score = self.get_pkgs_and_scores(rec, user)
@@ -512,8 +516,12 @@ class MachineLearning(ContentBased):
                                                              debtags_name)
 
         item_score = self.get_item_score(pkgs_score, pkgs_classifications)
+
+        if Config().because:
+            user_profile = user.pkg_profile
+
         return recommender.RecommendationResult(
-            item_score, limit=rec_size, user_profile=user.pkg_profile)
+            item_score, limit=rec_size, user_profile=user_profile)
 
 
 class MachineLearningBVA(MachineLearning):

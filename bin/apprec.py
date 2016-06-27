@@ -35,9 +35,9 @@ ERROR_INIT = 1
 ERROR_TRAIN = 2
 
 
-def call_initialize(options):
+def check_for_flag(options, short_flag, long_flag):
     for option, _ in options:
-        if option in ("-i", "--init"):
+        if option in (short_flag, long_flag):
             return True
 
     return False
@@ -45,10 +45,8 @@ def call_initialize(options):
 
 def run_apprecommender(options):
     try:
-        recommendation_size = 8
-
         app_recommender = AppRecommender()
-        app_recommender.make_recommendation(recommendation_size)
+        app_recommender.make_recommendation()
         return SUCCESS
     except xapian.DatabaseOpeningError:
         return ERROR_INIT
@@ -57,24 +55,17 @@ def run_apprecommender(options):
             return ERROR_TRAIN
 
 
-def call_training(options):
-    for option, _ in options:
-        if option in ("-t", "--train"):
-            return True
-
-    return False
-
-
 def run():
     load_options = LoadOptions()
     load_options.load()
+    options = load_options.options
 
-    if call_initialize(load_options.options):
+    if check_for_flag(options, '-i', '--init'):
         print "Initializing AppRecommender"
         initialize = Initialize()
         initialize.prepare_data()
         return SUCCESS
-    elif call_training(load_options.options):
+    elif check_for_flag(options, '-t', '--train'):
         print "Training machine learning"
         MachineLearning.train(MachineLearningBVA)
         MachineLearning.train(MachineLearningBOW)

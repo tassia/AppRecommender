@@ -96,6 +96,8 @@ class Config(Singleton):
             self.bm25_nl = 0.5
             # user content profile size
             self.profile_size = 10
+            self.num_recommendations = 8
+            self.because = False
             # neighborhood size
             self.k_neighbors = 50
             # popcon profiling method: full, voted
