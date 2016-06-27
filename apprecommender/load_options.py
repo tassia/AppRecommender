@@ -15,67 +15,40 @@ class LoadOptions(Singleton):
 
     def load(self):
         config = Config()
-        short_options = "hdvo:f:b:a:e:p:m:u:l:c:x:w:s:z:r:n:idvo:tdvo"
-        long_options = ["help", "debug", "verbose", "output=", "filtersdir=",
-                        "pkgsfilter=", "axi=", "dde=", "popconindex=",
-                        "popcondir=", "indexmode=", "clustersdir=",
-                        "kmedoids=", "maxpopcon=", "weight=", "strategy=",
-                        "profile_size=", "profiling=", "neighbors=", "init",
-                        "train"]
+        short_options = 'hdvo:f:b:a:e:p:m:u:l:c:x:w:s:z:r:n:idvo:tdvo'
+        long_options = ['help', 'debug', 'verbose', 'kmedoids=', 'maxpopcon=',
+                        'weight=', 'strategy=', 'profile_size=', 'init',
+                        'train', 'because', 'nrecommendation']
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
             self.options = opts
         except getopt.GetoptError as error:
             config.set_logger()
-            logging.error("Bad syntax: %s" % str(error))
+            logging.error('Bad syntax: {}'.format(str(error)))
             self.usage()
             sys.exit()
 
         for o, p in opts:
-            if o in ("-h", "--help"):
+            if o in ('-h', '--help'):
                 self.usage()
                 sys.exit()
-            elif o in ("-d", "--debug"):
+            elif o in ('-d', '--debug'):
                 config.debug = 1
-            elif o in ("-v", "--verbose"):
+            elif o in ('-v', '--verbose'):
                 config.verbose = 1
-            elif o in ("-o", "--output"):
-                config.output = p
-            elif o in ("-f", "--filtersdir"):
-                config.filters_dir = p
-            elif o in ("-b", "--pkgsfilter"):
-                config.pkgs_filter = p
-            elif o in ("-a", "--axi"):
-                config.axi = p
-            elif o in ("-e", "--dde"):
-                config.dde_url = p
-            elif o in ("-p", "--popconindex"):
-                config.popcon_index = p
-            elif o in ("-m", "--popcondir"):
-                config.popcon_dir = p
-            elif o in ("-u", "--index_mode"):
-                config.index_mode = p
-            elif o in ("-l", "--clustersdir"):
-                config.clusters_dir = p
-            elif o in ("-c", "--kmedoids"):
-                config.k_medoids = int(p)
-            elif o in ("-x", "--max_popcon"):
-                config.max_popcon = int(p)
-            elif o in ("-w", "--weight"):
-                config.weight = p
-            elif o in ("-s", "--strategy"):
+            elif o in ('-s', '--strategy'):
                 config.strategy = p
-            elif o in ("-z", "--profile_size"):
+            elif o in ('-z', '--profile_size'):
                 config.profile_size = int(p)
-            elif o in ("-z", "--profiling"):
-                config.profiling = p
-            elif o in ("-n", "--neighbors"):
-                config.k_neighbors = int(p)
-            elif o in ("-i", "--init"):
+            elif o in ('-i', '--init'):
                 continue
-            elif o in ("-t", "--train"):
+            elif o in ('-t', '--train'):
                 continue
+            elif o in ('-b', '--because'):
+                config.because = True
+            elif o in ('-n', '--num-recommendations'):
+                config.num_recommendations = int(p)
             else:
                 assert False, "unhandled option"
 
@@ -89,6 +62,10 @@ class LoadOptions(Singleton):
         print "  -i, --init                 Initialize AppRecommender data"
         print "  -t, --train                Make training of AppRecommender" \
               " machine learning"
+        print "  -n, --num-recommendations  Set the number of packages that" \
+              " will be recommended"
+        print "  -b, --because              Display user packages that" \
+              " generated a given recommendation"
         print "  -d, --debug                Set logging level to debug"
         print "  -v, --verbose              Set logging level to verbose"
         print "  -o, --output=PATH          Path to file to save output"

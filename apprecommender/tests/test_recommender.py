@@ -29,14 +29,17 @@ from apprecommender.strategy import (ContentBased, MachineLearningBVA,
 
 
 class RecommendationResultTests(unittest.TestCase):
+
     @classmethod
     def setUpClass(self):
         self.result = RecommendationResult({"gimp": 1.5, "inkscape": 3.0,
                                             "eog": 1})
 
     def test_str(self):
-        string = "\n 0: inkscape\n 1: gimp\n 2: eog\n"
-        self.assertEqual(self.result.__str__(), string)
+        rec = '\n1: inkscape             \t vector-based drawing program\n'
+        rec += '2: gimp                 \t The GNU Image Manipulation Program\n'  # noqa
+        rec += '3: eog                  \t Eye of GNOME graphics viewer program\n'  # noqa
+        self.assertEqual(self.result.__str__(), rec)
 
     def test_get_prediction(self):
         prediction = [("inkscape", 3.0), ("gimp", 1.5), ("eog", 1)]
@@ -44,6 +47,7 @@ class RecommendationResultTests(unittest.TestCase):
 
 
 class RecommenderTests(unittest.TestCase):
+
     @classmethod
     def setUpClass(self):
         cfg = Config()
@@ -78,8 +82,6 @@ class RecommenderTests(unittest.TestCase):
         self.rec.set_strategy("mlbow_eset")
         self.assertIsInstance(self.rec.strategy, MachineLearningBOW)
         self.assertEqual(self.rec.strategy.content, "mlbow_mix_eset")
-        # self.rec.set_strategy("knn")
-        # self.assertIsInstance(self.rec.strategy,Collaborative)
 
     def test_get_recommendation(self):
         user = User({"inkscape": 1, "gimp": 1, "eog": 1})
