@@ -13,3 +13,4 @@ test:
     - /usr/bin/python2 setup.py test
     - /usr/bin/python2 setup.py build
     - sudo /usr/bin/python2 setup.py install
+    - sudo rm -rf dist/ build/
