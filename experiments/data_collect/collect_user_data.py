@@ -375,7 +375,7 @@ def main():
     train_machine_learning()
     run_cross_validation()
     collect_user_preferences()
-    collect_user_data()
+    # collect_user_data()
 
     print "\n\nFinished: All files and recommendations were collected"
     print "Collect data folder: {0}".format(LOG_PATH)
