@@ -6,6 +6,7 @@ import commands
 import datetime as dt
 import logging
 import os
+import re
 import sys
 import time
 import xapian
@@ -15,6 +16,7 @@ sys.path.insert(0, '../../')
 from subprocess import Popen, PIPE
 
 from apprecommender.app_recommender import AppRecommender
+from apprecommender.config import Config
 from apprecommender.data import get_user_installed_pkgs
 from apprecommender.data_classification import get_alternative_pkg
 from apprecommender.ml.data import MachineLearningData
@@ -40,6 +42,8 @@ RECOMMENDATIONS_TIME = LOG_PATH + '/recommendations_time.txt'
 
 
 PKGS_DEPENDENCIES = []
+
+RE_MATCH = re.compile(r'^\d:\s([^\s]+)', re.MULTILINE)
 
 
 def create_log_folder():
@@ -161,19 +165,19 @@ def get_pkg_binary(pkg):
     return get_alternative_pkg(pkg)
 
 
-def get_pkgs_of_recommendation(recommendation_size, strategy):
+def get_pkgs_of_recommendation(strategy):
     app_recommender = AppRecommender()
 
     app_recommender.recommender.set_strategy(strategy)
-    recommender = (app_recommender.make_recommendation(recommendation_size))
-    pkgs = [pkg.split(':')[1][1:]
-            for pkg in str(recommender).splitlines()[1:]]
+    rec = app_recommender.make_recommendation(print_recommendation=False)
+
+    pkgs = RE_MATCH.findall(rec.__str__())
 
     return pkgs
 
 
 def collect_user_preferences():
-    recommendation_size = 6
+    Config().num_recommendations = 6
     strategies = ['cb', 'cb_eset', 'cbtm', 'mlbva', 'mlbva_eset', 'mlbow',
                   'mlbow_eset']
 
@@ -185,8 +189,7 @@ def collect_user_preferences():
     len_strategies = len(strategies)
     for index, strategy in enumerate(strategies):
         first_time = int(round(time.time() * 1000))
-        recommendations[strategy] = get_pkgs_of_recommendation(
-            recommendation_size, strategy)
+        recommendations[strategy] = get_pkgs_of_recommendation(strategy)
         last_time = int(round(time.time() * 1000))
         recommendations_time.append("{0}: {1}".format(strategy,
                                                       last_time - first_time))
