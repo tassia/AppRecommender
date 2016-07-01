@@ -15,10 +15,10 @@ class LoadOptions(Singleton):
 
     def load(self):
         config = Config()
-        short_options = 'hdvo:d:v:s:z:idvo:tdvo:b:n'
+        short_options = 'hdvo:d:v:s:z:idvo:tdvo:b:n:cdvo'
         long_options = ['help', 'debug', 'verbose', 'strategy=',
                         'profile_size=', 'init', 'train', 'because',
-                        'nrecommendation']
+                        'nrecommendation', 'contribute']
         try:
             opts, args = getopt.getopt(sys.argv[1:], short_options,
                                        long_options)
@@ -49,6 +49,8 @@ class LoadOptions(Singleton):
                 config.because = True
             elif o in ('-n', '--num-recommendations'):
                 config.num_recommendations = int(p)
+            elif o in ('-c', '--contribute'):
+                continue
             else:
                 assert False, "unhandled option"
 
@@ -85,3 +87,7 @@ class LoadOptions(Singleton):
         print "  cbh_eset = cbh with eset profiling"
         print "  mlbva = machine_learning, Binary Vector Approach"
         print "  mlbow = machine_learning, Bag Of Words"
+        print ""
+        print " [ contribute with AppRecommender ]"
+        print "  -c, --contribute           classify recommendations" \
+              " helping AppRecommender to improve recommendations"

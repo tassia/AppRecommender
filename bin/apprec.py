@@ -29,6 +29,7 @@ from apprecommender.load_options import LoadOptions
 from apprecommender.config import Config
 from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
                                      MachineLearningBOW)
+from experiments.data_collect import collect_user_data
 
 SUCCESS = 0
 ERROR_INIT = 1
@@ -70,6 +71,8 @@ def run():
         MachineLearning.train(MachineLearningBVA)
         MachineLearning.train(MachineLearningBOW)
         return SUCCESS
+    elif check_for_flag(options, '-c', '--contribute'):
+        collect_user_data.main()
     else:
         return run_apprecommender(load_options.options)
 
