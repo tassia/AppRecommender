@@ -7,7 +7,8 @@ import datetime as dt
 import logging
 import os
 import re
-import sys
+import shutil
+import tarfile
 import time
 import xapian
 
@@ -317,17 +318,46 @@ def collect_user_data():
 
 
 def initial_prints():
-    print "Data that will be collected:"
-    print " - PC informations: Processor used, both linux and distro version"
-    print " - All user packages"
-    print " - Manual installed packages"
-    print " - Packages modify and access time"
-    print " - popularity-contest submission"
+    experiment_agree = """
+        Participate in this package survey?
+
+        This survey has the objective to collect user feedback to allow the
+        comparison between some new strategies for AppRecommender. This survey
+        will them present a series of recommended packages that can
+        be evaluates as follows:
+
+        Bad:             A package that you would not install on your system.
+        Redundant:       You already have a package that provides the same
+                         functionality as the one being recommended.
+        Useful:          A package that you may install on you system.
+        Useful Surprise: A package that you would install on your system, but
+                         the recommendatio also surprised you in a positive
+                         way.
+
+        This survey will also collect the result of some cross validation
+        metrics generated for the AppRecommender strategies that use machine
+        learning.
+
+        Therefore, this survey will collect the following data:
+
+        * A list of your evaluations for the recommended packages.
+        * The result of the cross validation metrics for AppRecommender machine
+          learning strategies.
+        * The time in seconds that it took for each strategies to genarate its
+          recommendations
+
+        Once this process is over, a tar.gz file will be generated on your HOME
+        dir. After that just send this file over to:
+
+        lucas.moura128@gmail.com
+        lucianopcbr@gmail.com
+        terceiro@debian.org
+        """
+    print experiment_agree
 
 
 def user_accept_collect_data():
-    accept_message = "\nYou allow this data to be collected from your" \
-                     "computer? [y, N]: "
+    accept_message = "\nDo you want to participate on this survey ? [y, N]: "
     accept_input = raw_input(accept_message)
 
     return accept_input.lower() == 'y'
@@ -365,6 +395,11 @@ def run_cross_validation():
         print_progress_bar(index + 1, len_strategies)
 
 
+def make_tarfile(output_filename, source_dir):
+    with tarfile.open(output_filename, "w:gz") as tar:
+        tar.add(source_dir, arcname=os.path.basename(source_dir))
+
+
 def main():
     logging.getLogger().disabled = True
 
@@ -376,10 +411,14 @@ def main():
     train_machine_learning()
     run_cross_validation()
     collect_user_preferences()
-    # collect_user_data()
+
+    make_tarfile(LOG_PATH + '.tar.gz', LOG_PATH)
+    shutil.rmtree(LOG_PATH)
 
     print "\n\nFinished: All files and recommendations were collected"
-    print "Collect data folder: {0}".format(LOG_PATH)
+    print "Collect data folder: {0}.tar.gz\n".format(LOG_PATH)
+    print "Please, send this file to either one of these emails:\n"
+    print "lucas.moura128@gmail.com, lucianopcbr@gmail.com, terceiro@debian.org"
 
 if __name__ == '__main__':
     main()
