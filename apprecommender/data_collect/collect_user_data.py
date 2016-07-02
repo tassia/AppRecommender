@@ -11,8 +11,6 @@ import sys
 import time
 import xapian
 
-sys.path.insert(0, '../../')
-
 from subprocess import Popen, PIPE
 
 from apprecommender.app_recommender import AppRecommender

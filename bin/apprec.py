@@ -29,7 +29,7 @@ from apprecommender.load_options import LoadOptions
 from apprecommender.config import Config
 from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
                                      MachineLearningBOW)
-from experiments.data_collect import collect_user_data
+from apprecommender.data_collect import collect_user_data
 
 SUCCESS = 0
 ERROR_INIT = 1
