@@ -418,7 +418,7 @@ def main():
     print "\n\nFinished: All files and recommendations were collected"
     print "Collect data folder: {0}.tar.gz\n".format(LOG_PATH)
     print "Please, send this file to either one of these emails:\n"
-    print "lucas.moura128@gmail.com, lucianopcbr@gmail.com, terceiro@debian.org"
+    print "lucas.moura128@gmail.com, lucianopcbr@gmail.com, terceiro@debian.org"  # noqa
 
 if __name__ == '__main__':
     main()
