@@ -19,11 +19,9 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
 import xapian
 import logging
 import random
-import cluster
 import operator
 import math
 import commands
@@ -314,87 +312,3 @@ class PopconSubmission():
                             # Recently installed packages
                             elif data[4] == '<RECENT-CTIME>':
                                 self.packages[pkg] = 8
-
-
-class KMedoidsClustering(cluster.KMeansClustering):
-
-    def __init__(self, data, distance, max_data):
-        if len(data) < max_data:
-            data_sample = data
-        else:
-            data_sample = random.sample(data, max_data)
-        cluster.KMeansClustering.__init__(self, data_sample, distance)
-        self.distanceMatrix = {}
-        for submission in self._KMeansClustering__data:
-            self.distanceMatrix[submission.user_id] = {}
-
-    def loadDistanceMatrix(self, cluster):
-        for i in range(len(cluster) - 1):
-            for j in range(i + 1, len(cluster)):
-                try:
-                    user_id_i = cluster[i].user_id
-                    user_id_j = cluster[j].user_id
-                    d = self.distanceMatrix[user_id_i][user_id_j]
-                    logging.debug("Using d[%d,%d]" % (i, j))
-                except:
-                    d = self.distance(cluster[i], cluster[j])
-                    self.distanceMatrix[user_id_i][user_id_j] = d
-                    self.distanceMatrix[user_id_i][user_id_j] = d
-                    logging.debug("d[%d,%d] = %.2f" % (i, j, d))
-
-    def getMedoid(self, cluster):
-        """
-        Return the medoid popcon submission of a given a cluster, based on
-        the distance function.
-        """
-        logging.debug("Cluster size: %d" % len(cluster))
-        self.loadDistanceMatrix(cluster)
-        medoidDistance = sys.maxint
-        for i in range(len(cluster)):
-            user_id = cluster[i].user_id
-            totalDistance = sum(self.distanceMatrix[user_id].values())
-            logging.debug("totalDistance[%d]=%f" % (i, totalDistance))
-            if totalDistance < medoidDistance:
-                medoidDistance = totalDistance
-                medoid = i
-            logging.debug("medoidDistance: %f" % medoidDistance)
-        logging.debug("Cluster medoid: [%d] %s" % (medoid,
-                                                   cluster[medoid].user_id))
-        return (cluster[medoid], medoidDistance)
-
-    def assign_item(self, item, origin):
-        """
-        Assigns an item from a given cluster to the closest located cluster
-        """
-        closest_cluster = origin
-        for clusters in self._KMeansClustering__clusters:
-            if self.distance(item, self.getMedoid(clusters)[0]) < \
-                    self.distance(item, self.getMedoid(closest_cluster)[0]):
-                closest_cluster = clusters
-
-        if closest_cluster != origin:
-            self.move_item(item, origin, closest_cluster)
-            logging.debug("Item changed cluster: %s" % item.user_id)
-            return True
-        else:
-            return False
-
-    def getMedoids(self, n):
-        """
-        Generate n clusters and return their medoids.
-        """
-        medoids_distances = []
-        logging.debug("initial length %s"
-                      % self._KMeansClustering__initial_length)
-        logging.debug("n %d" % n)
-        for clusters in self.getclusters(n):
-            type(clusters)
-            print clusters
-            medoids_distances.append(self.getMedoid(clusters))
-            print medoids_distances
-        medoids = [m[0] for m in medoids_distances]
-        dispersion = sum([m[1] for m in medoids_distances])
-
-        logging.info("Clustering completed and the following"
-                     "medoids were found: %s" % [c.user_id for c in medoids])
-        return medoids, dispersion
