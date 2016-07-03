@@ -388,8 +388,12 @@ class LocalSystem(User):
     def get_apt_installed_pkgs(self):
         apt_pkgs = set()
         apt_log = glob.glob('/var/log/apt/history.log*')
-        installed_pkgs_regex = re.compile(r'install ([-\w\s]+)')
+        installed_pkgs_regex = re.compile(r'^Commandline:.+apt.+install\s(.+)',
+                                          re.MULTILINE)
+        remove_pkgs_regex = re.compile(r'^Commandline:.+apt.+remove\s(.+)',
+                                       re.MULTILINE)
 
+        apt_log = reversed(sorted(apt_log))
         for log in apt_log:
             command = 'zcat' if log.endswith('gz') else 'cat'
             history_files = commands.getoutput(
@@ -399,6 +403,8 @@ class LocalSystem(User):
             The log_files will hold packages with this format:
 
             Commandline: apt install google-chrome-stable
+            or
+            Commandline: apt remove google-chrome-stable
 
             Therefore it is necessary to perform another filter on it
             to only get the package name.
@@ -406,14 +412,17 @@ class LocalSystem(User):
 
             for apt_command in history_files.splitlines():
                 installed_pkgs = installed_pkgs_regex.search(apt_command)
+                removed_pkgs = remove_pkgs_regex.search(apt_command)
 
-                if not installed_pkgs:
-                    continue
+                if installed_pkgs:
+                    pkgs = set(installed_pkgs.group(1).split())
+                    print "Installed packages: {}".format(pkgs)
+                    apt_pkgs |= pkgs
 
-                pkg_list = installed_pkgs.group(1).split()
-
-                for pkg in pkg_list:
-                    apt_pkgs.add(pkg)
+                if removed_pkgs:
+                    pkgs = set(removed_pkgs.group(1).split())
+                    print "Removed packages: {}".format(pkgs)
+                    apt_pkgs -= pkgs
 
         return apt_pkgs
 
