@@ -27,17 +27,11 @@ import logging
 import random
 import cluster
 import shutil
-import apt
-import re
 import operator
-import urllib
-import simplejson as json
-import socket
 import math
 import commands
 
 from apprecommender.utils import print_progress_bar
-from apprecommender.config import Config
 from apprecommender.data_classification import time_weight
 from apprecommender.dissimilarity import JaccardDistance
 from apprecommender.error import Error
@@ -71,6 +65,7 @@ def axi_search_pkg_tags(axi, pkg):
     matches = enquire.get_mset(0, 1)
     if not matches:
         logging.debug("Package %s not found in items repository" % pkg)
+
         return False
     for m in matches:
         tags = [term.term for term in axi.get_document(m.docid).termlist() if
@@ -266,136 +261,6 @@ class SampleAptXapianIndex(xapian.WritableDatabase):
 
     def __str__(self):
         return print_index(self)
-
-
-class DebianPackage():
-
-    """
-    Class to load package information.
-    """
-
-    def __init__(self, pkg_name):
-        self.name = pkg_name
-
-    def connect_to_dde(self, dde_server, dde_port):
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # just one parameter (a tuple)
-            s.connect((dde_server, dde_port))
-            s.close()
-            return True
-        except:
-            logging.debug("Could not connect to DDE")
-            return False
-
-    def load_summary(self):
-        cfg = Config()
-        if self.connect_to_dde(cfg.dde_server, cfg.dde_port):
-            json_data = json.load(urllib.urlopen(cfg.dde_url % self.name))
-            self.summary = json_data['r']['description']
-        else:
-            pkg_version = apt.Cache()[self.name].candidate
-            self.summary = pkg_version.summary
-
-    def load_details(self):
-        cfg = Config()
-        if self.connect_to_dde(cfg.dde_server, cfg.dde_port):
-            self.load_details_from_dde(cfg.dde_url)
-        else:
-            self.load_details_from_apt()
-
-    def load_details_from_apt(self):
-        pkg_version = apt.Cache()[self.name].candidate
-
-        self.maintainer = pkg_version.record['Maintainer']
-        self.version = pkg_version.version
-        self.summary = pkg_version.summary
-        self.description = self.format_description(pkg_version.description)
-        self.section = pkg_version.section
-        if 'Homepage' in pkg_version.record:
-            self.homepage = pkg_version.record['Homepage']
-        if 'Tag' in pkg_version.record:
-            self.tags = self.debtags_str_to_dict(pkg_version.record['Tag'])
-        if 'Depends' in pkg_version.record:
-            self.depends = pkg_version.record['Depends']
-        if 'Pre-Depends' in pkg_version.record:
-            self.predepends = pkg_version.record['Pre-Depends']
-        if 'Recommends' in pkg_version.record:
-            self.recommends = pkg_version.record['Recommends']
-        if 'Suggests' in pkg_version.record:
-            self.suggests = pkg_version.record['Suggests']
-        if 'Breaks' in pkg_version.record:
-            self.breaks = pkg_version.record['Breaks']
-        if 'Conflicts' in pkg_version.record:
-            self.conflicts = pkg_version.record['Conflicts']
-        if 'Replaces' in pkg_version.record:
-            self.replaces = pkg_version.record['Replaces']
-        if 'Provides' in pkg_version.record:
-            self.provides = pkg_version.record['Provides']
-
-    def load_details_from_dde(self, dde_url):
-        json_data = json.load(urllib.urlopen(dde_url % self.name))
-
-        self.maintainer = json_data['r']['maintainer']
-        self.version = json_data['r']['version']
-        self.summary = json_data['r']['description']
-
-        json_description = json_data['r']['long_description']
-        self.description = self.format_description(json_description)
-
-        self.section = json_data['r']['section']
-        if json_data['r']['homepage']:
-            self.homepage = json_data['r']['homepage']
-        if json_data['r']['tag']:
-            self.tags = self.debtags_list_to_dict(json_data['r']['tag'])
-        if json_data['r']['depends']:
-            self.depends = json_data['r']['depends']
-        if json_data['r']['pre_depends']:
-            self.predepends = json_data['r']['pre_depends']
-        if json_data['r']['recommends']:
-            self.recommends = json_data['r']['recommends']
-        if json_data['r']['suggests']:
-            self.suggests = json_data['r']['suggests']
-        if json_data['r']['conflicts']:
-            self.conflicts = json_data['r']['conflicts']
-        if json_data['r']['replaces']:
-            self.replaces = json_data['r']['replaces']
-        if json_data['r']['provides']:
-            self.provides = json_data['r']['provides']
-        if json_data['r']['popcon']['insts']:
-            self.popcon_insts = json_data['r']['popcon']['insts']
-
-    def format_description(self, description):
-        return description.replace(' .\n', '<br />').replace('\n', '<br />')
-
-    def debtags_str_to_dict(self, debtags_str):
-        debtags_list = [tag.rstrip(",") for tag in debtags_str.split()]
-        return self.debtags_list_to_dict(debtags_list)
-
-    def debtags_list_to_dict(self, debtags_list):
-        """ input:  ['use::editing',
-                     'works-with-format::gif',
-                     'works-with-format::jpg',
-                     'works-with-format::pdf']
-            output: {'use': [editing],
-                     'works-with-format': ['gif', 'jpg', 'pdf']'}
-        """
-        debtags = {}
-        subtags = []
-        for tag in debtags_list:
-            match = re.search(r'^(.*)::(.*)$', tag)
-            if not match:
-                logging.info("Could not parse debtags format from tag: %s",
-                             tag)
-            facet, subtag = match.groups()
-            subtags.append(subtag)
-            if facet not in debtags:
-                debtags[facet] = subtags
-            else:
-                debtags[facet].append(subtag)
-            subtags = []
-        print "debtags_list", debtags
-        return debtags
 
 
 class PopconSubmission():
