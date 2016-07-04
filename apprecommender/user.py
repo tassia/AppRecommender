@@ -387,9 +387,11 @@ class LocalSystem(User):
 
     def get_apt_installed_pkgs(self):
         apt_pkgs = set()
-
         apt_log = glob.glob('/var/log/apt/history.log*')
+        installed_pkgs_regex = re.compile(r'^Commandline:.+apt.+install\s(.+)',
+                                          re.MULTILINE)
 
+        apt_log = reversed(sorted(apt_log))
         for log in apt_log:
             command = 'zcat' if log.endswith('gz') else 'cat'
             history_files = commands.getoutput(
@@ -405,18 +407,11 @@ class LocalSystem(User):
             '''
 
             for apt_command in history_files.splitlines():
-                apt_command = apt_command.split()
+                installed_pkgs = installed_pkgs_regex.search(apt_command)
 
-                if len(apt_command) < 3:
-                    continue
-
-                option = apt_command[2]
-
-                if option != 'install':
-                    continue
-
-                for pkg in apt_command[3:]:
-                    apt_pkgs.add(pkg)
+                if installed_pkgs:
+                    pkgs = set(installed_pkgs.group(1).split())
+                    apt_pkgs |= pkgs
 
         return apt_pkgs
 
