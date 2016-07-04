@@ -22,8 +22,8 @@ __license__ = """
 import unittest
 import xapian
 
-from apprecommender.strategy import (PkgMatchDecider, PkgExpandDecider,
-                                     TagExpandDecider)
+from apprecommender.decider import (PkgMatchDecider, PkgExpandDecider,
+                                    TagExpandDecider)
 
 
 class PkgMatchDeciderTests(unittest.TestCase):

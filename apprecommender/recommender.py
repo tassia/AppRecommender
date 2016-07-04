@@ -145,35 +145,15 @@ class Recommender:
             self.weight = xapian.TradWeight()
         self.set_strategy(self.cfg.strategy)
 
-    def set_strategy(self, strategy_str, k=0, n=0):
+    def set_strategy(self, strategy_str, n=0):
         """
         Set the recommendation strategy.
         """
-        if k:
-            k_neighbors = k
-        else:
-            k_neighbors = self.cfg.k_neighbors
-        if n:
-            profile_size = n
-        else:
-            profile_size = self.cfg.profile_size
-        logging.info("Setting recommender strategy to \'%s\'" % strategy_str)
-        # Check if collaborative strategies can be instanciated
-        if "knn" in strategy_str:
-            if not self.cfg.popcon:
-                logging.info("Cannot perform collaborative strategy")
-                return 1
-        # if self.cfg.pkgs_filter.split("/")[-1] == "desktopapps":
+        profile_size = n if n else self.cfg.profile_size
+
         self.items_repository = self.axi_desktopapps
         self.valid_pkgs = self.valid_desktopapps
-        if "knn" in strategy_str:
-            self.users_repository = self.popcon_desktopapps
-        # else:
-        #    self.items_repository = self.axi_programs
-        #    self.valid_pkgs = self.valid_programs
-        #    if "knn" in strategy_str:
-        #        self.users_repository = self.popcon_programs
-        # Set strategy based on strategy_str
+        logging.info("Setting recommender strategy to \'%s\'" % strategy_str)
 
         if strategy_str == "cb":
             self.strategy = strategy.ContentBased("mix", profile_size)
@@ -191,12 +171,6 @@ class Recommender:
         elif strategy_str == "mlbow":
             self.strategy = strategy.MachineLearningBOW("mlbow_mix",
                                                         profile_size)
-        elif strategy_str == "mlbva_eset":
-            self.strategy = strategy.MachineLearningBVA("mlbva_mix_eset",
-                                                        profile_size)
-        elif strategy_str == "mlbow_eset":
-            self.strategy = strategy.MachineLearningBOW("mlbow_mix_eset",
-                                                        profile_size)
         elif strategy_str == "cb_eset":
             self.strategy = strategy.ContentBased("mix_eset", profile_size)
         elif strategy_str == "cbt_eset":
@@ -205,19 +179,12 @@ class Recommender:
             self.strategy = strategy.ContentBased("desc_eset", profile_size)
         elif strategy_str == "cbh_eset":
             self.strategy = strategy.ContentBased("half_eset", profile_size)
-        elif strategy_str == "knn":
-            self.strategy = strategy.Knn(k_neighbors)
-        elif strategy_str == "knn_plus":
-            self.strategy = strategy.KnnPlus(k_neighbors)
-        elif strategy_str == "knn_eset":
-            self.strategy = strategy.KnnEset(k_neighbors)
-        elif strategy_str == "knnco":
-            self.strategy = strategy.KnnContent(k_neighbors)
-        elif strategy_str == "knnco_eset":
-            self.strategy = strategy.KnnContentEset(k_neighbors)
-        # [FIXME: fix repository instanciation]
-        # elif strategy_str.startswith("demo"):
-        #    self.strategy = strategy.Demographic(strategy_str)
+        elif strategy_str == "mlbva_eset":
+            self.strategy = strategy.MachineLearningBVA("mlbva_mix_eset",
+                                                        profile_size)
+        elif strategy_str == "mlbow_eset":
+            self.strategy = strategy.MachineLearningBOW("mlbow_mix_eset",
+                                                        profile_size)
         else:
             logging.info("Strategy not defined.")
             self.strategy = None
