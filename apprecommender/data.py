@@ -19,16 +19,18 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import xapian
-import logging
-import random
-import operator
-import math
 import commands
+import logging
+import math
+import operator
+import os
+import random
+import shutil
+import xapian
 
-from apprecommender.utils import print_progress_bar
 from apprecommender.data_classification import time_weight
 from apprecommender.error import Error
+from apprecommender.utils import print_progress_bar
 
 
 def axi_get_pkgs(axi):
@@ -41,7 +43,7 @@ def axi_get_pkgs(axi):
         except:
             continue
 
-        docterms_XP, docterms_XT = [], []
+        docterms_XP = []
         for terms in doc.termlist():
             if terms.term.startswith('XP'):
                 docterms_XP.append(terms.term)
@@ -328,7 +330,7 @@ class KnnXapianIndex(xapian.WritableDatabase):
 
     def __init__(self, path, pkgs, axi_path, tags_filter):
         self.axi = xapian.Database(axi_path)
-        self.path = os.path.expanduser(path)
+        self.path = path
         self.pkgs = pkgs
         self.valid_pkgs, self.pkgs_doc = axi_get_pkgs(self.axi)
         logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
@@ -349,8 +351,7 @@ class KnnXapianIndex(xapian.WritableDatabase):
             logging.critical(str(e))
             raise Error
 
-        pkgs = [pkg for pkg in self.pkgs
-                           if pkg in self.valid_pkgs]
+        pkgs = [pkg for pkg in self.pkgs if pkg in self.valid_pkgs]
         doc_count = 0
         len_pkgs = len(pkgs)
 

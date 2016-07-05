@@ -101,7 +101,7 @@ class Initialize:
 
     def indexer_knn(self):
         base_dir = self.config.base_dir
-        axi_path = Initialize.DEFAULT_AXI_PATH
+        axi_path = os.path.expanduser(Initialize.DEFAULT_AXI_PATH)
         path = self.config.knn_desktopapps
         tags_filter = os.path.join(base_dir, "filters/debtags")
         load_data_path = os.path.join(base_dir, "popcon_clusters/")
@@ -118,7 +118,6 @@ class Initialize:
         if error:
             exit(1)
 
-        cfg = Config()
         knn = Knn.load(load_data_path, user_popcon_file)
         pkgs = knn.user_cluster_pkgs
 

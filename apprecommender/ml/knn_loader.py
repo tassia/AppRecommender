@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 
-import numpy as np
-import pickle
 import re
 import os
 import commands
-
-from scipy import spatial
 
 
 class KnnLoader:

@@ -107,6 +107,6 @@ class KnnXapianIndexTest(unittest.TestCase):
         for index, pkg in enumerate(pkgs):
             doc = filtered_axi.get_document(index + 1)
             doc_pkg = [terms.term.lstrip('XP') for terms in doc.termlist()
-                    if terms.term.startswith('XP')][0]
+                       if terms.term.startswith('XP')][0]
 
             self.assertEqual(pkg, doc_pkg)
