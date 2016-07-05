@@ -7,7 +7,6 @@ import datetime as dt
 import logging
 import os
 import re
-import shutil
 import tarfile
 import time
 import xapian
@@ -413,7 +412,7 @@ def main():
     collect_user_preferences()
 
     make_tarfile(LOG_PATH + '.tar.gz', LOG_PATH)
-    shutil.rmtree(LOG_PATH)
+    commands.getoutput('rm -rf {}'.format(LOG_PATH))
 
     print "\n\nFinished: All files and recommendations were collected"
     print "Collect data folder: {0}.tar.gz\n".format(LOG_PATH)
