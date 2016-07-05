@@ -27,6 +27,7 @@ class PkgInitDecider():
         self.python_libs = re.compile(r'^(python|python3)-')
         self.golang_libs = re.compile(r'golang-')
         self.gir_libs = re.compile(r'^gir\d+\.\d+-')
+        self.texlive_libs = re.compile(r'^texlive-')
 
         self.cache = apt.Cache()
         self.user_role_programs = self.get_user_role_programs()
@@ -103,6 +104,9 @@ class PkgInitDecider():
     def is_pkg_gir_lib(self, pkg):
         return self.verify_pkg_regex('gir_libs', pkg)
 
+    def is_pkg_texlive_lib(self, pkg):
+        return self.verify_pkg_regex('texlive_libs', pkg)
+
     def is_pkg_dbg(self, pkg):
         return self.verify_pkg_regex('dbg_pkgs', pkg)
 
@@ -133,49 +137,23 @@ class PkgInitDecider():
 
         pkg_candidate = self.cache[pkg].candidate
 
-        if not pkg_candidate:
-            return False
+        valid = (pkg_candidate and
+                 self.is_program_dependencies_installed(pkg_candidate) and
+                 not self.is_pkg_python_lib(pkg) and
+                 not self.is_pkg_ruby_lib(pkg) and
+                 not self.is_pkg_texlive_lib(pkg) and
+                 not self.is_pkg_golang_lib(pkg) and
+                 not self.is_pkg_gir_lib(pkg) and
+                 not self.is_pkg_examples(pkg) and
+                 not self.is_pkg_dbg(pkg) and
+                 not self.is_pkg_data(pkg) and
+                 not self.is_pkg_dev(pkg) and
+                 not self.is_pkg_common(pkg) and
+                 not self.is_pkg_utils(pkg) and
+                 not self.is_pkg_fonts(pkg) and
+                 not self.is_pkg_doc(pkg_candidate))
 
-        if not self.is_program_dependencies_installed(pkg_candidate):
-            return False
-
-        if self.is_pkg_python_lib(pkg):
-            return False
-
-        if self.is_pkg_ruby_lib(pkg):
-            return False
-
-        if self.is_pkg_golang_lib(pkg):
-            return False
-
-        if self.is_pkg_gir_lib(pkg):
-            return False
-
-        if self.is_pkg_examples(pkg):
-            return False
-
-        if self.is_pkg_dbg(pkg):
-            return False
-
-        if self.is_pkg_data(pkg):
-            return False
-
-        if self.is_pkg_dev(pkg):
-            return False
-
-        if self.is_pkg_common(pkg):
-            return False
-
-        if self.is_pkg_utils(pkg):
-            return False
-
-        if self.is_pkg_fonts(pkg):
-            return False
-
-        if self.is_pkg_doc(pkg_candidate):
-            return False
-
-        return True
+        return valid
 
 
 class PkgMatchDecider(xapian.MatchDecider):

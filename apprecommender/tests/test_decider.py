@@ -39,6 +39,13 @@ class PkgInitDeciderTests(unittest.TestCase):
         pkg = 'test-pkg'
         self.assertFalse(self.pkg_init_decider.is_pkg_ruby_lib(pkg))
 
+    def test_texlive_pkg_regex(self):
+        pkg = 'texlive-test'
+        self.assertTrue(self.pkg_init_decider.is_pkg_texlive_lib(pkg))
+
+        pkg = 'test-pkg'
+        self.assertFalse(self.pkg_init_decider.is_pkg_texlive_lib(pkg))
+
     def test_pkg_gir_regex(self):
         pkg = 'gir1.2-test'
         self.assertTrue(self.pkg_init_decider.is_pkg_gir_lib(pkg))
