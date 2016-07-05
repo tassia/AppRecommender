@@ -84,7 +84,7 @@ class RecommenderTests(unittest.TestCase):
         self.assertEqual(self.rec.strategy.content, "mlbow_mix_eset")
 
     def test_get_recommendation(self):
-        user = User({"inkscape": 1, "gimp": 1, "eog": 1})
+        user = User({"inkscape": 1, "gimp": 1, "eog": 1, "vim": 1})
         result = self.rec.get_recommendation(user)
         self.assertIsInstance(result, RecommendationResult)
         self.assertGreater(len(result.item_score), 0)
