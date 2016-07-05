@@ -14,20 +14,14 @@ class PkgInitDecider():
     user or not.
     """
 
-    def __init__(self):
-        self.example_pkgs = re.compile(r'-examples$')
-        self.dbg_pkgs = re.compile(r'-dbg$')
-        self.data_pkgs = re.compile(r'-data$')
-        self.dev_pkgs = re.compile(r'-dev$')
-        self.utils_pkgs = re.compile(r'-(utils|utils-\d+\.\d+)$')
-        self.common_pkgs = re.compile(r'-common$')
-        self.fonts_pkgs = re.compile(r'-fonts$')
+    PREFIXES = ['gir']
+    SUFFIXES = ['examples', 'dbg', 'data', 'dev', 'utils', 'common', 'fonts']
 
-        self.ruby_libs = re.compile(r'^ruby-')
-        self.python_libs = re.compile(r'^(python|python3)-')
-        self.golang_libs = re.compile(r'golang-')
-        self.gir_libs = re.compile(r'^gir\d+\.\d+-')
-        self.texlive_libs = re.compile(r'^texlive-')
+    def __init__(self):
+        all_pkgs = commands.getoutput('apt-cache pkgnames')
+        prefix_regex = re.compile(r'^((?!.*\b-\b).*)$', re.MULTILINE)
+
+        self.prefix_pkgs = set(prefix_regex.findall(all_pkgs))
 
         self.cache = apt.Cache()
         self.user_role_programs = self.get_user_role_programs()
@@ -88,48 +82,24 @@ class PkgInitDecider():
 
         return len(dep_programs - self.user_role_programs) == 0
 
-    def verify_pkg_regex(self, regex_variable, pkg):
-        return eval("self.{}.search('{}') is not None".format(
-            regex_variable, pkg))
+    def is_pkg_a_prefix_or_suffix(self, pkg):
+        splited_pkg = pkg.split('-')
 
-    def is_pkg_python_lib(self, pkg):
-        return self.verify_pkg_regex('python_libs', pkg)
+        if len(splited_pkg) == 1:
+            return False
 
-    def is_pkg_ruby_lib(self, pkg):
-        return self.verify_pkg_regex('ruby_libs', pkg)
+        pkg_prefix = splited_pkg[0]
 
-    def is_pkg_golang_lib(self, pkg):
-        return self.verify_pkg_regex('golang_libs', pkg)
+        for prefix in PkgInitDecider.PREFIXES:
+            if pkg_prefix.startswith(prefix):
+                return True
 
-    def is_pkg_gir_lib(self, pkg):
-        return self.verify_pkg_regex('gir_libs', pkg)
+        for suffix in PkgInitDecider.SUFFIXES:
+            if (splited_pkg[-1].endswith(suffix) or
+               splited_pkg[-2].endswith(suffix)):
+                return True
 
-    def is_pkg_texlive_lib(self, pkg):
-        return self.verify_pkg_regex('texlive_libs', pkg)
-
-    def is_pkg_dbg(self, pkg):
-        return self.verify_pkg_regex('dbg_pkgs', pkg)
-
-    def is_pkg_examples(self, pkg):
-        return self.verify_pkg_regex('example_pkgs', pkg)
-
-    def is_pkg_common(self, pkg):
-        return self.verify_pkg_regex('common_pkgs', pkg)
-
-    def is_pkg_data(self, pkg):
-        return self.verify_pkg_regex('data_pkgs', pkg)
-
-    def is_pkg_dev(self, pkg):
-        return self.verify_pkg_regex('dev_pkgs', pkg)
-
-    def is_pkg_fonts(self, pkg):
-        return self.verify_pkg_regex('fonts_pkgs', pkg)
-
-    def is_pkg_utils(self, pkg):
-        return self.verify_pkg_regex('utils_pkgs', pkg)
-
-    def is_pkg_doc(self, pkg):
-        return pkg.section == 'doc'
+        return pkg_prefix in self.prefix_pkgs
 
     def __call__(self, pkg):
         if not self.is_in_apt_cache(pkg):
@@ -139,19 +109,7 @@ class PkgInitDecider():
 
         valid = (pkg_candidate and
                  self.is_program_dependencies_installed(pkg_candidate) and
-                 not self.is_pkg_python_lib(pkg) and
-                 not self.is_pkg_ruby_lib(pkg) and
-                 not self.is_pkg_texlive_lib(pkg) and
-                 not self.is_pkg_golang_lib(pkg) and
-                 not self.is_pkg_gir_lib(pkg) and
-                 not self.is_pkg_examples(pkg) and
-                 not self.is_pkg_dbg(pkg) and
-                 not self.is_pkg_data(pkg) and
-                 not self.is_pkg_dev(pkg) and
-                 not self.is_pkg_common(pkg) and
-                 not self.is_pkg_utils(pkg) and
-                 not self.is_pkg_fonts(pkg) and
-                 not self.is_pkg_doc(pkg_candidate))
+                 not self.is_pkg_a_prefix_or_suffix(pkg))
 
         return valid
 
