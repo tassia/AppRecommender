@@ -388,8 +388,11 @@ class LocalSystem(User):
     def get_apt_installed_pkgs(self):
         apt_pkgs = set()
         apt_log = glob.glob('/var/log/apt/history.log*')
-        installed_pkgs_regex = re.compile(r'^Commandline:.+apt.+install\s(.+)',
-                                          re.MULTILINE)
+
+        installed_pkgs_regex = re.compile(
+            r'^Commandline:.+apt.+install\s(.+)', re.MULTILINE)
+        no_remove_pkgs_regex = re.compile(r'--no-remove')
+        automatic_remove_regex = re.compile(r'APT::Get::AutomaticRemove=true')
 
         apt_log = reversed(sorted(apt_log))
         for log in apt_log:
@@ -408,8 +411,12 @@ class LocalSystem(User):
 
             for apt_command in history_files.splitlines():
                 installed_pkgs = installed_pkgs_regex.search(apt_command)
+                no_remove_pkgs = no_remove_pkgs_regex.search(apt_command)
+                automatic_remove_pkgs = automatic_remove_regex.search(
+                    apt_command)
 
-                if installed_pkgs:
+                if (installed_pkgs and not no_remove_pkgs and not
+                        automatic_remove_pkgs):
                     pkgs = set(installed_pkgs.group(1).split())
                     apt_pkgs |= pkgs
 
