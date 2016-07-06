@@ -14,15 +14,12 @@ class PkgInitDecider():
     user or not.
     """
 
-    PREFIXES = ['gir']
-    SUFFIXES = ['examples', 'dbg', 'data', 'dev', 'utils', 'common', 'fonts']
+    INVALID_PREFIXES = ['ruby', 'python', 'python3', 'golang', 'gir',
+                        'texlive']
+    INVALID_SUFFIXES = ['examples', 'dbg', 'data', 'dev', 'utils', 'common',
+                        'fonts']
 
     def __init__(self):
-        all_pkgs = commands.getoutput('apt-cache pkgnames')
-        prefix_regex = re.compile(r'^((?!.*\b-\b).*)$', re.MULTILINE)
-
-        self.prefix_pkgs = set(prefix_regex.findall(all_pkgs))
-
         self.cache = apt.Cache()
         self.user_role_programs = self.get_user_role_programs()
 
@@ -89,17 +86,16 @@ class PkgInitDecider():
             return False
 
         pkg_prefix = splited_pkg[0]
-
-        for prefix in PkgInitDecider.PREFIXES:
+        for prefix in PkgInitDecider.INVALID_PREFIXES:
             if pkg_prefix.startswith(prefix):
                 return True
 
-        for suffix in PkgInitDecider.SUFFIXES:
+        for suffix in PkgInitDecider.INVALID_SUFFIXES:
             if (splited_pkg[-1].endswith(suffix) or
                splited_pkg[-2].endswith(suffix)):
                 return True
 
-        return pkg_prefix in self.prefix_pkgs
+        return False
 
     def __call__(self, pkg):
         if not self.is_in_apt_cache(pkg):
