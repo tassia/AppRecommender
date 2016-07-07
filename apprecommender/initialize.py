@@ -104,7 +104,7 @@ class Initialize:
         axi_path = os.path.expanduser(Initialize.DEFAULT_AXI_PATH)
         path = self.config.knn_desktopapps
         tags_filter = os.path.join(base_dir, "filters/debtags")
-        load_data_path = os.path.join(base_dir, "popcon_clusters/")
+        load_data_path = os.path.join(base_dir, "clusters/")
         user_popcon_file = os.path.join(base_dir, "my_popcon")
 
         error = False
