@@ -9,7 +9,7 @@ import xapian
 
 from apprecommender.config import Config
 from apprecommender.decider import PkgInitDecider
-from apprecommender.ml.knn import Knn
+from apprecommender.knn import Knn
 
 
 class Initialize:

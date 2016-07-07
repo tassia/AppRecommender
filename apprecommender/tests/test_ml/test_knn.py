@@ -5,7 +5,7 @@ import commands
 import shutil
 import unittest
 
-from apprecommender.ml.knn import Knn
+from apprecommender.knn import Knn
 
 
 class KnnTests(unittest.TestCase):
