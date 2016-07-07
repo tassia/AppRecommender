@@ -332,8 +332,7 @@ class KnnXapianIndex(xapian.WritableDatabase):
         self.axi = xapian.Database(axi_path)
         self.path = path
         self.pkgs = pkgs
-        self.valid_pkgs, self.pkgs_doc = axi_get_pkgs(self.axi)
-        logging.debug("Considering %d valid packages" % len(self.valid_pkgs))
+        _, self.pkgs_doc = axi_get_pkgs(self.axi)
         if len(self.pkgs) == 0:
             logging.critical("Knn submissions can't be empty")
             raise Error
@@ -351,7 +350,6 @@ class KnnXapianIndex(xapian.WritableDatabase):
             logging.critical(str(e))
             raise Error
 
-        pkgs = [pkg for pkg in self.pkgs if pkg in self.valid_pkgs]
         doc_count = 0
         len_pkgs = len(pkgs)
 

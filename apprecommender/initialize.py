@@ -11,6 +11,7 @@ from apprecommender.config import Config
 from apprecommender.decider import PkgInitDecider
 from apprecommender.ml.knn import Knn
 
+
 class Initialize:
 
     AXI_SAMPLES = ['sample', 'filter']
@@ -120,14 +121,15 @@ class Initialize:
 
         knn = Knn.load(load_data_path, user_popcon_file)
         pkgs = knn.user_cluster_pkgs
+        valid_pkgs = [pkg for pkg in pkgs if self.pkg_init_decider(pkg)]
 
         begin_time = datetime.datetime.now()
         print("Knn indexing started at %s" % begin_time)
-        index = data.KnnXapianIndex(path, pkgs, axi_path, tags_filter)
+        index = data.KnnXapianIndex(path, valid_pkgs, axi_path, tags_filter)
 
         end_time = datetime.datetime.now()
         print("Knn indexing completed at %s" % end_time)
-        print("Number of documents (submissions): %d" % index.get_doccount())
+        print("Number of documents (pkgs): %d" % index.get_doccount())
 
         delta = end_time - begin_time
         print("Time elapsed: %d seconds." % delta.seconds)
