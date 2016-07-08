@@ -327,29 +327,6 @@ class PopconSystem(User):
         User.__init__(self, submission.packages, user_id, submission.arch)
 
 
-class PkgsListSystem(User):
-
-    def __init__(self, pkgs_list_or_file, user_id=0):
-        """
-        Set initial parameters.
-        """
-        if type(pkgs_list_or_file).__name__ == "list":
-            pkgs_list = pkgs_list_or_file
-        elif type(pkgs_list_or_file).__name__ == "str":
-            try:
-                with open(pkgs_list_or_file) as pkgs_list_file:
-                    pkgs_list = [line.split()[0] for line in pkgs_list_file
-                                 if line.split()]
-            except IOError:
-                logging.critical("Could not open packages list file.")
-                raise Error
-        else:
-            logging.debug("No packages provided for user profiling.")
-            pkgs_list = []
-
-        User.__init__(self, dict.fromkeys(pkgs_list, 1), user_id)
-
-
 class LocalSystem(User):
 
     """
