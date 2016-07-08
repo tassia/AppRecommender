@@ -101,7 +101,7 @@ def collect_popcon_submission():
     create_popularity_contest_file()
 
     popcon = subprocess.Popen('./popularity-contest',
-                              shell=True, stdin=subprocess.PIPE,
+                              shell=False, stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE)
 
