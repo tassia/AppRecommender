@@ -7,11 +7,10 @@ import datetime as dt
 import logging
 import os
 import re
+import subprocess
 import tarfile
 import time
 import xapian
-
-from subprocess import Popen, PIPE
 
 from apprecommender.app_recommender import AppRecommender
 from apprecommender.config import Config
@@ -101,10 +100,10 @@ def collect_popcon_submission():
 
     create_popularity_contest_file()
 
-    popcon = Popen('./popularity-contest',
-                   shell=True, stdin=PIPE,
-                   stdout=PIPE,
-                   stderr=PIPE)
+    popcon = subprocess.Popen('./popularity-contest',
+                              shell=True, stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
 
     popcon_output = popcon.stdout.read()
 
@@ -412,7 +411,7 @@ def main():
     collect_user_preferences()
 
     make_tarfile(LOG_PATH + '.tar.gz', LOG_PATH)
-    commands.getoutput('rm -rf {}'.format(LOG_PATH))
+    subprocess.call(['rm', '-rf', LOG_PATH])
 
     print "\n\nFinished: All files and recommendations were collected"
     print "Collect data folder: {0}.tar.gz\n".format(LOG_PATH)
