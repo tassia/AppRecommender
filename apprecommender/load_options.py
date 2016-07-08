@@ -54,6 +54,8 @@ class LoadOptions(Singleton):
             else:
                 assert False, "unhandled option"
 
+        config.set_logger()
+
     def usage(self):
         """
         Print usage help.

@@ -54,7 +54,7 @@ class Config(Singleton):
             self.user_data_dir = os.path.join(self.base_dir, "user_data/")
             # general options
             self.debug = 0
-            self.verbose = 1
+            self.verbose = 0
             self.output = os.path.join(self.base_dir, "apprec.log")
             # filters for valid packages
             self.filters_dir = os.path.join(self.base_dir, "filters")
