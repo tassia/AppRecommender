@@ -31,6 +31,8 @@ import xapian
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
+from fuzzywuzzy import fuzz
+from os import path
 
 from apprecommender.config import Config
 from apprecommender.decider import PkgMatchDecider
@@ -103,6 +105,64 @@ class ContentBased(RecommendationStrategy):
         logging.debug(profile)
         result = self.get_sugestion_from_profile(rec, user, profile, rec_size)
         return result
+
+
+class PackageReference(ContentBased):
+
+    def __init__(self, content, profile_size, reference_pkgs,
+                 suggestion_size=1000):
+        ContentBased.__init__(self, content, profile_size)
+        self.content = content
+        self.description = 'Package-reference'
+        self.profile_size = profile_size
+        self.suggestion_size = suggestion_size
+        self.reference_pkgs = reference_pkgs
+        self.cache = apt.Cache()
+
+    def load_pkgs_descriptions(self, pkgs):
+        pkgs_descriptions = {}
+
+        for pkg in pkgs:
+            description = self.cache[pkg].candidate.description
+            pkgs_descriptions[pkg] = description.lower()
+
+        return pkgs_descriptions
+
+    def get_item_score(self, reference_pkgs, content_based_pkgs):
+        item_score = {}
+        references_descriptions = self.load_pkgs_descriptions(reference_pkgs)
+        pkgs_descriptions = self.load_pkgs_descriptions(content_based_pkgs)
+        len_references = float(len(reference_pkgs)) or 1
+
+        for pkg in content_based_pkgs:
+            score = 0
+            pkg_description = pkgs_descriptions[pkg]
+
+            for reference_pkg in reference_pkgs:
+                ref_description = references_descriptions[reference_pkg]
+                score += fuzz.ratio(ref_description, pkg_description)
+
+            item_score[pkg] = float(score) / len_references
+
+        return item_score
+
+    def run(self, rec, user, rec_size):
+        user_profile = None
+        profile = user.content_profile(rec.items_repository, self.content,
+                                       self.profile_size, rec.valid_tags)
+
+        pkgs_regex = re.compile(r'^\d+:\s([^\s]+)', re.MULTILINE)
+        suggested_pkgs = self.get_sugestion_from_profile(
+            rec, user, profile, self.suggestion_size, because=False)
+        pkgs = pkgs_regex.findall(suggested_pkgs.__str__())
+
+        item_score = self.get_item_score(self.reference_pkgs, pkgs)
+
+        if Config().because:
+            user_profile = user.pkg_profile
+
+        return recommender.RecommendationResult(
+            item_score, limit=rec_size, user_profile=user_profile)
 
 
 class MachineLearning(ContentBased):

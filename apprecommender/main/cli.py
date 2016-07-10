@@ -30,6 +30,10 @@ def parse_options(args, config):
         config.because = True
     if args['num_recommendations']:
         config.num_recommendations = args['num_recommendations']
+    if args['package']:
+        package = args['package']
+        config.reference_pkgs.append(package)
+        config.reference_pkgs = list(set(config.reference_pkgs))
 
 
 def run_apprecommender():

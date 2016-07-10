@@ -109,6 +109,7 @@ class Config(Singleton):
 
             self.load_config_file()
             self.initialized = 1
+            self.reference_pkgs = []
             logging.info("Basic config")
 
     def read_option(self, section, option):

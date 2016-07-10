@@ -51,4 +51,9 @@ def get_parser():
         help='classify recommendations and help apprecommender to improve',
         action='store_true')
 
+    parser.add_argument(
+        '-p', '--package',
+        help="Add reference package for strategy 'cbpkg'",
+        type=str)
+
     return parser
