@@ -11,13 +11,6 @@ class PkgTimeTests(unittest.TestCase):
     def setUp(self):
         self.pkg_time = PkgTime()
 
-    def test_access_time_greater_than_modify_time(self):
-        pkgs_time = self.pkg_time.create_pkg_data()
-
-        for _, times in pkgs_time.iteritems():
-            modify, access = times
-            self.assertTrue(access >= modify)
-
     @patch('commands.getoutput')
     @patch('apprecommender.ml.pkg_time.get_time_from_package')
     def test_invalid_paths_get_best_time(self, mock_time, mock_command):
