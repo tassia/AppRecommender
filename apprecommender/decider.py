@@ -17,7 +17,7 @@ class PkgInitDecider():
     INVALID_PREFIXES = ['ruby', 'python', 'python3', 'golang', 'gir',
                         'texlive']
     INVALID_SUFFIXES = ['examples', 'dbg', 'data', 'dev', 'utils', 'common',
-                        'fonts']
+                        'fonts', 'png']
 
     def __init__(self):
         self.cache = apt.Cache()
