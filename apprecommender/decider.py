@@ -9,6 +9,7 @@ from sklearn.feature_extraction.stop_words import ENGLISH_STOP_WORDS
 
 
 class PkgInitDecider():
+
     """
     Class used to decide if a package can be considered to recommended to an
     user or not.
@@ -49,6 +50,9 @@ class PkgInitDecider():
                     user_programs.add(pkg)
 
         return user_programs
+
+    def is_section_doc(self, pkg_section):
+        return pkg_section == 'doc'
 
     def is_valid_dependency(self, pkg_tags, pkg_section):
         tags_dep = 'role::program' in pkg_tags or 'devel::editor' in pkg_tags
@@ -103,11 +107,19 @@ class PkgInitDecider():
 
         pkg_candidate = self.cache[pkg].candidate
 
-        valid = (pkg_candidate and
-                 self.is_program_dependencies_installed(pkg_candidate) and
-                 not self.is_pkg_a_prefix_or_suffix(pkg))
+        if not pkg_candidate:
+            return False
 
-        return valid
+        if not self.is_program_dependencies_installed(pkg_candidate):
+            return False
+
+        if self.is_pkg_a_prefix_or_suffix(pkg):
+            return False
+
+        if self.is_section_doc(pkg_candidate.section):
+            return False
+
+        return True
 
 
 class PkgMatchDecider(xapian.MatchDecider):
