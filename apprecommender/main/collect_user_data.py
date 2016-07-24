@@ -12,7 +12,7 @@ import tarfile
 import time
 import xapian
 
-from apprecommender.app_recommender import AppRecommender
+from apprecommender.main.app_recommender import AppRecommender
 from apprecommender.config import Config
 from apprecommender.data import get_user_installed_pkgs
 from apprecommender.data_classification import get_alternative_pkg
@@ -21,7 +21,7 @@ from apprecommender.ml.pkg_time import PkgTime
 from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
                                      MachineLearningBOW)
 from apprecommender.utils import print_progress_bar
-from bin.ml_cross_validation import ml_cross_validation
+from apprecommender.main.ml_cross_validation import ml_cross_validation
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 SUFIX = dt.datetime.now().strftime('%Y%m%d%H%M')

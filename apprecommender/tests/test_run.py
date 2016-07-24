@@ -2,8 +2,8 @@
 
 import unittest
 import logging
-import bin.apprec as apprec
 
+import apprecommender.main.cli as apprec
 from apprecommender.config import Config
 from apprecommender.ml.data import MachineLearningData
 

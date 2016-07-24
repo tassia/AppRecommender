@@ -7,8 +7,6 @@ import pickle
 import sys
 import getopt
 
-sys.path.insert(0, "{0}/../".format(os.path.dirname(__file__)))
-
 from apprecommender.ml.cross_validation import (CrossValidationBVA,
                                                 CrossValidationBOW)
 from apprecommender.evaluation import (SimpleAccuracy, Precision, Recall, FPR,

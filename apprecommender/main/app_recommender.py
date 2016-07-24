@@ -16,8 +16,7 @@ class AppRecommender:
     def make_recommendation(self, print_recommendation=True):
         begin_time = datetime.datetime.now()
         logging.info("Computation started at %s" % begin_time)
-        # user = RandomPopcon(cfg.popcon_dir,os.path.join(cfg.filters_dir,
-        #                                                 "desktopapps"))
+
         user = LocalSystem()
         recommendation_size = Config().num_recommendations
         user_recommendation = (self.recommender.get_recommendation(
