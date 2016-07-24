@@ -14,7 +14,7 @@ setup(
     test_suite='nose.collector',
     entry_points={
         'console_scripts': [
-            'apprec = bin.apprec:main',
+            'apprec = apprecommender.main.cli:main',
         ]
     },
 )
