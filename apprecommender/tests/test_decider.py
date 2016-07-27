@@ -90,3 +90,17 @@ class PkgInitDeciderTests(unittest.TestCase):
 
         pkg = 'test-pkg'
         self.assertFalse(self.pkg_init_decider.is_pkg_a_prefix_or_suffix(pkg))
+
+    def test_pkg_core_regex(self):
+        pkg = 'test-core'
+        self.assertTrue(self.pkg_init_decider.is_pkg_a_prefix_or_suffix(pkg))
+
+        pkg = 'test-pkg'
+        self.assertFalse(self.pkg_init_decider.is_pkg_a_prefix_or_suffix(pkg))
+
+    def test_pkg_default_regex(self):
+        pkg = 'test-default'
+        self.assertTrue(self.pkg_init_decider.is_pkg_a_prefix_or_suffix(pkg))
+
+        pkg = 'test-pkg'
+        self.assertFalse(self.pkg_init_decider.is_pkg_a_prefix_or_suffix(pkg))
