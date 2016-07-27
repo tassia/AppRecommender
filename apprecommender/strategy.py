@@ -31,7 +31,6 @@ import xapian
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
-from os import path
 
 from apprecommender.config import Config
 from apprecommender.decider import PkgMatchDecider
@@ -39,7 +38,7 @@ from apprecommender.ml.bag_of_words import BagOfWords
 from apprecommender.ml.bayes_matrix import BayesMatrix
 from apprecommender.ml.data import MachineLearningData
 
-XAPIAN_DATABASE_PATH = path.expanduser('~/.app-recommender/axi_desktopapps/')
+XAPIAN_DATABASE_PATH = Config().axi_desktopapps
 USER_DATA_DIR = Config().user_data_dir
 PKGS_CLASSIFICATIONS_INDICES = (USER_DATA_DIR +
                                 'pkgs_classifications_indices.txt')
@@ -223,12 +222,15 @@ class MachineLearning(ContentBased):
 
     @staticmethod
     def train(cls):
-        if MachineLearning.PKGS_CLASSIFICATIONS is None:
-            ml_data = MachineLearningData()
-            labels = ['RU', 'U', 'NU']
-            MachineLearning.PKGS_CLASSIFICATIONS = ml_data.create_data(labels)
+        ml_data = MachineLearningData()
+        labels = ['RU', 'U', 'NU']
 
-        cls.run_train(MachineLearning.PKGS_CLASSIFICATIONS)
+        try:
+            MachineLearning.PKGS_CLASSIFICATIONS = ml_data.create_data(
+                labels)
+            cls.run_train(MachineLearning.PKGS_CLASSIFICATIONS)
+        except IOError:
+            raise
 
     @abstractmethod
     def get_debtags_path(self):

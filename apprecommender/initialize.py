@@ -102,10 +102,15 @@ class Initialize:
         print "Time elapsed: %d seconds." % delta.seconds
 
     def prepare_data(self):
-        if os.path.exists(self.config.base_dir):
-            shutil.rmtree(self.config.base_dir)
-        os.makedirs(self.config.base_dir)
-        os.makedirs(self.config.filters_dir)
+
+        try:
+            if os.path.exists(self.config.base_dir):
+                shutil.rmtree(self.config.base_dir)
+
+            os.makedirs(self.config.base_dir)
+            os.makedirs(self.config.filters_dir)
+        except OSError:
+            raise
 
         tags = self.get_tags()
         tags_path = "{}/debtags".format(self.config.filters_dir)
