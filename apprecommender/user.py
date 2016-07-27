@@ -37,6 +37,7 @@ from apprecommender.error import Error
 from apprecommender.singleton import Singleton
 from apprecommender.decider import (FilterTag, FilterDescription,
                                     FilterTag_or_Description)
+from apprecommender.config import Config
 
 
 class DemographicProfile(Singleton):
@@ -272,8 +273,8 @@ class User:
         return self.pkg_profile
 
     def get_most_usefull_pkgs(self):
-        classification_path = os.path.expanduser(
-            '~/.app-recommender/user_data/pkgs_classifications.txt')
+        classification_path = Config().user_data_dir
+        classification_path += 'pkgs_classifications.txt'
 
         if not os.path.exists(classification_path):
             return -1
