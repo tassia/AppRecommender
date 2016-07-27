@@ -12,16 +12,14 @@ import tarfile
 import time
 import xapian
 
-from apprecommender.app_recommender import AppRecommender
+from apprecommender.main.app_recommender import AppRecommender
 from apprecommender.config import Config
 from apprecommender.data import get_user_installed_pkgs
 from apprecommender.data_classification import get_alternative_pkg
 from apprecommender.ml.data import MachineLearningData
 from apprecommender.ml.pkg_time import PkgTime
-from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
-                                     MachineLearningBOW)
 from apprecommender.utils import print_progress_bar
-from bin.ml_cross_validation import ml_cross_validation
+from apprecommender.main.ml_cross_validation import ml_cross_validation
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 SUFIX = dt.datetime.now().strftime('%Y%m%d%H%M')
@@ -369,8 +367,6 @@ def clear_prints():
 def train_machine_learning():
     try:
         print "Training machine learning"
-        MachineLearning.train(MachineLearningBVA)
-        MachineLearning.train(MachineLearningBOW)
 
         os.system("cp {} {}".format(
             MachineLearningData.PKGS_CLASSIFICATIONS, LOG_PATH))
@@ -378,8 +374,11 @@ def train_machine_learning():
         print "\n\nPlease check if you prepared the AppRecommender data"
         print "Try to run the following commands:"
         print "  $ cd .."
-        print "  $ apprec --init\n"
+        print "  $ sudo apprec --init\n"
         exit(1)
+    except IOError:
+        print "\n\nPlease run the train command before executing this script:"
+        print "  $ sudo apprec --train\n"
 
 
 def run_cross_validation():

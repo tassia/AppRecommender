@@ -13,8 +13,7 @@ from apprecommender.decider import FilterTag, FilterDescription
 
 class MachineLearningData():
 
-    XAPIAN_DATABASE_PATH = path.expanduser(
-        '~/.app-recommender/axi_desktopapps/')
+    XAPIAN_DATABASE_PATH = Config().axi_desktopapps
     USER_DATA_DIR = Config().user_data_dir
     BASE_DIR = Config().base_dir
 
@@ -56,13 +55,15 @@ class MachineLearningData():
             self.get_pkgs_table_classification(self.axi, pkgs,
                                                cache, debtags_name,
                                                terms_name))
-
-        self.save_pkg_data(terms_name,
-                           MachineLearningData.MACHINE_LEARNING_TERMS)
-        self.save_pkg_data(debtags_name,
-                           MachineLearningData.MACHINE_LEARNING_DEBTAGS)
-        self.save_pkg_data(pkgs_classifications,
-                           MachineLearningData.PKGS_CLASSIFICATIONS)
+        try:
+            self.save_pkg_data(
+                terms_name, MachineLearningData.MACHINE_LEARNING_TERMS)
+            self.save_pkg_data(
+                debtags_name, MachineLearningData.MACHINE_LEARNING_DEBTAGS)
+            self.save_pkg_data(
+                pkgs_classifications, MachineLearningData.PKGS_CLASSIFICATIONS)
+        except IOError:
+            raise
 
         return pkgs_classifications
 
@@ -204,5 +205,11 @@ class MachineLearningData():
         return pkgs_classification
 
     def save_pkg_data(self, pkg_data, file_path):
-        with open(file_path, 'wb') as text:
-            pickle.dump(pkg_data, text)
+        try:
+            ml_data = open(file_path, 'wb')
+
+            with ml_data:
+                pickle.dump(pkg_data, ml_data)
+
+        except IOError:
+            raise

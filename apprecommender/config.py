@@ -45,17 +45,25 @@ class Config(Singleton):
                 ['/etc/apprecommender/recommender.conf',
                  os.path.expanduser('~/.app_recommender.rc'),
                  os.path.expanduser('app_recommender.cfg')])
+
+            log_path = "/home/{}/.app-recommender/"
+
+            if os.getenv('SUDO_USER'):
+                self.output = log_path.format(os.getenv("SUDO_USER"))
+            elif os.getenv('USER'):
+                self.output = log_path.format(os.getenv("USER"))
+
         except (MissingSectionHeaderError), err:
             logging.error("Error in config file syntax: %s", str(err))
             os.abort()
         if not hasattr(self, 'initialized'):
             # data_source options
+            # self.base_dir = '/var/lib/apprecommender'
             self.base_dir = os.path.expanduser('~/.app-recommender')
             self.user_data_dir = os.path.join(self.base_dir, "user_data/")
             # general options
             self.debug = 0
             self.verbose = 0
-            self.output = os.path.join(self.base_dir, "apprec.log")
             # filters for valid packages
             self.filters_dir = os.path.join(self.base_dir, "filters")
             self.pkgs_filter = os.path.join(self.filters_dir, "desktopapps")
@@ -130,8 +138,6 @@ class Config(Singleton):
         self.user_data_dir = os.path.join(
             self.base_dir, self.read_option('data_sources',
                                             'user_data_dir'))
-        self.output = os.path.join(
-            self.base_dir, self.read_option('general', 'output'))
         self.filters_dir = os.path.join(
             self.base_dir, self.read_option('data_sources',
                                             'filters_dir'))
@@ -202,11 +208,19 @@ class Config(Singleton):
         console_handler.setLevel(log_level)
         self.logger.addHandler(console_handler)
 
-        if not os.path.exists(self.base_dir):
-            os.makedirs(self.base_dir)
+        if not os.path.exists(self.output):
+            os.makedirs(self.output, mode=0777)
+            os.chmod(self.output, 0777)
+
+        self.output += "apprec.log"
+
         file_handler = logging.handlers.RotatingFileHandler(self.output,
                                                             maxBytes=50000000,
                                                             backupCount=5)
+
+        if os.getenv('SUDO_USER'):
+            os.chmod(self.output, 0777)
+
         log_format = '%(asctime)s %(levelname)-8s %(message)s'
         file_handler.setFormatter(logging.Formatter(
             log_format, datefmt='%Y-%m-%d %H:%M:%S'))

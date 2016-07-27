@@ -7,8 +7,6 @@ import pickle
 import sys
 import getopt
 
-sys.path.insert(0, "{0}/../".format(os.path.dirname(__file__)))
-
 from apprecommender.ml.cross_validation import (CrossValidationBVA,
                                                 CrossValidationBOW)
 from apprecommender.evaluation import (SimpleAccuracy, Precision, Recall, FPR,
@@ -37,10 +35,11 @@ def get_strategy(ml_strategy_str, pkg_data, partition_size, rounds,
 def get_pkg_data(ml_strategy_str, ml_data, labels):
     if ml_strategy_str == 'bow':
         path = BagOfWords.BAG_OF_WORDS_PKGS_CLASSIFICATION
-        with open(path, 'ra') as pkgs_classification:
-            return pickle.load(pkgs_classification)
     else:
-        return ml_data.create_data(labels)
+        path = MachineLearningData.PKGS_CLASSIFICATIONS
+
+    with open(path, 'ra') as pkgs_classification:
+        return pickle.load(pkgs_classification)
 
 
 def ml_cross_validation(folder_path, ml_strategy_str):
