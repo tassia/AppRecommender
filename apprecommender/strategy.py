@@ -26,16 +26,15 @@ import operator
 import pickle
 import re
 import recommender
+import subprocess
 import xapian
 
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
-from fuzzywuzzy import fuzz
-from os import path
 
 from apprecommender.config import Config
-from apprecommender.decider import PkgMatchDecider
+from apprecommender.decider import PkgMatchDecider, PkgFilterDecider
 from apprecommender.ml.bag_of_words import BagOfWords
 from apprecommender.ml.bayes_matrix import BayesMatrix
 from apprecommender.ml.data import MachineLearningData
@@ -68,16 +67,20 @@ class ContentBased(RecommendationStrategy):
         self.profile_size = profile_size
 
     def get_sugestion_from_profile(self, rec, user, profile,
-                                   recommendation_size, because=True):
+                                   recommendation_size, because=True,
+                                   pkg_decider=None):
         query = xapian.Query(xapian.Query.OP_OR, profile)
         enquire = xapian.Enquire(rec.items_repository)
         enquire.set_weighting_scheme(rec.weight)
         enquire.set_query(query)
         user_profile = None
+        if pkg_decider is None:
+            pkg_decider = PkgMatchDecider(user.installed_pkgs)
+
         # Retrieve matching packages
         try:
             mset = enquire.get_mset(0, recommendation_size, None,
-                                    PkgMatchDecider(user.installed_pkgs))
+                                    pkg_decider)
         except xapian.DatabaseError as error:
             logging.critical("Content-based strategy: " + error.get_msg())
 
@@ -109,60 +112,43 @@ class ContentBased(RecommendationStrategy):
 
 class PackageReference(ContentBased):
 
-    def __init__(self, content, profile_size, reference_pkgs,
-                 suggestion_size=1000):
+    def __init__(self, content, profile_size, reference_pkgs):
         ContentBased.__init__(self, content, profile_size)
         self.content = content
         self.description = 'Package-reference'
         self.profile_size = profile_size
-        self.suggestion_size = suggestion_size
-        self.reference_pkgs = reference_pkgs
         self.cache = apt.Cache()
+        self.pkgs_regex = re.compile(r'^\s+(?:\|)?(.+)$', re.MULTILINE)
 
-    def load_pkgs_descriptions(self, pkgs):
-        pkgs_descriptions = {}
+        self.reference_pkgs = [pkg for pkg in reference_pkgs
+                               if pkg in self.cache]
 
-        for pkg in pkgs:
-            description = self.cache[pkg].candidate.description
-            pkgs_descriptions[pkg] = description.lower()
+    def get_dependency_pkgs(self):
+        dependency_pkgs = []
+        for pkg in self.reference_pkgs:
+            command = 'apt-cache rdepends {}'.format(pkg)
+            rdepends = subprocess.check_output(command,
+                                               stderr=subprocess.STDOUT,
+                                               shell=True)
+            rdepends_pkgs = self.pkgs_regex.findall(rdepends)
+            dependency_pkgs += rdepends_pkgs
 
-        return pkgs_descriptions
-
-    def get_item_score(self, reference_pkgs, content_based_pkgs):
-        item_score = {}
-        references_descriptions = self.load_pkgs_descriptions(reference_pkgs)
-        pkgs_descriptions = self.load_pkgs_descriptions(content_based_pkgs)
-        len_references = float(len(reference_pkgs)) or 1
-
-        for pkg in content_based_pkgs:
-            score = 0
-            pkg_description = pkgs_descriptions[pkg]
-
-            for reference_pkg in reference_pkgs:
-                ref_description = references_descriptions[reference_pkg]
-                score += fuzz.ratio(ref_description, pkg_description)
-
-            item_score[pkg] = float(score) / len_references
-
-        return item_score
+        return dependency_pkgs
 
     def run(self, rec, user, rec_size):
-        user_profile = None
+        dependency_pkgs = self.get_dependency_pkgs()
+
+        pkg_decider = PkgFilterDecider(dependency_pkgs, user.installed_pkgs)
+
         profile = user.content_profile(rec.items_repository, self.content,
                                        self.profile_size, rec.valid_tags)
+        profile += self.reference_pkgs
 
-        pkgs_regex = re.compile(r'^\d+:\s([^\s]+)', re.MULTILINE)
-        suggested_pkgs = self.get_sugestion_from_profile(
-            rec, user, profile, self.suggestion_size, because=False)
-        pkgs = pkgs_regex.findall(suggested_pkgs.__str__())
+        rec.items_repository = xapian.Database(Config().axi)
+        result = self.get_sugestion_from_profile(
+            rec, user, profile, rec_size, pkg_decider=pkg_decider)
 
-        item_score = self.get_item_score(self.reference_pkgs, pkgs)
-
-        if Config().because:
-            user_profile = user.pkg_profile
-
-        return recommender.RecommendationResult(
-            item_score, limit=rec_size, user_profile=user_profile)
+        return result
 
 
 class MachineLearning(ContentBased):

@@ -180,6 +180,29 @@ class PkgExpandDecider(xapian.ExpandDecider):
         return is_new_pkg
 
 
+class PkgFilterDecider(xapian.MatchDecider):
+
+    """
+    Extend xapian.MatchDecider to consider only packages on valid list
+    """
+
+    def __init__(self, valid_pkgs_list, user_installed_pkgs):
+        """
+        Set initial parameters.
+        """
+        xapian.MatchDecider.__init__(self)
+        self.valid_pkgs_list = valid_pkgs_list
+        self.pkg_match_decider = PkgMatchDecider(user_installed_pkgs)
+
+    def __call__(self, doc):
+        """
+        True if the package is on pkg_list
+        """
+        pkg = doc.get_data()
+
+        return pkg in self.valid_pkgs_list and self.pkg_match_decider(doc)
+
+
 class TagExpandDecider(xapian.ExpandDecider):
 
     """
