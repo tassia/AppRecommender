@@ -135,6 +135,15 @@ class PackageReference(ContentBased):
 
         return dependency_pkgs
 
+    def content_profile_for_reference_pkgs(self):
+        content_profile = self.reference_pkgs[:]
+        for pkg in self.reference_pkgs:
+            content_profile += pkg.split('-')
+
+        content_profile = list(set(content_profile))
+
+        return content_profile
+
     def run(self, rec, user, rec_size):
         dependency_pkgs = self.get_dependency_pkgs()
 
@@ -142,7 +151,7 @@ class PackageReference(ContentBased):
 
         profile = user.content_profile(rec.items_repository, self.content,
                                        self.profile_size, rec.valid_tags)
-        profile += self.reference_pkgs
+        profile += self.content_profile_for_reference_pkgs()
 
         rec.items_repository = xapian.Database(Config().axi)
         result = self.get_sugestion_from_profile(
