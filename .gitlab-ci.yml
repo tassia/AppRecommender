@@ -1,16 +1,10 @@
 before_script:
   - ./install_dependencies.sh
   - sudo pip2 install flake8
-  - pushd bin
-  - python --version
-  - /usr/bin/python2 apprec.py --init
-  - /usr/bin/python2 apprec.py --train
-  - popd
+  - /usr/bin/python2 -m apprecommender.main.cli --init
+  - /usr/bin/python2 -m apprecommender.main.cli --train
 
 test:
   script:
     - flake8 .
     - /usr/bin/python2 setup.py test
-    - /usr/bin/python2 setup.py build
-    - sudo /usr/bin/python2 setup.py install
-    - sudo rm -rf dist/ build/
