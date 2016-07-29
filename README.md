@@ -1,4 +1,4 @@
-AppRecommender [![Build Status](https://travis-ci.org/GCS2016/AppRecommender.svg?branch=master)](https://travis-ci.org/GCS2016/AppRecommender)
+AppRecommender [![Build Status](https://gitlab.com/AppRecommender/AppRecommender/badges/master/build.svg)](https://gitlab.com/AppRecommender/AppRecommender/builds)
 ===============================================================
 Application recommender for GNU/Linux systems
 ---------------------------------------------------------------
