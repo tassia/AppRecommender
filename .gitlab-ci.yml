@@ -1,0 +1,10 @@
+before_script:
+  - ./install_dependencies.sh
+  - sudo pip2 install flake8
+  - /usr/bin/python2 -m apprecommender.main.cli --init
+  - /usr/bin/python2 -m apprecommender.main.cli --train
+
+test:
+  script:
+    - flake8 .
+    - /usr/bin/python2 setup.py test
