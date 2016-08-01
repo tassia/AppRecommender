@@ -45,13 +45,7 @@ class Config(Singleton):
                 ['/etc/apprecommender/recommender.conf',
                  os.path.expanduser('~/.app_recommender.rc'),
                  os.path.expanduser('app_recommender.cfg')])
-
-            log_path = "/home/{}/.app-recommender/"
-
-            if os.getenv('SUDO_USER'):
-                self.output = log_path.format(os.getenv("SUDO_USER"))
-            elif os.getenv('USER'):
-                self.output = log_path.format(os.getenv("USER"))
+            self.home_dir = os.path.expanduser('~/.app-recommender')
 
         except (MissingSectionHeaderError), err:
             logging.error("Error in config file syntax: %s", str(err))
@@ -60,6 +54,7 @@ class Config(Singleton):
             # data_source options
             # self.base_dir = '/var/lib/apprecommender'
             self.base_dir = os.path.expanduser('~/.app-recommender')
+            self.output = os.path.join(self.home_dir, 'apprec.log')
             self.user_data_dir = os.path.join(self.base_dir, "user_data/")
             # general options
             self.debug = 0
@@ -112,7 +107,6 @@ class Config(Singleton):
             self.popcon_profiling = "full"
 
             self.load_config_file()
-            self.set_logger()
             self.initialized = 1
             logging.info("Basic config")
 
@@ -135,6 +129,9 @@ class Config(Singleton):
         self.debug = int(self.read_option('general', 'verbose'))
         self.base_dir = os.path.expanduser(
             self.read_option('data_sources', 'base_dir'))
+        self.output = os.path.join(
+            self.home_dir, self.read_option('data_sources',
+                                            'output'))
         self.user_data_dir = os.path.join(
             self.base_dir, self.read_option('data_sources',
                                             'user_data_dir'))
@@ -193,7 +190,7 @@ class Config(Singleton):
         Configure application logger and log level.
         """
         self.logger = logging.getLogger('')  # root logger is used by default
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.WARNING)
 
         if self.debug == 1:
             log_level = logging.DEBUG
@@ -208,18 +205,12 @@ class Config(Singleton):
         console_handler.setLevel(log_level)
         self.logger.addHandler(console_handler)
 
-        if not os.path.exists(self.output):
-            os.makedirs(self.output, mode=0777)
-            os.chmod(self.output, 0777)
-
-        self.output += "apprec.log"
+        if not os.path.exists(self.home_dir):
+            os.makedirs(self.home_dir)
 
         file_handler = logging.handlers.RotatingFileHandler(self.output,
                                                             maxBytes=50000000,
                                                             backupCount=5)
-
-        if os.getenv('SUDO_USER'):
-            os.chmod(self.output, 0777)
 
         log_format = '%(asctime)s %(levelname)-8s %(message)s'
         file_handler.setFormatter(logging.Formatter(
