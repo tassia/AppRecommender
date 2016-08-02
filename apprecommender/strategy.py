@@ -123,17 +123,17 @@ class PackageReference(ContentBased):
         self.reference_pkgs = [pkg for pkg in reference_pkgs
                                if pkg in self.cache]
 
-    def get_dependency_pkgs(self):
-        dependency_pkgs = []
+    def get_reverse_dependencies_pkgs(self):
+        reverse_dependencies_pkgs = []
         for pkg in self.reference_pkgs:
             command = 'apt-cache rdepends {}'.format(pkg)
             rdepends = subprocess.check_output(command,
                                                stderr=subprocess.STDOUT,
                                                shell=True)
             rdepends_pkgs = self.pkgs_regex.findall(rdepends)
-            dependency_pkgs += rdepends_pkgs
+            reverse_dependencies_pkgs += rdepends_pkgs
 
-        return dependency_pkgs
+        return reverse_dependencies_pkgs
 
     def content_profile_for_reference_pkgs(self):
         content_profile = self.reference_pkgs[:]
@@ -145,9 +145,10 @@ class PackageReference(ContentBased):
         return content_profile
 
     def run(self, rec, user, rec_size):
-        dependency_pkgs = self.get_dependency_pkgs()
+        reverse_dependencies_pkgs = self.get_reverse_dependencies_pkgs()
 
-        pkg_decider = PkgFilterDecider(dependency_pkgs, user.installed_pkgs)
+        pkg_decider = PkgFilterDecider(reverse_dependencies_pkgs,
+                                       user.installed_pkgs)
 
         profile = user.content_profile(rec.items_repository, self.content,
                                        self.profile_size, rec.valid_tags)
