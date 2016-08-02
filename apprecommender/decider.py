@@ -180,19 +180,21 @@ class PkgExpandDecider(xapian.ExpandDecider):
         return is_new_pkg
 
 
-class PkgFilterDecider(xapian.MatchDecider):
+class PkgReverseDependeciesDecider(xapian.MatchDecider):
 
     """
     Extend xapian.MatchDecider to consider only packages on valid list
     """
 
-    def __init__(self, valid_pkgs_list, user_installed_pkgs):
+    def __init__(self, reverse_dependencies, user_installed_pkgs):
         """
         Set initial parameters.
         """
         xapian.MatchDecider.__init__(self)
-        self.valid_pkgs_list = valid_pkgs_list
+        self.reverse_dependencies = reverse_dependencies
+        self.pkg_init_decider = PkgInitDecider()
         self.pkg_match_decider = PkgMatchDecider(user_installed_pkgs)
+        self.cache = apt.Cache()
 
     def __call__(self, doc):
         """
@@ -200,7 +202,21 @@ class PkgFilterDecider(xapian.MatchDecider):
         """
         pkg = doc.get_data()
 
-        return pkg in self.valid_pkgs_list and self.pkg_match_decider(doc)
+        if pkg not in self.reverse_dependencies:
+            return False
+
+        if pkg not in self.cache:
+            return False
+
+        if self.cache[pkg].section == 'doc':
+            return False
+
+        decider = self.pkg_init_decider
+        pkg_candidate = self.cache[pkg].candidate
+        if not decider.is_program_dependencies_installed(pkg_candidate):
+            return False
+
+        return self.pkg_match_decider(doc)
 
 
 class TagExpandDecider(xapian.ExpandDecider):
