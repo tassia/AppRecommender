@@ -4,6 +4,8 @@ import unittest
 import logging
 
 import apprecommender.main.cli as apprec
+
+from apprecommender.main.options import get_parser
 from apprecommender.config import Config
 from apprecommender.ml.data import MachineLearningData
 
@@ -15,18 +17,21 @@ class RunTests(unittest.TestCase):
 
         self.axi_desktopapps = Config().axi_desktopapps
 
+        parser = get_parser()
+        self.args = vars(parser.parse_args(''))
+
     def tearDown(self):
         Config().axi_desktopapps = self.axi_desktopapps
 
     def test_success_run_apprec(self):
         logging.getLogger().disabled = False
-        result = apprec.run()
+        result = apprec.run(self.args)
 
         self.assertEqual(apprec.SUCCESS, result)
 
     def test_error_init_on_run_apprec(self):
         Config().axi_desktopapps = "asd"
-        result = apprec.run()
+        result = apprec.run(self.args)
 
         self.assertEqual(apprec.ERROR_INIT, result)
 
@@ -38,7 +43,7 @@ class RunTests(unittest.TestCase):
         training_path = MachineLearningData.MACHINE_LEARNING_TRAINING
         MachineLearningData.MACHINE_LEARNING_TRAINING = "error.txt"
 
-        result = apprec.run()
+        result = apprec.run(self.args)
 
         config.strategy = strategy
         MachineLearningData.MACHINE_LEARNING_TRAINING = training_path
