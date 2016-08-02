@@ -5,10 +5,10 @@ import xapian
 from apprecommender.main.app_recommender import AppRecommender
 from apprecommender.config import Config
 from apprecommender.initialize import Initialize
-from apprecommender.load_options import LoadOptions
 from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
                                      MachineLearningBOW)
 from apprecommender.main import collect_user_data
+from apprecommender.main.options import get_parser
 
 SUCCESS = 0
 ERROR_INIT = 1
@@ -16,15 +16,23 @@ ERROR_TRAIN = 2
 PERMISSION_DENIED = 3
 
 
-def check_for_flag(options, short_flag, long_flag):
-    for option, _ in options:
-        if option in (short_flag, long_flag):
-            return True
+def parse_options(args, config):
 
-    return False
+    if args['strategy']:
+        config.strategy = args['strategy']
+    if args['debug']:
+        config.debug = 1
+    if args['verbose']:
+        config.verbose = 1
+    if args['profile_size']:
+        config.profile_size = args['profile_size']
+    if args['because']:
+        config.because = True
+    if args['num_recommendations']:
+        config.num_recommendations = args['num_recommendations']
 
 
-def run_apprecommender(options):
+def run_apprecommender():
     try:
         app_recommender = AppRecommender()
         app_recommender.make_recommendation()
@@ -38,12 +46,8 @@ def run_apprecommender(options):
         return PERMISSION_DENIED
 
 
-def run():
-    load_options = LoadOptions()
-    load_options.load()
-    options = load_options.options
-
-    if check_for_flag(options, '-i', '--init'):
+def run(args):
+    if args['init']:
         print "Initializing AppRecommender"
         initialize = Initialize()
 
@@ -53,7 +57,7 @@ def run():
             return PERMISSION_DENIED
 
         return SUCCESS
-    elif check_for_flag(options, '-t', '--train'):
+    elif args['train']:
         print "Training machine learning"
 
         try:
@@ -63,14 +67,19 @@ def run():
             return PERMISSION_DENIED
 
         return SUCCESS
-    elif check_for_flag(options, '-c', '--contribute'):
+    elif args['contribute']:
         collect_user_data.main()
     else:
-        return run_apprecommender(load_options.options)
+        config = Config()
+        parse_options(args, config)
+        return run_apprecommender()
 
 
 def main():
-    result = run()
+    parser = get_parser()
+    args = vars(parser.parse_args())
+
+    result = run(args)
 
     if result is ERROR_INIT:
         print "\n"
