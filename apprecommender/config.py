@@ -52,8 +52,9 @@ class Config(Singleton):
             os.abort()
         if not hasattr(self, 'initialized'):
             # data_source options
-            # self.base_dir = '/var/lib/apprecommender'
-            self.base_dir = os.path.expanduser('~/.app-recommender')
+            self.base_dir = os.environ.get(
+                'APPREC_DATA', '~/.apprecommender')
+            self.base_dir = os.path.expanduser(self.base_dir)
             self.output = os.path.join(self.home_dir, 'apprec.log')
             self.user_data_dir = os.path.join(self.base_dir, "user_data/")
             # general options
@@ -127,8 +128,9 @@ class Config(Singleton):
         """
         self.debug = int(self.read_option('general', 'debug'))
         self.debug = int(self.read_option('general', 'verbose'))
-        self.base_dir = os.path.expanduser(
-            self.read_option('data_sources', 'base_dir'))
+        self.base_dir = os.environ.get(
+            'APPREC_DATA', '~/.apprecommender')
+        self.base_dir = os.path.expanduser(self.base_dir)
         self.output = os.path.join(
             self.home_dir, self.read_option('data_sources',
                                             'output'))
