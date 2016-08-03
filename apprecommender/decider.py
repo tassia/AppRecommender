@@ -135,11 +135,12 @@ class PkgMatchDecider(xapian.MatchDecider):
         xapian.MatchDecider.__init__(self)
         self.pkgs_list = pkgs_list
 
-    def __call__(self, doc):
+    def __call__(self, xapian_document):
         """
-        True if the package is not already installed and is not a lib or a doc.
+        True if the package is not already installed and is not a lib or
+        a xapian_document.
         """
-        pkg = doc.get_data()
+        pkg = xapian_document.get_data()
         is_new = pkg not in self.pkgs_list
         is_new = is_new and ':' not in pkg
 
@@ -196,11 +197,11 @@ class PkgReverseDependeciesDecider(xapian.MatchDecider):
         self.pkg_match_decider = PkgMatchDecider(user_installed_pkgs)
         self.cache = apt.Cache()
 
-    def __call__(self, doc):
+    def __call__(self, xapian_document):
         """
         True if the package is on pkg_list
         """
-        pkg = doc.get_data()
+        pkg = xapian_document.get_data()
 
         if pkg not in self.reverse_dependencies:
             return False
@@ -216,7 +217,7 @@ class PkgReverseDependeciesDecider(xapian.MatchDecider):
         if not decider.is_program_dependencies_installed(pkg_candidate):
             return False
 
-        return self.pkg_match_decider(doc)
+        return self.pkg_match_decider(xapian_document)
 
 
 class TagExpandDecider(xapian.ExpandDecider):
