@@ -113,18 +113,17 @@ class ContentBased(RecommendationStrategy):
 
 class PackageReference(ContentBased):
 
-    def __init__(self, content, profile_size, reference_pkgs):
+    def __init__(self, content, profile_size):
         ContentBased.__init__(self, content, profile_size)
         self.content = content
         self.description = 'Package-reference'
         self.profile_size = profile_size
         self.cache = apt.Cache()
         self.pkgs_regex = re.compile(r'^\s+(?:\|)?(.+)$', re.MULTILINE)
-        self.reference_pkgs = reference_pkgs
 
-    def get_reverse_dependencies_pkgs(self):
+    def get_reverse_dependencies_pkgs(self, reference_pkgs):
         reverse_dependencies_pkgs = []
-        for pkg in self.reference_pkgs:
+        for pkg in reference_pkgs:
             command = 'apt-cache rdepends {}'.format(pkg)
             rdepends = subprocess.check_output(command,
                                                stderr=subprocess.STDOUT,
@@ -134,9 +133,9 @@ class PackageReference(ContentBased):
 
         return reverse_dependencies_pkgs
 
-    def content_profile_for_reference_pkgs(self):
-        content_profile = self.reference_pkgs[:]
-        for pkg in self.reference_pkgs:
+    def content_profile_for_reference_pkgs(self, reference_pkgs):
+        content_profile = reference_pkgs[:]
+        for pkg in reference_pkgs:
             content_profile += pkg.split('-')
 
         content_profile = list(set(content_profile))
@@ -144,14 +143,16 @@ class PackageReference(ContentBased):
         return content_profile
 
     def run(self, rec, user, rec_size):
-        reverse_dependencies_pkgs = self.get_reverse_dependencies_pkgs()
+        reference_pkgs = user.reference_pkgs
+        reverse_dependencies_pkgs = self.get_reverse_dependencies_pkgs(
+            reference_pkgs)
 
         pkg_decider = PkgReverseDependeciesDecider(reverse_dependencies_pkgs,
                                                    user.installed_pkgs)
 
         profile = user.content_profile(rec.items_repository, self.content,
                                        self.profile_size, rec.valid_tags)
-        profile += self.content_profile_for_reference_pkgs()
+        profile += self.content_profile_for_reference_pkgs(reference_pkgs)
 
         rec.items_repository = xapian.Database(Config().axi)
         result = self.get_sugestion_from_profile(

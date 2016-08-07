@@ -73,7 +73,8 @@ class User:
     Define a user of a recommender.
     """
 
-    def __init__(self, item_score, user_id=0, arch=0, demo_profiles_set=0):
+    def __init__(self, item_score, user_id=0, arch=0, demo_profiles_set=0,
+                 reference_pkgs=[]):
         """
         Set initial user attributes. pkg_profile gets the whole set of items,
         a random user_id is set if none was provided and the demographic
@@ -83,6 +84,7 @@ class User:
         self.pkg_profile = self.items()
         self.installed_pkgs = data.get_user_installed_pkgs()
         self.arch = arch
+        self.reference_pkgs = reference_pkgs
 
         if user_id:
             self.user_id = user_id
@@ -335,7 +337,7 @@ class LocalSystem(User):
     system as the set of selected itens.
     """
 
-    def __init__(self):
+    def __init__(self, reference_pkgs=[]):
         """
         Set initial parameters.
         """
@@ -344,7 +346,7 @@ class LocalSystem(User):
 
         self.user_id = "local-" + str(datetime.datetime.now())
 
-        User.__init__(self, item_score)
+        User.__init__(self, item_score, reference_pkgs=reference_pkgs)
 
     def get_system_pkgs(self):
         system_pkgs = []

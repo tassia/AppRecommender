@@ -11,7 +11,7 @@ from apprecommender.ml.pkg_time import PkgTime
 
 def main():
     path = os.path.expanduser(
-        '~/.app-recommender/user_data/pkgs_classifications.txt')
+        '~/.apprecommender/user_data/pkgs_classifications.txt')
 
     if not os.path.exists(path):
         print 'Could not find file pkgs_classification'

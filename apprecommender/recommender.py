@@ -148,7 +148,6 @@ class Recommender:
         """
         Set the recommendation strategy.
         """
-        reference_pkgs = self.cfg.reference_pkgs
         profile_size = n if n else self.cfg.profile_size
 
         self.items_repository = self.axi_desktopapps
@@ -166,8 +165,7 @@ class Recommender:
         elif strategy_str == "cbtm":
             self.strategy = strategy.ContentBased("time", profile_size)
         elif strategy_str == "cbpkg":
-            self.strategy = strategy.PackageReference("mix", profile_size,
-                                                      reference_pkgs)
+            self.strategy = strategy.PackageReference("mix", profile_size)
         elif strategy_str == "mlbva":
             self.strategy = strategy.MachineLearningBVA("mlbva_mix",
                                                         profile_size)
