@@ -13,10 +13,13 @@ class AppRecommender:
         self.recommender = Recommender()
         self.config = Config()
 
-    def make_recommendation(self, reference_pkgs=[],
+    def make_recommendation(self, reference_pkgs=None,
                             print_recommendation=True):
         begin_time = datetime.datetime.now()
         logging.info("Computation started at %s" % begin_time)
+
+        if not reference_pkgs:
+            reference_pkgs = []
 
         user = LocalSystem(reference_pkgs)
         recommendation_size = Config().num_recommendations

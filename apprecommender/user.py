@@ -74,7 +74,7 @@ class User:
     """
 
     def __init__(self, item_score, user_id=0, arch=0, demo_profiles_set=0,
-                 reference_pkgs=[]):
+                 reference_pkgs=None):
         """
         Set initial user attributes. pkg_profile gets the whole set of items,
         a random user_id is set if none was provided and the demographic
@@ -84,7 +84,8 @@ class User:
         self.pkg_profile = self.items()
         self.installed_pkgs = data.get_user_installed_pkgs()
         self.arch = arch
-        self.reference_pkgs = reference_pkgs
+
+        self.reference_pkgs = reference_pkgs if reference_pkgs else []
 
         if user_id:
             self.user_id = user_id
@@ -337,7 +338,7 @@ class LocalSystem(User):
     system as the set of selected itens.
     """
 
-    def __init__(self, reference_pkgs=[]):
+    def __init__(self, reference_pkgs=None):
         """
         Set initial parameters.
         """
