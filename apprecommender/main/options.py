@@ -52,8 +52,8 @@ def get_parser():
         action='store_true')
 
     parser.add_argument(
-        '-p', '--package',
+        '-p', '--packages',
         help="Add reference package for strategy 'cbpkg'",
-        type=str)
+        type=str, nargs='+', default=[])
 
     return parser

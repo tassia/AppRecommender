@@ -31,16 +31,6 @@ def parse_options(args, config):
         config.num_recommendations = args['num_recommendations']
 
 
-def get_reference_pkgs(args):
-    reference_pkgs = []
-
-    if args['package']:
-        package = args['package']
-        reference_pkgs.append(package)
-
-    return reference_pkgs
-
-
 def run_apprecommender(reference_pkgs):
     try:
         app_recommender = AppRecommender()
@@ -81,7 +71,7 @@ def run(args):
     else:
         config = Config()
         parse_options(args, config)
-        reference_pkgs = get_reference_pkgs(args)
+        reference_pkgs = args['packages']
         return run_apprecommender(reference_pkgs)
 
 
