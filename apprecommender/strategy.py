@@ -161,6 +161,15 @@ class PackageReference(ContentBased):
         return result
 
 
+class MachineLearningTrainError(Exception):
+
+    def __init__(self, value=''):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+
 class MachineLearning(ContentBased):
 
     __metaclass__ = ABCMeta
@@ -284,7 +293,10 @@ class MachineLearning(ContentBased):
         try:
             MachineLearning.PKGS_CLASSIFICATIONS = ml_data.create_data(
                 labels)
-            cls.run_train(MachineLearning.PKGS_CLASSIFICATIONS)
+            if len(MachineLearning.PKGS_CLASSIFICATIONS) > 0:
+                cls.run_train(MachineLearning.PKGS_CLASSIFICATIONS)
+            else:
+                raise MachineLearningTrainError()
         except IOError:
             raise
 

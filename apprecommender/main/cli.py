@@ -6,7 +6,8 @@ from apprecommender.main.app_recommender import AppRecommender
 from apprecommender.config import Config
 from apprecommender.initialize import Initialize
 from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
-                                     MachineLearningBOW)
+                                     MachineLearningBOW,
+                                     MachineLearningTrainError)
 from apprecommender.main import collect_user_data
 from apprecommender.main.options import get_parser
 
@@ -14,6 +15,7 @@ SUCCESS = 0
 ERROR_INIT = 1
 ERROR_TRAIN = 2
 PERMISSION_DENIED = 3
+ERROR_INIT_TRAIN = 4
 
 
 def parse_options(args, config):
@@ -64,6 +66,8 @@ def run(args):
             MachineLearning.train(MachineLearningBOW)
         except IOError:
             return PERMISSION_DENIED
+        except MachineLearningTrainError:
+            return ERROR_INIT_TRAIN
 
         return SUCCESS
     elif args['contribute']:
@@ -91,6 +95,9 @@ def main():
         print "Run: apprec.py --train"
     elif result is PERMISSION_DENIED:
         print "Please, run this command as sudo"
+    elif result is ERROR_INIT_TRAIN:
+        print 'Error: You need install more packages to use machine' \
+              ' learning recommendations'
 
 if __name__ == '__main__':
     main()
