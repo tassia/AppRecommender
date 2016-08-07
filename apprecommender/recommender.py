@@ -164,6 +164,8 @@ class Recommender:
             self.strategy = strategy.ContentBased("half", profile_size)
         elif strategy_str == "cbtm":
             self.strategy = strategy.ContentBased("time", profile_size)
+        elif strategy_str == "cbpkg":
+            self.strategy = strategy.PackageReference("mix", profile_size)
         elif strategy_str == "mlbva":
             self.strategy = strategy.MachineLearningBVA("mlbva_mix",
                                                         profile_size)

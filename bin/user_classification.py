@@ -7,11 +7,11 @@ import sys
 sys.path.insert(0, "{0}/../".format(os.path.dirname(__file__)))
 
 from apprecommender.ml.pkg_time import PkgTime
+from apprecommender.config import Config
 
 
 def main():
-    path = os.path.expanduser(
-        '~/.app-recommender/user_data/pkgs_classifications.txt')
+    path = Config().user_data_dir + 'pkgs_classifications.txt'
 
     if not os.path.exists(path):
         print 'Could not find file pkgs_classification'

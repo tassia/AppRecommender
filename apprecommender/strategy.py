@@ -26,6 +26,7 @@ import operator
 import pickle
 import re
 import recommender
+import subprocess
 import xapian
 
 import numpy as np
@@ -33,7 +34,8 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 
 from apprecommender.config import Config
-from apprecommender.decider import PkgMatchDecider
+from apprecommender.decider import (PkgMatchDecider,
+                                    PkgReverseDependeciesDecider)
 from apprecommender.ml.bag_of_words import BagOfWords
 from apprecommender.ml.bayes_matrix import BayesMatrix
 from apprecommender.ml.data import MachineLearningData
@@ -66,16 +68,20 @@ class ContentBased(RecommendationStrategy):
         self.profile_size = profile_size
 
     def get_sugestion_from_profile(self, rec, user, profile,
-                                   recommendation_size, because=True):
+                                   recommendation_size, because=True,
+                                   pkg_decider=None):
         query = xapian.Query(xapian.Query.OP_OR, profile)
         enquire = xapian.Enquire(rec.items_repository)
         enquire.set_weighting_scheme(rec.weight)
         enquire.set_query(query)
         user_profile = None
+        if pkg_decider is None:
+            pkg_decider = PkgMatchDecider(user.installed_pkgs)
+
         # Retrieve matching packages
         try:
             mset = enquire.get_mset(0, recommendation_size, None,
-                                    PkgMatchDecider(user.installed_pkgs))
+                                    pkg_decider)
         except xapian.DatabaseError as error:
             logging.critical("Content-based strategy: " + error.get_msg())
 
@@ -102,6 +108,56 @@ class ContentBased(RecommendationStrategy):
                                        self.profile_size, rec.valid_tags)
         logging.debug(profile)
         result = self.get_sugestion_from_profile(rec, user, profile, rec_size)
+        return result
+
+
+class PackageReference(ContentBased):
+
+    def __init__(self, content, profile_size):
+        ContentBased.__init__(self, content, profile_size)
+        self.content = content
+        self.description = 'Package-reference'
+        self.profile_size = profile_size
+        self.cache = apt.Cache()
+        self.pkgs_regex = re.compile(r'^\s+(?:\|)?(.+)$', re.MULTILINE)
+
+    def get_reverse_dependencies_pkgs(self, reference_pkgs):
+        reverse_dependencies_pkgs = []
+        for pkg in reference_pkgs:
+            command = 'apt-cache rdepends {}'.format(pkg)
+            rdepends = subprocess.check_output(command,
+                                               stderr=subprocess.STDOUT,
+                                               shell=True)
+            rdepends_pkgs = self.pkgs_regex.findall(rdepends)
+            reverse_dependencies_pkgs += rdepends_pkgs
+
+        return reverse_dependencies_pkgs
+
+    def content_profile_for_reference_pkgs(self, reference_pkgs):
+        content_profile = reference_pkgs[:]
+        for pkg in reference_pkgs:
+            content_profile += pkg.split('-')
+
+        content_profile = list(set(content_profile))
+
+        return content_profile
+
+    def run(self, rec, user, rec_size):
+        reference_pkgs = user.reference_pkgs
+        reverse_dependencies_pkgs = self.get_reverse_dependencies_pkgs(
+            reference_pkgs)
+
+        pkg_decider = PkgReverseDependeciesDecider(reverse_dependencies_pkgs,
+                                                   user.installed_pkgs)
+
+        profile = user.content_profile(rec.items_repository, self.content,
+                                       self.profile_size, rec.valid_tags)
+        profile += self.content_profile_for_reference_pkgs(reference_pkgs)
+
+        rec.items_repository = xapian.Database(Config().axi)
+        result = self.get_sugestion_from_profile(
+            rec, user, profile, rec_size, pkg_decider=pkg_decider)
+
         return result
 
 

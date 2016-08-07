@@ -135,11 +135,12 @@ class PkgMatchDecider(xapian.MatchDecider):
         xapian.MatchDecider.__init__(self)
         self.pkgs_list = pkgs_list
 
-    def __call__(self, doc):
+    def __call__(self, xapian_document):
         """
-        True if the package is not already installed and is not a lib or a doc.
+        True if the package is not already installed and is not a lib or
+        a xapian_document.
         """
-        pkg = doc.get_data()
+        pkg = xapian_document.get_data()
         is_new = pkg not in self.pkgs_list
         is_new = is_new and ':' not in pkg
 
@@ -178,6 +179,45 @@ class PkgExpandDecider(xapian.ExpandDecider):
         if "gnome" in pkg:
             return is_new_pkg and "gnome" in self.pkgs_list
         return is_new_pkg
+
+
+class PkgReverseDependeciesDecider(xapian.MatchDecider):
+
+    """
+    Extend xapian.MatchDecider to consider only packages on valid list
+    """
+
+    def __init__(self, reverse_dependencies, user_installed_pkgs):
+        """
+        Set initial parameters.
+        """
+        xapian.MatchDecider.__init__(self)
+        self.reverse_dependencies = reverse_dependencies
+        self.pkg_init_decider = PkgInitDecider()
+        self.pkg_match_decider = PkgMatchDecider(user_installed_pkgs)
+        self.cache = apt.Cache()
+
+    def __call__(self, xapian_document):
+        """
+        True if the package is on pkg_list
+        """
+        pkg = xapian_document.get_data()
+
+        if pkg not in self.reverse_dependencies:
+            return False
+
+        if pkg not in self.cache:
+            return False
+
+        if self.cache[pkg].section == 'doc':
+            return False
+
+        decider = self.pkg_init_decider
+        pkg_candidate = self.cache[pkg].candidate
+        if not decider.is_program_dependencies_installed(pkg_candidate):
+            return False
+
+        return self.pkg_match_decider(xapian_document)
 
 
 class TagExpandDecider(xapian.ExpandDecider):

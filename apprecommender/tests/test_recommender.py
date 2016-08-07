@@ -25,7 +25,7 @@ from apprecommender.recommender import RecommendationResult, Recommender
 from apprecommender.user import User
 from apprecommender.config import Config
 from apprecommender.strategy import (ContentBased, MachineLearningBVA,
-                                     MachineLearningBOW)
+                                     MachineLearningBOW, PackageReference)
 
 
 class RecommendationResultTests(unittest.TestCase):
@@ -82,6 +82,9 @@ class RecommenderTests(unittest.TestCase):
         self.rec.set_strategy("mlbow_eset")
         self.assertIsInstance(self.rec.strategy, MachineLearningBOW)
         self.assertEqual(self.rec.strategy.content, "mlbow_mix_eset")
+        self.rec.set_strategy("cbpkg")
+        self.assertIsInstance(self.rec.strategy, PackageReference)
+        self.assertEqual(self.rec.strategy.content, "mix")
 
     def test_get_recommendation(self):
         user = User({"inkscape": 1, "gimp": 1, "eog": 1, "vim": 1})

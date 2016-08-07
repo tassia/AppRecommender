@@ -17,7 +17,6 @@ PERMISSION_DENIED = 3
 
 
 def parse_options(args, config):
-
     if args['strategy']:
         config.strategy = args['strategy']
     if args['debug']:
@@ -32,10 +31,10 @@ def parse_options(args, config):
         config.num_recommendations = args['num_recommendations']
 
 
-def run_apprecommender():
+def run_apprecommender(reference_pkgs):
     try:
         app_recommender = AppRecommender()
-        app_recommender.make_recommendation()
+        app_recommender.make_recommendation(reference_pkgs)
         return SUCCESS
     except xapian.DatabaseOpeningError:
         return ERROR_INIT
@@ -72,7 +71,8 @@ def run(args):
     else:
         config = Config()
         parse_options(args, config)
-        return run_apprecommender()
+        reference_pkgs = args['packages']
+        return run_apprecommender(reference_pkgs)
 
 
 def main():
