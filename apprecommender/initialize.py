@@ -105,9 +105,15 @@ class Initialize:
 
         try:
             if os.path.exists(self.config.base_dir):
-                shutil.rmtree(self.config.base_dir)
+                if os.path.exists(self.config.user_data_dir):
+                    shutil.rmtree(self.config.user_data_dir)
 
-            os.makedirs(self.config.base_dir)
+                if os.path.exists(self.config.axi_desktopapps):
+                    shutil.rmtree(self.config.axi_desktopapps)
+
+                if os.path.exists(self.config.filters_dir):
+                    shutil.rmtree(self.config.filters_dir)
+
             os.makedirs(self.config.filters_dir)
         except OSError:
             raise
