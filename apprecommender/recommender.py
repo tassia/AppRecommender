@@ -21,16 +21,17 @@ __license__ = """
 
 import apt
 import heapq
+import inspect
 import logging
 import operator
 import os
-import strategy
 import xapian
 
 from collections import namedtuple
 from fuzzywuzzy import fuzz
 from operator import attrgetter
 
+import apprecommender.strategy
 from apprecommender.config import Config
 
 
@@ -144,48 +145,38 @@ class Recommender:
 
         self.set_strategy(self.cfg.strategy)
 
+    def get_all_strategies(self):
+        cls_members = inspect.getmembers(apprecommender.strategy,
+                                         inspect.isclass)
+        valid_strategies = {}
+
+        for name, obj in cls_members:
+            class_strategies = getattr(obj, 'get_valid_strategies', None)
+
+            if class_strategies:
+                valid_strategies = dict(class_strategies(), **valid_strategies)
+
+        return valid_strategies
+
     def set_strategy(self, strategy_str, n=0):
         """
         Set the recommendation strategy.
         """
+        valid_strategies = self.get_all_strategies()
         profile_size = n if n else self.cfg.profile_size
 
         self.items_repository = self.axi_desktopapps
         self.valid_pkgs = self.valid_desktopapps
         logging.info("Setting recommender strategy to \'%s\'" % strategy_str)
 
-        if strategy_str == "cb":
-            self.strategy = strategy.ContentBased("mix", profile_size)
-        elif strategy_str == "cbt":
-            self.strategy = strategy.ContentBased("tag", profile_size)
-        elif strategy_str == "cbd":
-            self.strategy = strategy.ContentBased("desc", profile_size)
-        elif strategy_str == "cbh":
-            self.strategy = strategy.ContentBased("half", profile_size)
-        elif strategy_str == "cbtm":
-            self.strategy = strategy.ContentBased("time", profile_size)
-        elif strategy_str == "cbpkg":
-            self.strategy = strategy.PackageReference("mix", profile_size)
-        elif strategy_str == "mlbva":
-            self.strategy = strategy.MachineLearningBVA("mlbva_mix",
-                                                        profile_size)
-        elif strategy_str == "mlbow":
-            self.strategy = strategy.MachineLearningBOW("mlbow_mix",
-                                                        profile_size)
-        elif strategy_str == "cb_eset":
-            self.strategy = strategy.ContentBased("mix_eset", profile_size)
-        elif strategy_str == "cbt_eset":
-            self.strategy = strategy.ContentBased("tag_eset", profile_size)
-        elif strategy_str == "cbd_eset":
-            self.strategy = strategy.ContentBased("desc_eset", profile_size)
-        elif strategy_str == "cbh_eset":
-            self.strategy = strategy.ContentBased("half_eset", profile_size)
-        elif strategy_str == "mlbva_eset":
-            self.strategy = strategy.MachineLearningBVA("mlbva_mix_eset",
-                                                        profile_size)
-        elif strategy_str == "mlbow_eset":
-            self.strategy = strategy.MachineLearningBOW("mlbow_mix_eset",
-                                                        profile_size)
+        if strategy_str in valid_strategies:
+            strategy_type = valid_strategies[strategy_str]
+            class_name = strategy_type.class_name
+            content_type = strategy_type.content_type
+
+            self.strategy = eval(class_name)(
+                content_type, profile_size)
+
         else:
             logging.info("Strategy not defined.")
             self.strategy = None

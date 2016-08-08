@@ -21,6 +21,7 @@ __license__ = """
 """
 
 import apt
+import collections
 import logging
 import operator
 import pickle
@@ -39,11 +40,15 @@ from apprecommender.decider import (PkgMatchDecider,
 from apprecommender.ml.bag_of_words import BagOfWords
 from apprecommender.ml.bayes_matrix import BayesMatrix
 from apprecommender.ml.data import MachineLearningData
+from apprecommender.utils import get_class_and_module_name
 
 XAPIAN_DATABASE_PATH = Config().axi_desktopapps
 USER_DATA_DIR = Config().user_data_dir
 PKGS_CLASSIFICATIONS_INDICES = (USER_DATA_DIR +
                                 'pkgs_classifications_indices.txt')
+
+StrategyType = collections.namedtuple('StrategyType',
+                                      'class_name content_type')
 
 
 class RecommendationStrategy(object):
@@ -61,6 +66,21 @@ class ContentBased(RecommendationStrategy):
     """
     Content-based recommendation strategy based on Apt-xapian-index.
     """
+
+    @classmethod
+    def get_valid_strategies(cls):
+        class_name = get_class_and_module_name(cls)
+        valid_strategies = {'cb': StrategyType(class_name, 'mix'),
+                            'cbt': StrategyType(class_name, 'tag'),
+                            'cbd': StrategyType(class_name, 'desc'),
+                            'cbh': StrategyType(class_name, 'half'),
+                            'cbtm': StrategyType(class_name, 'time'),
+                            'cb_eset': StrategyType(class_name, 'mix_eset'),
+                            'cbt_eset': StrategyType(class_name, 'tag_eset'),
+                            'cbd_eset': StrategyType(class_name, 'desc_eset'),
+                            'cbh_eset': StrategyType(class_name, 'half_eset')}
+
+        return valid_strategies
 
     def __init__(self, content, profile_size):
         self.description = "Content-based"
@@ -112,6 +132,13 @@ class ContentBased(RecommendationStrategy):
 
 
 class PackageReference(ContentBased):
+
+    @classmethod
+    def get_valid_strategies(cls):
+        class_name = get_class_and_module_name(cls)
+        valid_strategies = {'cbpkg': StrategyType(class_name, 'mix')}
+
+        return valid_strategies
 
     def __init__(self, content, profile_size):
         ContentBased.__init__(self, content, profile_size)
@@ -345,6 +372,29 @@ class MachineLearning(ContentBased):
 
 class MachineLearningBVA(MachineLearning):
 
+    @classmethod
+    def get_valid_strategies(cls):
+        class_name = get_class_and_module_name(cls)
+        valid_strategies = {'mlbva': StrategyType(class_name, 'mlbva_mix'),
+                            'mlbva_eset': StrategyType(class_name,
+                                                       'mlbva_mix_eset')}
+
+        return valid_strategies
+
+    @classmethod
+    def run_train(cls, pkgs_classifications):
+        all_matrix = (np.matrix(pkgs_classifications.values()))
+        data_matrix = all_matrix[0:, 0:-1]
+        classifications = all_matrix[0:, -1]
+        order_of_classifications = ['NU', 'U', 'RU']
+
+        bayes_matrix = BayesMatrix()
+        bayes_matrix.training(data_matrix, classifications,
+                              order_of_classifications)
+
+        BayesMatrix.save(bayes_matrix,
+                         MachineLearningData.MACHINE_LEARNING_TRAINING)
+
     def __init__(self, content, profile_size, suggestion_size=200):
         super(MachineLearningBVA, self).__init__(
             content, profile_size, suggestion_size)
@@ -380,22 +430,17 @@ class MachineLearningBVA(MachineLearning):
 
         return attribute_vector
 
-    @classmethod
-    def run_train(cls, pkgs_classifications):
-        all_matrix = (np.matrix(pkgs_classifications.values()))
-        data_matrix = all_matrix[0:, 0:-1]
-        classifications = all_matrix[0:, -1]
-        order_of_classifications = ['NU', 'U', 'RU']
-
-        bayes_matrix = BayesMatrix()
-        bayes_matrix.training(data_matrix, classifications,
-                              order_of_classifications)
-
-        BayesMatrix.save(bayes_matrix,
-                         MachineLearningData.MACHINE_LEARNING_TRAINING)
-
 
 class MachineLearningBOW(MachineLearning):
+
+    @classmethod
+    def get_valid_strategies(cls):
+        class_name = get_class_and_module_name(cls)
+        valid_strategies = {'mlbow': StrategyType(class_name, 'mlbow_mix'),
+                            'mlbow_eset': StrategyType(class_name,
+                                                       'mlbow_mix_eset')}
+
+        return valid_strategies
 
     def __init__(self, content, profile_size, suggestion_size=200):
         super(MachineLearningBOW, self).__init__(
