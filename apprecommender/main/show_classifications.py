@@ -2,9 +2,6 @@
 
 import os
 import pickle
-import sys
-
-sys.path.insert(0, "{0}/../".format(os.path.dirname(__file__)))
 
 from apprecommender.ml.pkg_time import PkgTime
 from apprecommender.config import Config
@@ -44,7 +41,3 @@ def main():
             print pkg_text.format(pkg, pkgs_times[pkg][1].strip())
 
     print '\nNum pkgs: {}'.format(len(pkg_classification))
-
-
-if __name__ == '__main__':
-    main()

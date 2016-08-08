@@ -56,4 +56,9 @@ def get_parser():
         help="Add reference package for strategy 'cbpkg'",
         type=str, nargs='+', default=[])
 
+    parser.add_argument(
+        '--show-classifications',
+        help='Show the user classifications for machine learning algorithms',
+        action='store_true')
+
     return parser

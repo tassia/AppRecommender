@@ -9,6 +9,7 @@ from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
                                      MachineLearningBOW,
                                      MachineLearningTrainError)
 from apprecommender.main import collect_user_data
+from apprecommender.main import show_classifications
 from apprecommender.main.options import get_parser
 
 SUCCESS = 0
@@ -72,6 +73,8 @@ def run(args):
         return SUCCESS
     elif args['contribute']:
         collect_user_data.main()
+    elif args['show_classifications']:
+        show_classifications.main()
     else:
         config = Config()
         parse_options(args, config)
