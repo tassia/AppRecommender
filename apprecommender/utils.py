@@ -19,3 +19,10 @@ def print_progress_bar(number, n_numbers, message='Progress',
     sys.stdout.flush()
     if number == n_numbers:
         print '\n'
+
+
+def get_class_and_module_name(cls):
+    class_name = cls.__name__
+    module_name = cls.__module__
+
+    return module_name + '.' + class_name
