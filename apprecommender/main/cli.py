@@ -10,6 +10,7 @@ from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
                                      MachineLearningTrainError)
 from apprecommender.main import collect_user_data
 from apprecommender.main import show_classifications
+from apprecommender.main.apt_run import AptRun
 from apprecommender.main.options import get_parser
 
 SUCCESS = 0
@@ -75,6 +76,16 @@ def run(args):
         collect_user_data.main()
     elif args['show_classifications']:
         show_classifications.main()
+    elif args['enable_apt']:
+        apt_run = AptRun()
+        apt_run.enable()
+        print 'AppRecommender now makes recommendations when you install' \
+              ' new packages with apt'
+    elif args['disable_apt']:
+        apt_run = AptRun()
+        apt_run.disable()
+        print 'AppRecommender now dont makes recommendations when you' \
+              ' install new packages with apt'
     else:
         config = Config()
         parse_options(args, config)
