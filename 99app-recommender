@@ -1,0 +1,2 @@
+DPkg::Post-Invoke {"apprec-apt --post-invoke";};
+DPkg::Pre-Install-Pkgs {"apprec-apt --pre-install-pkgs";};

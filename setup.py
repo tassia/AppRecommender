@@ -15,6 +15,7 @@ setup(
     entry_points={
         'console_scripts': [
             'apprec = apprecommender.main.cli:main',
+            'apprec-apt = apprecommender.main.apt_run:main',
         ]
     },
 )

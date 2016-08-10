@@ -77,15 +77,29 @@ def run(args):
     elif args['show_classifications']:
         show_classifications.main()
     elif args['enable_apt']:
-        apt_run = AptRun()
-        apt_run.enable()
-        print 'AppRecommender now makes recommendations when you install' \
-              ' new packages with apt'
+        try:
+            apt_run = AptRun()
+            if apt_run.enable():
+                print 'AppRecommender now makes recommendations when you ' \
+                      ' install new packages with apt'
+            else:
+                print 'This is already enabled'
+
+            return SUCCESS
+        except OSError:
+            return PERMISSION_DENIED
     elif args['disable_apt']:
-        apt_run = AptRun()
-        apt_run.disable()
-        print 'AppRecommender now dont makes recommendations when you' \
-              ' install new packages with apt'
+        try:
+            apt_run = AptRun()
+            if apt_run.disable():
+                print 'AppRecommender now dont makes recommendations when' \
+                      'you install new packages with apt'
+            else:
+                print 'This is already disabled'
+
+            return SUCCESS
+        except OSError:
+            return PERMISSION_DENIED
     else:
         config = Config()
         parse_options(args, config)

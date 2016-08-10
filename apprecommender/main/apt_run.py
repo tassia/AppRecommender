@@ -18,17 +18,21 @@ class AptRun:
     def enable(self):
         if not self.is_enable():
             os.makedirs(AptRun.APT_FOLDER)
+            return True
+
+        return False
 
     def disable(self):
-        shutil.rmtree(AptRun.APT_FOLDER)
+        if self.is_enable():
+            shutil.rmtree(AptRun.APT_FOLDER)
+            return True
+
+        return False
 
     def is_enable(self):
         return os.path.exists(AptRun.APT_FOLDER)
 
     def pre_install_pkgs(self):
-        if not self.is_enable():
-            return
-
         if self.is_enable():
             commands.getoutput("apt-mark showmanual > %s" %
                                AptRun.INSTALLED_PKGS_FILE)
@@ -44,6 +48,7 @@ class AptRun:
         pos_installed_pkgs = set([pkg.strip() for pkg in pkgs])
 
         installed_pkgs = list(pos_installed_pkgs - pre_installed_pkgs)
+
         self.make_recommendations(installed_pkgs)
 
     def get_recommendation_pkgs(self, installed_pkgs):
@@ -62,9 +67,10 @@ class AptRun:
         if len(installed_pkgs) > 0:
             pkgs = self.get_recommendation_pkgs(installed_pkgs)
 
-            print 'Recommended Packages:'
-            for pkg in pkgs:
-                print ' - {}'.format(pkg)
+            if len(pkgs) > 0:
+                print '\nApprecommeder: The following packages are interesting'
+                for pkg in pkgs:
+                    print ' - {}'.format(pkg)
 
 
 def get_args():
