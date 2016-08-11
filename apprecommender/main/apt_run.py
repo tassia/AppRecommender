@@ -12,44 +12,60 @@ from apprecommender.main.app_recommender import AppRecommender
 
 class AptRun:
 
-    APT_FOLDER = os.path.join(Config().base_dir, "apt_run/")
-    INSTALLED_PKGS_FILE = APT_FOLDER + "/installed_pkgs.txt"
+    def __init__(self):
+        apt_folder = os.path.join(Config().base_dir, "apt_run/")
+        self.set_folder(apt_folder)
+
+    def set_folder(self, folder_path):
+        folder_path = os.path.expanduser(folder_path)
+        folder_path = os.path.abspath(folder_path)
+
+        if folder_path[-1] != '/':
+            folder_path += '/'
+
+        self.apt_folder = folder_path
+        self.installed_pkgs_file = self.apt_folder + "installed_pkgs.txt"
 
     def enable(self):
         if not self.is_enable():
-            os.makedirs(AptRun.APT_FOLDER)
+            os.makedirs(self.apt_folder)
             return True
 
         return False
 
     def disable(self):
         if self.is_enable():
-            shutil.rmtree(AptRun.APT_FOLDER)
+            shutil.rmtree(self.apt_folder)
             return True
 
         return False
 
     def is_enable(self):
-        return os.path.exists(AptRun.APT_FOLDER)
+        return os.path.exists(self.apt_folder)
+
+    def get_user_pkgs(self):
+        user_pkgs = commands.getoutput("apt-mark showmanual").splitlines()
+        return user_pkgs
 
     def pre_install_pkgs(self):
         if self.is_enable():
-            commands.getoutput("apt-mark showmanual > %s" %
-                               AptRun.INSTALLED_PKGS_FILE)
+            user_pkgs = self.get_user_pkgs()
+            with open(self.installed_pkgs_file, 'w') as text:
+                text.write("\n".join(user_pkgs))
 
     def post_invoke(self):
         if not self.is_enable():
-            return
+            return []
 
-        with open(AptRun.INSTALLED_PKGS_FILE, 'r') as text:
+        with open(self.installed_pkgs_file, 'r') as text:
             pre_installed_pkgs = set([line.strip() for line in text])
 
-        pkgs = commands.getoutput("apt-mark showmanual").splitlines()
+        pkgs = self.get_user_pkgs()
         pos_installed_pkgs = set([pkg.strip() for pkg in pkgs])
 
         installed_pkgs = list(pos_installed_pkgs - pre_installed_pkgs)
 
-        self.make_recommendations(installed_pkgs)
+        return installed_pkgs
 
     def get_recommendation_pkgs(self, installed_pkgs):
         app_recommender = AppRecommender()
@@ -66,9 +82,9 @@ class AptRun:
     def make_recommendations(self, installed_pkgs):
         if len(installed_pkgs) > 0:
             pkgs = self.get_recommendation_pkgs(installed_pkgs)
-
             if len(pkgs) > 0:
-                print '\nApprecommeder: The following packages are interesting'
+                print '\nApprecommeder: The following packages are' \
+                      ' interesting'
                 for pkg in pkgs:
                     print ' - {}'.format(pkg)
 
@@ -99,7 +115,8 @@ def main():
     if args['pre_install_pkgs']:
         apt_run.pre_install_pkgs()
     elif args['post_invoke']:
-        apt_run.post_invoke()
+        installed_pkgs = apt_run.post_invoke()
+        apt_run.make_recommendations(installed_pkgs)
 
 
 if __name__ == '__main__':
