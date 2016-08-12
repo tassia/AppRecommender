@@ -1,4 +1,2 @@
 DPkg::Post-Invoke {"apprec-apt --post-invoke";};
 DPkg::Pre-Install-Pkgs {"apprec-apt --pre-install-pkgs";};
-
-APT::Update::Post-Invoke-Success {"update-apt-xapian-index";};
