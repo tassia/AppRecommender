@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import argparse
-import commands
 import os
 import shutil
 import re
 
 from apprecommender.config import Config
 from apprecommender.main.app_recommender import AppRecommender
+from apprecommender.user import LocalSystem
 
 
 class AptRun:
@@ -44,7 +44,9 @@ class AptRun:
         return os.path.exists(self.apt_folder)
 
     def get_user_pkgs(self):
-        user_pkgs = commands.getoutput("apt-mark showmanual").splitlines()
+        user = LocalSystem()
+        user_pkgs = user.pkg_profile
+
         return user_pkgs
 
     def pre_install_pkgs(self):

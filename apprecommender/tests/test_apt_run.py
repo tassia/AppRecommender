@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import commands
 import os
 import shutil
 import unittest
@@ -8,6 +7,7 @@ import unittest
 from mock import patch
 
 from apprecommender.main.apt_run import AptRun
+from apprecommender.user import LocalSystem
 
 
 class AptRunTests(unittest.TestCase):
@@ -60,13 +60,12 @@ class AptRunTests(unittest.TestCase):
         apt_run.enable()
         apt_run.pre_install_pkgs()
 
-        assert_pkgs = commands.getoutput("apt-mark showmanual").splitlines()
-        assert_pkgs = sorted(assert_pkgs)
+        user = LocalSystem()
+        assert_pkgs = user.pkg_profile
 
         pkgs = []
         with open(apt_run.installed_pkgs_file, 'r') as text:
             pkgs = [line.strip() for line in text]
-            pkgs = sorted(pkgs)
 
         self.assertListEqual(assert_pkgs, pkgs)
 
