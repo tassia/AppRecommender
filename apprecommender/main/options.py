@@ -71,4 +71,9 @@ def get_parser():
         help='Disable recommendations when install a package with apt',
         action='store_true')
 
+    parser.add_argument(
+        '--update',
+        help='Run both init and train commands',
+        action='store_true')
+
     return parser

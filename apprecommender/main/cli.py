@@ -49,29 +49,49 @@ def run_apprecommender(reference_pkgs):
         return PERMISSION_DENIED
 
 
+def run_initialize():
+    print "Initializing AppRecommender"
+    initialize = Initialize()
+
+    try:
+        initialize.prepare_data()
+    except OSError:
+        return PERMISSION_DENIED
+
+    return SUCCESS
+
+
+def run_train():
+    print "Training machine learning"
+
+    try:
+        MachineLearning.train(MachineLearningBVA)
+        MachineLearning.train(MachineLearningBOW)
+    except IOError:
+        return PERMISSION_DENIED
+    except MachineLearningTrainError:
+        return ERROR_INIT_TRAIN
+
+    return SUCCESS
+
+
 def run(args):
-    if args['init']:
-        print "Initializing AppRecommender"
-        initialize = Initialize()
+    if args['update']:
+        init_result = run_initialize()
 
-        try:
-            initialize.prepare_data()
-        except OSError:
-            return PERMISSION_DENIED
+        if init_result != SUCCESS:
+            return init_result
+
+        train_result = run_train()
+
+        if train_result != SUCCESS:
+            return train_result
 
         return SUCCESS
+    elif args['init']:
+        return run_initialize()
     elif args['train']:
-        print "Training machine learning"
-
-        try:
-            MachineLearning.train(MachineLearningBVA)
-            MachineLearning.train(MachineLearningBOW)
-        except IOError:
-            return PERMISSION_DENIED
-        except MachineLearningTrainError:
-            return ERROR_INIT_TRAIN
-
-        return SUCCESS
+        return run_train()
     elif args['contribute']:
         collect_user_data.main()
     elif args['show_classifications']:
