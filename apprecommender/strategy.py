@@ -320,7 +320,7 @@ class MachineLearning(ContentBased):
         try:
             MachineLearning.PKGS_CLASSIFICATIONS = ml_data.create_data(
                 labels)
-            if len(MachineLearning.PKGS_CLASSIFICATIONS) > 0:
+            if len(MachineLearning.PKGS_CLASSIFICATIONS) >= 10:
                 cls.run_train(MachineLearning.PKGS_CLASSIFICATIONS)
             else:
                 raise MachineLearningTrainError()
