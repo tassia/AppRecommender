@@ -61,4 +61,14 @@ def get_parser():
         help='Show the user classifications for machine learning algorithms',
         action='store_true')
 
+    parser.add_argument(
+        '-e', '--enable-apt',
+        help='Enable recommendations when install a package with apt',
+        action='store_true')
+
+    parser.add_argument(
+        '-r', '--disable-apt',
+        help='Disable recommendations when install a package with apt',
+        action='store_true')
+
     return parser

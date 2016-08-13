@@ -13,5 +13,6 @@ udd.sql.gz
 apprecommender.egg-info/
 apprecommender/tests/test_data/.sample_axi/
 apprecommender/tests/test_data/.sample_axi/
+apprecommender/tests/.apt_run/
 apprecommender/web/submissions/
 .travis.yml.container

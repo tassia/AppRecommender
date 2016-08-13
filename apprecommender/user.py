@@ -424,4 +424,6 @@ class LocalSystem(User):
         pkgs = self.__remove_lib_packages(pkgs)
         pkgs = self.__remove_apt_packages(pkgs)
 
-        return set([pkg for pkg in pkgs if pkg not in system_pkgs])
+        pkgs -= set(system_pkgs)
+
+        return pkgs
