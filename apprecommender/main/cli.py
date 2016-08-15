@@ -33,6 +33,8 @@ def parse_options(args, config):
         config.because = True
     if args['num_recommendations']:
         config.num_recommendations = args['num_recommendations']
+    if args['withknn']:
+        config.use_knn_desktopapps()
 
 
 def run_apprecommender(reference_pkgs):
