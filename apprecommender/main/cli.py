@@ -12,6 +12,7 @@ from apprecommender.main import collect_user_data
 from apprecommender.main import show_classifications
 from apprecommender.main.apt_run import AptRun
 from apprecommender.main.options import get_parser
+from apprecommender.knn import KnnLoaderError
 
 SUCCESS = 0
 ERROR_INIT = 1
@@ -77,6 +78,20 @@ def run_train():
     return SUCCESS
 
 
+def run_update_knn():
+    print "Updating collaborative data"
+    initialize = Initialize()
+
+    try:
+        initialize.update_knn_data()
+    except OSError:
+        return PERMISSION_DENIED
+    except KnnLoaderError as error:
+        print error
+
+    return SUCCESS
+
+
 def run(args):
     if args['update']:
         init_result = run_initialize()
@@ -94,6 +109,8 @@ def run(args):
         return run_initialize()
     elif args['train']:
         return run_train()
+    elif args['update_knn']:
+        return run_update_knn()
     elif args['contribute']:
         collect_user_data.main()
     elif args['show_classifications']:

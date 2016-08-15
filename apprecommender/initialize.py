@@ -100,13 +100,13 @@ class Initialize:
         delta = end_time - begin_time
         print "Time elapsed: %d seconds." % delta.seconds
 
-    def indexer_knn(self):
+    def update_knn_data(self):
         base_dir = self.config.base_dir
         axi_path = os.path.expanduser(Initialize.DEFAULT_AXI_PATH)
         path = self.config.knn_desktopapps
         tags_filter = os.path.join(base_dir, "filters/debtags")
-        load_data_path = os.path.join(base_dir, "clusters/")
-        user_popcon_file = os.path.join(base_dir, "my_popcon")
+        load_data_path = os.path.join(base_dir, "popcon_clusters/")
+        user_popcon_file = os.path.join(base_dir, "popcon_submission")
 
         error = False
         if not os.path.exists(load_data_path):

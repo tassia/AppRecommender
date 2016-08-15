@@ -42,7 +42,7 @@ def get_parser():
         action='store_true')
 
     parser.add_argument(
-        '-k', '--load-knn',
+        '-k', '--update-knn',
         help='Load collaborative data',
         action='store_true')
 

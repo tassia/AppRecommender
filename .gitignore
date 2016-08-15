@@ -16,6 +16,5 @@ apprecommender/tests/test_data/.sample_axi/
 apprecommender/tests/test_data/.sample_axi/
 apprecommender/tests/test_data/.test_knn_axi/
 apprecommender/tests/test_data/.test_sample_axi/
->>>>>>> Add tests for Knn and SampleApt XapianIndex
 apprecommender/web/submissions/
 .travis.yml.container

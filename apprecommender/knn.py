@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import commands
+import hashlib
+import lzma
 import os
 import re
 
@@ -32,7 +33,8 @@ class Knn:
     def read_popcon_file(self, file_path):
         file_path = os.path.expanduser(file_path)
 
-        match = re.compile(r'^\d+\s\d+\s([^\/\s]+)', re.MULTILINE)
+        match = re.compile(r'^\d+\s\d+\s([^\/\s]+)(?!.*<NOFILES>)',
+                           re.MULTILINE)
         ifile = open(file_path)
         text = ifile.read()
         ifile.close()
@@ -75,16 +77,43 @@ class Knn:
         self.create_user_cluster_pkgs()
 
 
+class KnnLoaderError(Exception):
+
+    def __init__(self, value=''):
+        self.value = value
+
+    def __str__(self):
+        return self.value
+
+
 class KnnLoader:
 
     def __init__(self, folder_path):
         self.set_folder(folder_path)
-        self.check_sha256()
         self.set_files_path()
+        self.load_files_content()
+        self.check_sha256()
+
+    def get_sha256sum(self):
+        files = [self.clusters_path, self.pkgs_clusters_path]
+
+        sha256sum = ''
+        for file_name in files:
+            ifile = open(file_name, 'rb')
+            content = ifile.read()
+            ifile.close()
+
+            checksum = hashlib.sha256(content).hexdigest()
+
+            sha256sum += '{}  {}\n'.format(checksum, file_name)
+
+        sha256sum = sha256sum[:-1]
+
+        return sha256sum
 
     def check_sha256(self):
-        sha_text = commands.getoutput("sha256sum %s*.txt" % self.folder_path)
-        ifile = open(self.folder_path + 'InRelease', 'r')
+        sha_text = self.get_sha256sum()
+        ifile = open(self.inrelease_path, 'r')
         inrelease_text = ifile.read()
         ifile.close()
 
@@ -92,14 +121,14 @@ class KnnLoader:
         inrelease = self.get_files_sha(inrelease_text)
 
         if files_sha != inrelease:
-            raise Exception("Check sha256sum its WRONG on folder: %s" %
-                            self.folder_path)
+            error_msg = "Error: Checksum of collaborative data its wrong."
+            raise KnnLoaderError(error_msg)
 
         return files_sha == inrelease
 
     def get_files_sha(self, text):
-        match_sha = re.compile(r'^([^\s]+).+\w.txt', re.MULTILINE)
-        match_file = re.compile(r'(\w+.txt)$', re.MULTILINE)
+        match_sha = re.compile(r'^([^\s]+).+\w.xz', re.MULTILINE)
+        match_file = re.compile(r'(\w+.xz)$', re.MULTILINE)
 
         files = match_file.findall(text)
         sha256s = match_sha.findall(text)
@@ -108,29 +137,50 @@ class KnnLoader:
         return files_sha
 
     def set_folder(self, folder_path):
-        if folder_path[-1] != '/':
-            folder_path += '/'
+        folder_path = os.path.expanduser(folder_path)
+        self.folder_path = os.path.abspath(folder_path)
 
-        self.folder_path = os.path.expanduser(folder_path)
+        if self.folder_path[-1] != '/':
+            self.folder_path += '/'
+
+    def check_file_exists(self, file_path):
+        file_name = os.path.basename(file_path)
+        error_msg = "Error on collaborative data. File not founded: {}"
+        if not os.path.exists(file_path):
+            raise KnnLoaderError(error_msg.format(file_name))
 
     def set_files_path(self):
-        self.pkgs_clusters_path = self.folder_path + 'pkgs_clusters.txt'
-        self.clusters_path = self.folder_path + 'clusters.txt'
+        self.clusters_path = self.folder_path + 'clusters.xz'
+        self.inrelease_path = self.folder_path + 'InRelease'
+        self.pkgs_clusters_path = self.folder_path + 'pkgs_clusters.xz'
+
+        self.check_file_exists(self.clusters_path)
+        self.check_file_exists(self.inrelease_path)
+        self.check_file_exists(self.pkgs_clusters_path)
+
+    def get_compressed_file_text(self, file_path):
+        ifile = lzma.LZMAFile(file_path)
+        text = ifile.read().decode('utf-8')
+        ifile.close()
+
+        return text
+
+    def load_files_content(self):
+        self.clusters_content = self.get_compressed_file_text(
+            self.clusters_path)
+        self.pkgs_cluster_content = self.get_compressed_file_text(
+            self.pkgs_clusters_path)
 
     def load_all_pkgs(self):
         match = re.compile(r'^(.*)-', re.MULTILINE)
-        ifile = open(self.pkgs_clusters_path)
-        text = ifile.read()
-        ifile.close()
-
-        all_pkgs = match.findall(text)
+        all_pkgs = match.findall(self.pkgs_cluster_content)
 
         return all_pkgs
 
     def load_clusters(self):
         clusters = []
-        with open(self.clusters_path, 'r') as text:
-            clusters = [map(float, line.strip().split(';')) for line in text]
+        clusters = [map(float, line.strip().split(';'))
+                    for line in self.clusters_content.splitlines()]
 
         return clusters
 
@@ -138,12 +188,8 @@ class KnnLoader:
         pkgs_match = re.compile(r'^(.*)-', re.MULTILINE)
         clusters_match = re.compile(r'^.*-(.*)', re.MULTILINE)
 
-        ifile = open(self.pkgs_clusters_path)
-        text = ifile.read()
-        ifile.close()
-
-        pkgs = pkgs_match.findall(text)
-        clusters_list = clusters_match.findall(text)
+        pkgs = pkgs_match.findall(self.pkgs_cluster_content)
+        clusters_list = clusters_match.findall(self.pkgs_cluster_content)
 
         pkgs_clusters = {}
         for index, pkg in enumerate(pkgs):
