@@ -9,7 +9,7 @@ import xapian
 
 from apprecommender.config import Config
 from apprecommender.decider import PkgInitDecider
-from apprecommender.knn import Knn
+from apprecommender.knn import Knn, KnnDownloadData
 
 
 class Initialize:
@@ -105,8 +105,12 @@ class Initialize:
         axi_path = os.path.expanduser(Initialize.DEFAULT_AXI_PATH)
         path = self.config.knn_desktopapps
         tags_filter = os.path.join(base_dir, "filters/debtags")
-        load_data_path = os.path.join(base_dir, "popcon_clusters/")
+        load_data_path = self.config.popcon_clusters_dir
         user_popcon_file = os.path.join(base_dir, "popcon_submission")
+
+        print "Download popularity-contest cluster data"
+        knn_download_data = KnnDownloadData(load_data_path)
+        knn_download_data.download()
 
         error = False
         if not os.path.exists(load_data_path):

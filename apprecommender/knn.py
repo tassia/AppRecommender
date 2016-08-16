@@ -4,10 +4,13 @@ import hashlib
 import lzma
 import os
 import re
+import shutil
+import wget
 
 import numpy as np
 
 from scipy import spatial
+from apprecommender.config import Config
 
 
 class Knn:
@@ -77,7 +80,7 @@ class Knn:
         self.create_user_cluster_pkgs()
 
 
-class KnnLoaderError(Exception):
+class KnnError(Exception):
 
     def __init__(self, value=''):
         self.value = value
@@ -86,16 +89,55 @@ class KnnLoaderError(Exception):
         return self.value
 
 
-class KnnLoader:
+class KnnDownloadData:
 
-    def __init__(self, folder_path):
-        self.set_folder(folder_path)
-        self.set_files_path()
-        self.load_files_content()
-        self.check_sha256()
+    def __init__(self, save_data_folder):
+        download_folder_link = Config().popcon_folder_link
 
-    def get_sha256sum(self):
-        files = [self.clusters_path, self.pkgs_clusters_path]
+        self.save_data_folder = save_data_folder
+        self.inrelease_link = os.path.join(download_folder_link,
+                                           '0688/InRelease')
+        self.clusters_link = os.path.join(download_folder_link,
+                                          '0687/clusters.xz')
+        self.pkgs_clusters_link = os.path.join(download_folder_link,
+                                               '0689/pkgs_clusters.xz')
+
+    def download(self):
+        if not os.path.exists(self.save_data_folder):
+            os.mkdir(self.save_data_folder)
+
+        self.download_files()
+        self.check_sha256sum()
+        self.move_files_to_save_data_folder()
+
+    def download_files(self):
+        links = [self.inrelease_link, self.clusters_link,
+                 self.pkgs_clusters_link]
+
+        try:
+            files = []
+            for link in links:
+                files.append(wget.download(link, bar=None))
+
+            return files
+        except IOError:
+            raise KnnError("Error: link not founded: {}".format(link))
+
+    def check_sha256sum(self):
+        sha_text = self.get_sha256sum_text()
+        ifile = open('InRelease', 'r')
+        inrelease_text = ifile.read()
+        ifile.close()
+
+        files_sha = self.get_sha256_from_text(sha_text)
+        inrelease = self.get_sha256_from_text(inrelease_text)
+
+        if files_sha != inrelease:
+            error_msg = "Error: Checksum of collaborative data its wrong."
+            raise KnnError(error_msg)
+
+    def get_sha256sum_text(self):
+        files = ['clusters.xz', 'pkgs_clusters.xz']
 
         sha256sum = ''
         for file_name in files:
@@ -111,22 +153,7 @@ class KnnLoader:
 
         return sha256sum
 
-    def check_sha256(self):
-        sha_text = self.get_sha256sum()
-        ifile = open(self.inrelease_path, 'r')
-        inrelease_text = ifile.read()
-        ifile.close()
-
-        files_sha = self.get_files_sha(sha_text)
-        inrelease = self.get_files_sha(inrelease_text)
-
-        if files_sha != inrelease:
-            error_msg = "Error: Checksum of collaborative data its wrong."
-            raise KnnLoaderError(error_msg)
-
-        return files_sha == inrelease
-
-    def get_files_sha(self, text):
+    def get_sha256_from_text(self, text):
         match_sha = re.compile(r'^([^\s]+).+\w.xz', re.MULTILINE)
         match_file = re.compile(r'(\w+.xz)$', re.MULTILINE)
 
@@ -135,6 +162,25 @@ class KnnLoader:
         files_sha = {ifile: sha for ifile, sha in zip(files, sha256s)}
 
         return files_sha
+
+    def move_files_to_save_data_folder(self):
+        files = ['InRelease', 'clusters.xz', 'pkgs_clusters.xz']
+
+        for file_name in files:
+            file_path = os.path.join(self.save_data_folder, file_name)
+
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+            shutil.move(file_name, file_path)
+
+
+class KnnLoader:
+
+    def __init__(self, folder_path):
+        self.set_folder(folder_path)
+        self.set_files_path()
+        self.load_files_content()
 
     def set_folder(self, folder_path):
         folder_path = os.path.expanduser(folder_path)
@@ -147,7 +193,7 @@ class KnnLoader:
         file_name = os.path.basename(file_path)
         error_msg = "Error on collaborative data. File not founded: {}"
         if not os.path.exists(file_path):
-            raise KnnLoaderError(error_msg.format(file_name))
+            raise KnnError(error_msg.format(file_name))
 
     def set_files_path(self):
         self.clusters_path = self.folder_path + 'clusters.xz'

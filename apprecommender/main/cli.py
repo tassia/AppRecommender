@@ -12,7 +12,7 @@ from apprecommender.main import collect_user_data
 from apprecommender.main import show_classifications
 from apprecommender.main.apt_run import AptRun
 from apprecommender.main.options import get_parser
-from apprecommender.knn import KnnLoaderError
+from apprecommender.knn import KnnError
 
 SUCCESS = 0
 ERROR_INIT = 1
@@ -86,7 +86,7 @@ def run_update_knn():
         initialize.update_knn_data()
     except OSError:
         return PERMISSION_DENIED
-    except KnnLoaderError as error:
+    except KnnError as error:
         print error
 
     return SUCCESS

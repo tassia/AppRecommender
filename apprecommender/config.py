@@ -68,6 +68,13 @@ class Config(Singleton):
             self.axi_programs = os.path.join(self.base_dir, "axi_programs")
             self.axi_desktopapps = os.path.join(self.base_dir,
                                                 "axi_desktopapps")
+
+            # new collaborative strategy
+            self.popcon_clusters_dir = os.path.join(self.base_dir,
+                                                    'popcon_clusters')
+            link = "http://softwarelivre.org/articles/0161/"
+            self.popcon_folder_link = link
+
             # popcon indexes
             self.index_mode = "old"
             # check if there are popcon indexes available
@@ -160,6 +167,13 @@ class Config(Singleton):
         self.axi_desktopapps = os.path.join(
             self.base_dir, self.read_option('data_sources',
                                             'axi_desktopapps'))
+        # new collaborative strategy
+        self.popcon_clusters_dir = os.path.join(
+            self.base_dir, self.read_option('collaborative_data',
+                                            'popcon_clusters_dir'))
+        self.popcon_folder_link = self.read_option('collaborative_data',
+                                                   'popcon_folder_link')
+
         # self.index_mode = self.read_option('data_sources', 'index_mode')
         self.popcon = int(self.read_option('data_sources', 'popcon'))
         self.popcon_programs = os.path.join(
