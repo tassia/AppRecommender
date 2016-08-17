@@ -1,2 +1,2 @@
-DPkg::Post-Invoke {"apprec-apt --post-invoke";};
-DPkg::Pre-Install-Pkgs {"apprec-apt --pre-install-pkgs";};
+DPkg::Post-Invoke {"[ ! -x /usr/bin/apprec-apt ] || apprec-apt --post-invoke";};
+DPkg::Pre-Install-Pkgs {"[ ! -x /usr/bin/apprec-apt ] || apprec-apt --pre-install-pkgs";};
