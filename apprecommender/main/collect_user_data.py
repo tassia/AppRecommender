@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import apt
 import binascii
 import commands
 import datetime as dt
@@ -12,14 +11,15 @@ import tarfile
 import time
 import xapian
 
-from apprecommender.main.app_recommender import AppRecommender
+from apprecommender.apt_cache import AptCache
 from apprecommender.config import Config
 from apprecommender.data import get_user_installed_pkgs
 from apprecommender.data_classification import get_alternative_pkg
+from apprecommender.main.app_recommender import AppRecommender
+from apprecommender.main.ml_cross_validation import ml_cross_validation
 from apprecommender.ml.data import MachineLearningData
 from apprecommender.ml.pkg_time import PkgTime
 from apprecommender.utils import print_progress_bar
-from apprecommender.main.ml_cross_validation import ml_cross_validation
 
 LOG_PATH = os.path.expanduser('~/app_recommender_log')
 SUFIX = dt.datetime.now().strftime('%Y%m%d%H%M')
@@ -210,7 +210,7 @@ def collect_user_preferences():
 
     message_error = "\nPlease use digits 1-4 to rank a package: "
 
-    apt_cache = apt.Cache()
+    apt_cache = AptCache()
     for i in range(len(all_recommendations)):
         pkg = all_recommendations[i]
         pkg_description = apt_cache[pkg].versions[0].description

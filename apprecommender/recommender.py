@@ -19,7 +19,6 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import apt
 import heapq
 import inspect
 import logging
@@ -32,6 +31,8 @@ from fuzzywuzzy import fuzz
 from operator import attrgetter
 
 import apprecommender.strategy
+
+from apprecommender.apt_cache import AptCache
 from apprecommender.config import Config
 
 
@@ -46,7 +47,7 @@ class RecommendationResult:
         self.item_score = item_score
         self.size = len(item_score)
         self.limit = limit
-        self.cache = apt.Cache()
+        self.cache = AptCache()
         self.pkg_descriptions = {}
 
         if ranking:

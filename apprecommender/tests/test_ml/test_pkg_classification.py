@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import apt
 import unittest
 import xapian
 
 from mock import patch
 
+from apprecommender.apt_cache import AptCache
 from apprecommender.ml.data import MachineLearningData
 
 
@@ -13,7 +13,7 @@ class PkgClassificationTests(unittest.TestCase):
 
     def setUp(self):
         self.ml_data = MachineLearningData()
-        self.cache = apt.Cache()
+        self.cache = AptCache()
 
     def test_get_pkg_debtags(self):
         vim_debtags = ['devel::editor', 'implemented-in::c',

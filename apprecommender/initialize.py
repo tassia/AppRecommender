@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import apt
 import commands
 import data
 import datetime
@@ -24,7 +23,6 @@ class Initialize:
 
     def __init__(self):
         self.config = Config()
-        self.cache = apt.Cache()
         self.pkg_init_decider = PkgInitDecider()
 
     def get_tags(self):

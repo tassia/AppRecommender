@@ -1,10 +1,10 @@
 import os
 import pickle
-from apt import Cache
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import GaussianNB
 
+from apprecommender.apt_cache import AptCache
 from apprecommender.config import Config
 from apprecommender.ml.data import MachineLearningData
 
@@ -134,7 +134,7 @@ class BagOfWords():
             pickle.dump(pkgs_classification, bow_pkgs_classification)
 
     def train_model(self, pkgs_list, axi, save_files=True):
-        cache = Cache()
+        cache = AptCache()
         ml_data = MachineLearningData()
 
         pkgs_description, pkg_classification = self.prepare_data(
