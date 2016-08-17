@@ -45,7 +45,7 @@ class Config(Singleton):
                 ['/etc/apprecommender/recommender.conf',
                  os.path.expanduser('~/.app_recommender.rc'),
                  os.path.expanduser('app_recommender.cfg')])
-            self.home_dir = os.path.expanduser('~/.app-recommender')
+            self.home_dir = os.path.expanduser('~/.apprecommender')
 
         except (MissingSectionHeaderError), err:
             logging.error("Error in config file syntax: %s", str(err))
@@ -53,7 +53,7 @@ class Config(Singleton):
         if not hasattr(self, 'initialized'):
             # data_source options
             self.base_dir = os.environ.get(
-                'APPREC_DATA', '~/.apprecommender')
+                'APPREC_DATA', '/var/lib/apprecommender')
             self.base_dir = os.path.expanduser(self.base_dir)
             self.output = os.path.join(self.home_dir, 'apprec.log')
             self.user_data_dir = os.path.join(self.base_dir, "user_data/")
@@ -129,7 +129,7 @@ class Config(Singleton):
         self.debug = int(self.read_option('general', 'debug'))
         self.debug = int(self.read_option('general', 'verbose'))
         self.base_dir = os.environ.get(
-            'APPREC_DATA', '~/.apprecommender')
+            'APPREC_DATA', '/var/lib/apprecommender')
         self.base_dir = os.path.expanduser(self.base_dir)
         self.output = os.path.join(
             self.home_dir, self.read_option('data_sources',
