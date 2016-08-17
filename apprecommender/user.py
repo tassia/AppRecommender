@@ -20,7 +20,6 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import apt
 import commands
 import datetime
 import glob
@@ -33,11 +32,12 @@ import xapian
 
 import apprecommender.data as data
 
-from apprecommender.error import Error
-from apprecommender.singleton import Singleton
+from apprecommender.apt_cache import AptCache
+from apprecommender.config import Config
 from apprecommender.decider import (FilterTag, FilterDescription,
                                     FilterTag_or_Description)
-from apprecommender.config import Config
+from apprecommender.error import Error
+from apprecommender.singleton import Singleton
 
 
 class DemographicProfile(Singleton):
@@ -257,7 +257,7 @@ class User:
         Return list of packages that are not dependence of any other package in
         the list.
         """
-        cache = apt.Cache()
+        cache = AptCache()
         old_profile_size = len(self.pkg_profile)
 
         for p in self.pkg_profile[:]:  # iterate list copy

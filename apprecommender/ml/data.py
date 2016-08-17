@@ -1,14 +1,14 @@
 from os import path
 from os import makedirs
 
-import apt
+import Stemmer
 import pickle
 import xapian
-import Stemmer
 
-from apprecommender.ml.pkg_time import PkgTime
+from apprecommender.apt_cache import AptCache
 from apprecommender.config import Config
 from apprecommender.decider import FilterTag, FilterDescription
+from apprecommender.ml.pkg_time import PkgTime
 
 
 class MachineLearningData():
@@ -41,7 +41,7 @@ class MachineLearningData():
 
         pkgs = self.get_pkgs_classification(labels)
 
-        cache = apt.Cache()
+        cache = AptCache()
 
         terms_name = self.get_terms_for_all_pkgs(cache, pkgs.keys())
         debtags_name = self.get_debtags_for_all_pkgs(self.axi, pkgs.keys())

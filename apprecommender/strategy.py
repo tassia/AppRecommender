@@ -20,7 +20,6 @@ __license__ = """
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import apt
 import collections
 import logging
 import operator
@@ -34,6 +33,7 @@ import numpy as np
 
 from abc import ABCMeta, abstractmethod
 
+from apprecommender.apt_cache import AptCache
 from apprecommender.config import Config
 from apprecommender.decider import (PkgMatchDecider,
                                     PkgReverseDependeciesDecider)
@@ -145,7 +145,7 @@ class PackageReference(ContentBased):
         self.content = content
         self.description = 'Package-reference'
         self.profile_size = profile_size
-        self.cache = apt.Cache()
+        self.cache = AptCache()
         self.pkgs_regex = re.compile(r'^\s+(?:\|)?(.+)$', re.MULTILINE)
 
     def get_reverse_dependencies_pkgs(self, reference_pkgs):
@@ -209,7 +209,7 @@ class MachineLearning(ContentBased):
         self.description = 'Machine-learning'
         self.profile_size = profile_size
         self.suggestion_size = suggestion_size
-        self.cache = apt.Cache()
+        self.cache = AptCache()
         self.ml_data = MachineLearningData()
         self.axi = xapian.Database(XAPIAN_DATABASE_PATH)
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import apt
 import commands
 import re
 import xapian
+
+from apprecommender.apt_cache import AptCache
 
 from sklearn.feature_extraction.stop_words import ENGLISH_STOP_WORDS
 
@@ -21,7 +22,7 @@ class PkgInitDecider():
                         'fonts', 'png', 'core', 'default'}
 
     def __init__(self):
-        self.cache = apt.Cache()
+        self.cache = AptCache()
         self.user_role_programs = self.get_user_role_programs()
 
     def is_in_apt_cache(self, pkg):
@@ -195,7 +196,7 @@ class PkgReverseDependeciesDecider(xapian.MatchDecider):
         self.reverse_dependencies = reverse_dependencies
         self.pkg_init_decider = PkgInitDecider()
         self.pkg_match_decider = PkgMatchDecider(user_installed_pkgs)
-        self.cache = apt.Cache()
+        self.cache = AptCache()
 
     def __call__(self, xapian_document):
         """
