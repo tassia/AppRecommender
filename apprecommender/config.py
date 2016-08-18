@@ -70,6 +70,8 @@ class Config(Singleton):
                                                 "axi_desktopapps")
 
             # new collaborative strategy
+            self.popcon_public_key = '/usr/share/popularity-contest/' \
+                                     'debian-popcon.gpg'
             self.popcon_clusters_dir = os.path.join(self.base_dir,
                                                     'popcon_clusters')
             link = "http://softwarelivre.org/articles/0161/"
@@ -168,6 +170,9 @@ class Config(Singleton):
             self.base_dir, self.read_option('data_sources',
                                             'axi_desktopapps'))
         # new collaborative strategy
+        self.popcon_public_key = os.path.join(
+            self.base_dir, self.read_option('collaborative_data',
+                                            'popcon_public_key'))
         self.popcon_clusters_dir = os.path.join(
             self.base_dir, self.read_option('collaborative_data',
                                             'popcon_clusters_dir'))

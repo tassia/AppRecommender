@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import gnupg
 import hashlib
 import lzma
 import os
@@ -107,6 +108,7 @@ class KnnDownloadData:
             os.mkdir(self.save_data_folder)
 
         self.download_files()
+        self.check_gpg_signature()
         self.check_sha256sum()
         self.move_files_to_save_data_folder()
 
@@ -123,6 +125,20 @@ class KnnDownloadData:
         except IOError:
             raise KnnError("Error: link not founded: {}".format(link))
 
+    def check_gpg_signature(self):
+        gnupg_home = '~/.gnupg'
+        keyring = Config().popcon_public_key
+        gpg = gnupg.GPG(gnupghome=gnupg_home, keyring=keyring)
+        gpg.encoding = 'utf-8'
+
+        ifile = open('InRelease', 'r')
+        inrelease_data = ifile.read()
+        ifile.close()
+
+        if not gpg.verify(inrelease_data).valid:
+            message = "Error: The signature of downloaded files are corrupt"
+            raise KnnError(message)
+
     def check_sha256sum(self):
         sha_text = self.get_sha256sum_text()
         ifile = open('InRelease', 'r')
@@ -132,7 +148,7 @@ class KnnDownloadData:
         files_sha = self.get_sha256_from_text(sha_text)
         inrelease = self.get_sha256_from_text(inrelease_text)
 
-        if files_sha != inrelease:
+        if files_sha != inrelease or len(files_sha) == 0:
             error_msg = "Error: Checksum of collaborative data its wrong."
             raise KnnError(error_msg)
 
