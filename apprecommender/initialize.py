@@ -9,7 +9,8 @@ import xapian
 
 from apprecommender.config import Config
 from apprecommender.decider import PkgInitDecider
-from apprecommender.knn import Knn, KnnDownloadData
+from apprecommender.collaborative_data import (CollaborativeData,
+                                               DownloadCollaborativeData)
 
 
 class Initialize:
@@ -100,17 +101,17 @@ class Initialize:
         delta = end_time - begin_time
         print "Time elapsed: %d seconds." % delta.seconds
 
-    def update_knn_data(self):
+    def update_collaborative_data(self):
         base_dir = self.config.base_dir
         axi_path = os.path.expanduser(Initialize.DEFAULT_AXI_PATH)
-        path = self.config.knn_desktopapps
+        path = self.config.collaborative_desktopapps
         tags_filter = os.path.join(base_dir, "filters/debtags")
         load_data_path = self.config.popcon_clusters_dir
         user_popcon_file = os.path.join(base_dir, "popcon_submission")
 
         print "Download popularity-contest cluster data"
-        knn_download_data = KnnDownloadData(load_data_path)
-        knn_download_data.download()
+        download_data = DownloadCollaborativeData(load_data_path)
+        download_data.download()
 
         error = False
         if not os.path.exists(load_data_path):
@@ -123,16 +124,18 @@ class Initialize:
         if error:
             exit(1)
 
-        knn = Knn.load(load_data_path, user_popcon_file)
-        pkgs = knn.user_cluster_pkgs
+        collaborative = CollaborativeData.load(load_data_path,
+                                               user_popcon_file)
+        pkgs = collaborative.user_cluster_pkgs
         valid_pkgs = [pkg for pkg in pkgs if self.pkg_init_decider(pkg)]
 
         begin_time = datetime.datetime.now()
-        print("Knn indexing started at %s" % begin_time)
-        index = data.KnnXapianIndex(path, valid_pkgs, axi_path, tags_filter)
+        print("Collaborative data indexing started at %s" % begin_time)
+        index = data.CollaborativeDataXapianIndex(path, valid_pkgs, axi_path,
+                                                  tags_filter)
 
         end_time = datetime.datetime.now()
-        print("Knn indexing completed at %s" % end_time)
+        print("Collaborative data indexing completed at %s" % end_time)
         print("Number of documents (pkgs): %d" % index.get_doccount())
 
         delta = end_time - begin_time

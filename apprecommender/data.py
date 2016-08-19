@@ -326,7 +326,7 @@ class PopconSubmission():
                                 self.packages[pkg] = 8
 
 
-class KnnXapianIndex(xapian.WritableDatabase):
+class CollaborativeDataXapianIndex(xapian.WritableDatabase):
 
     def __init__(self, path, pkgs, axi_path, tags_filter):
         self.axi = xapian.Database(axi_path)
@@ -334,7 +334,7 @@ class KnnXapianIndex(xapian.WritableDatabase):
         self.pkgs = pkgs
         _, self.pkgs_doc = axi_get_pkgs(self.axi)
         if len(self.pkgs) == 0:
-            logging.critical("Knn submissions can't be empty")
+            logging.critical("Collaborative data submissions can't be empty")
             raise Error
 
         # set up directory

@@ -12,7 +12,7 @@ def get_parser():
         type=str)
 
     parser.add_argument(
-        '-w', '--withknn',
+        '-w', '--with-collaborative',
         help='Run strategy with collaborative data',
         action='store_true')
 
@@ -42,7 +42,7 @@ def get_parser():
         action='store_true')
 
     parser.add_argument(
-        '-k', '--update-knn',
+        '-k', '--update-collaborative-data',
         help='Load collaborative data',
         action='store_true')
 

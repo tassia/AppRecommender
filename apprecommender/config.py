@@ -70,6 +70,8 @@ class Config(Singleton):
                                                 "axi_desktopapps")
 
             # new collaborative strategy
+            self.collaborative_desktopapps = os.path.join(
+                self.base_dir, 'collaborative_desktopapps')
             self.popcon_public_key = '/usr/share/popularity-contest/' \
                                      'debian-popcon.gpg'
             self.popcon_clusters_dir = os.path.join(self.base_dir,
@@ -124,11 +126,12 @@ class Config(Singleton):
             self.initialized = 1
             logging.info("Basic config")
 
-    def use_knn_desktopapps(self):
-        knn_folder = os.path.join(self.base_dir, "knn_desktopapps")
+    def use_collaborative_desktopapps(self):
+        collaborative_folder = os.path.join(self.base_dir,
+                                            "collaborative_desktopapps")
 
-        if os.path.exists(knn_folder):
-            self.axi_desktopapps = knn_folder
+        if os.path.exists(collaborative_folder):
+            self.axi_desktopapps = collaborative_folder
 
     def read_option(self, section, option):
         """
@@ -170,13 +173,16 @@ class Config(Singleton):
             self.base_dir, self.read_option('data_sources',
                                             'axi_desktopapps'))
         # new collaborative strategy
+        self.collaborative_desktopapps = os.path.join(
+            self.base_dir, self.read_option('popcon_data',
+                                            'collaborative_desktopapps'))
         self.popcon_public_key = os.path.join(
-            self.base_dir, self.read_option('collaborative_data',
+            self.base_dir, self.read_option('popcon_data',
                                             'popcon_public_key'))
         self.popcon_clusters_dir = os.path.join(
-            self.base_dir, self.read_option('collaborative_data',
+            self.base_dir, self.read_option('popcon_data',
                                             'popcon_clusters_dir'))
-        self.popcon_folder_link = self.read_option('collaborative_data',
+        self.popcon_folder_link = self.read_option('popcon_data',
                                                    'popcon_folder_link')
 
         # self.index_mode = self.read_option('data_sources', 'index_mode')

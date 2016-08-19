@@ -6,23 +6,24 @@ import os
 import shutil
 import unittest
 
-from apprecommender.knn import Knn
+from apprecommender.collaborative_data import CollaborativeData
 
 
-KNN_DATA_DIR = 'apprecommender/tests/test_data/.popcon_clusters_tests/'
-USER_POPCON_FILE = KNN_DATA_DIR + 'popcon_for_test'
-INRELEASE_FILE = KNN_DATA_DIR + 'InRelease'
-CLUSTERS_FILE = KNN_DATA_DIR + 'clusters.txt'
-CLUSTERS_FILE_XZ = KNN_DATA_DIR + 'clusters.xz'
-PKGS_CLUSTERS_FILE = KNN_DATA_DIR + 'pkgs_clusters.txt'
-PKGS_CLUSTERS_FILE_XZ = KNN_DATA_DIR + 'pkgs_clusters.xz'
+COLLABORATIVE_DATA_DIR = 'apprecommender/tests/test_data/' \
+                         '.popcon_clusters_tests/'
+USER_POPCON_FILE = COLLABORATIVE_DATA_DIR + 'popcon_for_test'
+INRELEASE_FILE = COLLABORATIVE_DATA_DIR + 'InRelease'
+CLUSTERS_FILE = COLLABORATIVE_DATA_DIR + 'clusters.txt'
+CLUSTERS_FILE_XZ = COLLABORATIVE_DATA_DIR + 'clusters.xz'
+PKGS_CLUSTERS_FILE = COLLABORATIVE_DATA_DIR + 'pkgs_clusters.txt'
+PKGS_CLUSTERS_FILE_XZ = COLLABORATIVE_DATA_DIR + 'pkgs_clusters.xz'
 
 
-class KnnTests(unittest.TestCase):
+class CollaborativeDataTests(unittest.TestCase):
 
     def tearDown(self):
-        if os.path.exists(KNN_DATA_DIR):
-            shutil.rmtree(KNN_DATA_DIR)
+        if os.path.exists(COLLABORATIVE_DATA_DIR):
+            shutil.rmtree(COLLABORATIVE_DATA_DIR)
 
     def compress_file(self, source, destiny):
         if os.path.exists(destiny):
@@ -35,10 +36,10 @@ class KnnTests(unittest.TestCase):
 
         os.remove(source)
 
-    def create_knn_data_dir(self):
-        if os.path.exists(KNN_DATA_DIR):
-            shutil.rmtree(KNN_DATA_DIR)
-        os.mkdir(KNN_DATA_DIR)
+    def create_collaborative_data_dir(self):
+        if os.path.exists(COLLABORATIVE_DATA_DIR):
+            shutil.rmtree(COLLABORATIVE_DATA_DIR)
+        os.mkdir(COLLABORATIVE_DATA_DIR)
 
         clusters = [[1.0, 0.0, 1.0, 0.0, 1.0],
                     [0.0, 1.0, 0.0, 1.0, 1.0],
@@ -69,18 +70,20 @@ class KnnTests(unittest.TestCase):
             text.write('END-POPULARITY-CONTEST-0 TIME:1464009355\n')
 
     def create_inrelease_file(self):
-        command = "sha256sum {}*.xz > {}".format(KNN_DATA_DIR, INRELEASE_FILE)
+        command = "sha256sum {}*.xz > {}".format(COLLABORATIVE_DATA_DIR,
+                                                 INRELEASE_FILE)
         commands.getoutput(command)
 
-    def test_load_knn_by_files(self):
-        self.create_knn_data_dir()
+    def test_load_collaborative_by_files(self):
+        self.create_collaborative_data_dir()
         self.create_user_popcon_file()
         self.create_inrelease_file()
 
-        knn = Knn.load(KNN_DATA_DIR, USER_POPCON_FILE)
-        shutil.rmtree(KNN_DATA_DIR)
+        collaborative = CollaborativeData.load(COLLABORATIVE_DATA_DIR,
+                                               USER_POPCON_FILE)
+        shutil.rmtree(COLLABORATIVE_DATA_DIR)
 
         self.assertEqual(['ruby', 'vagrant', 'vim'],
-                         sorted(knn.user_cluster_pkgs))
-        self.assertEqual([1, 0, 0, 1, 0], knn.user)
-        self.assertEqual(2, knn.user_cluster_index)
+                         sorted(collaborative.user_cluster_pkgs))
+        self.assertEqual([1, 0, 0, 1, 0], collaborative.user)
+        self.assertEqual(2, collaborative.user_cluster_index)

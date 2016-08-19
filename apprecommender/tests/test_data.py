@@ -24,8 +24,8 @@ import unittest
 import xapian
 
 from apprecommender.data import (PopconSubmission, SampleAptXapianIndex,
-                                 KnnXapianIndex, axi_search_pkg_tags,
-                                 axi_get_pkgs)
+                                 CollaborativeDataXapianIndex,
+                                 axi_search_pkg_tags, axi_get_pkgs)
 from apprecommender.config import Config
 
 
@@ -88,19 +88,20 @@ class SampleAptXapianIndexTest(unittest.TestCase):
         self.assertEqual(packages, sample_axi_pkgs)
 
 
-class KnnXapianIndexTest(unittest.TestCase):
+class CollaborativeDataXapianIndexTest(unittest.TestCase):
 
     def test_index_data(self):
         config = Config()
         base_dir = config.base_dir
         axi_path = config.axi
-        path = "apprecommender/tests/test_data/.test_knn_axi"
+        path = "apprecommender/tests/test_data/.test_collaborative_axi"
         tags_filter = os.path.join(base_dir, "filters/debtags")
 
         pkgs = ['git', 'python', 'gem2deb', 'vagrant', 'gedit', 'vim',
                 'terminator', 'ipython', 'inkscape']
 
-        filtered_axi = KnnXapianIndex(path, pkgs, axi_path, tags_filter)
+        filtered_axi = CollaborativeDataXapianIndex(path, pkgs, axi_path,
+                                                    tags_filter)
 
         self.assertEqual(len(pkgs), filtered_axi.get_doccount())
 

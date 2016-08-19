@@ -14,20 +14,20 @@ from scipy import spatial
 from apprecommender.config import Config
 
 
-class Knn:
+class CollaborativeData:
 
     @staticmethod
     def load(load_data_path, user_popcon_file_path):
-        knn = Knn()
-        knn_loader = KnnLoader(load_data_path)
+        collaborative = CollaborativeData()
+        collaborative_loader = CollaborativeDataLoader(load_data_path)
 
-        knn.all_pkgs = knn_loader.load_all_pkgs()
-        knn.clusters = knn_loader.load_clusters()
-        knn.pkgs_clusters = knn_loader.load_pkgs_clusters()
+        collaborative.all_pkgs = collaborative_loader.load_all_pkgs()
+        collaborative.clusters = collaborative_loader.load_clusters()
+        collaborative.pkgs_clusters = collaborative_loader.load_pkgs_clusters()
 
-        knn.load_user_popcon_file(user_popcon_file_path)
+        collaborative.load_user_popcon_file(user_popcon_file_path)
 
-        return knn
+        return collaborative
 
     def __init__(self):
         self.user = None
@@ -81,7 +81,7 @@ class Knn:
         self.create_user_cluster_pkgs()
 
 
-class KnnError(Exception):
+class CollaborativeDataError(Exception):
 
     def __init__(self, value=''):
         self.value = value
@@ -90,7 +90,7 @@ class KnnError(Exception):
         return self.value
 
 
-class KnnDownloadData:
+class DownloadCollaborativeData:
 
     def __init__(self, save_data_folder):
         download_folder_link = Config().popcon_folder_link
@@ -107,10 +107,18 @@ class KnnDownloadData:
         if not os.path.exists(self.save_data_folder):
             os.mkdir(self.save_data_folder)
 
+        self.delete_trash_files()
         self.download_files()
         self.check_gpg_signature()
         self.check_sha256sum()
         self.move_files_to_save_data_folder()
+
+    def delete_trash_files(self):
+        files = ['InRelease', 'clusters.xz', 'pkgs_clusters.xz']
+
+        for file_name in files:
+            if os.path.exists(file_name):
+                os.remove(file_name)
 
     def download_files(self):
         links = [self.inrelease_link, self.clusters_link,
@@ -123,7 +131,8 @@ class KnnDownloadData:
 
             return files
         except IOError:
-            raise KnnError("Error: link not founded: {}".format(link))
+            message = "Error: link not founded: {}".format(link)
+            raise CollaborativeDataError(message)
 
     def check_gpg_signature(self):
         gnupg_home = '~/.gnupg'
@@ -137,7 +146,7 @@ class KnnDownloadData:
 
         if not gpg.verify(inrelease_data).valid:
             message = "Error: The signature of downloaded files are corrupt"
-            raise KnnError(message)
+            raise CollaborativeDataError(message)
 
     def check_sha256sum(self):
         sha_text = self.get_sha256sum_text()
@@ -150,7 +159,7 @@ class KnnDownloadData:
 
         if files_sha != inrelease or len(files_sha) == 0:
             error_msg = "Error: Checksum of collaborative data its wrong."
-            raise KnnError(error_msg)
+            raise CollaborativeDataError(error_msg)
 
     def get_sha256sum_text(self):
         files = ['clusters.xz', 'pkgs_clusters.xz']
@@ -191,7 +200,7 @@ class KnnDownloadData:
             shutil.move(file_name, file_path)
 
 
-class KnnLoader:
+class CollaborativeDataLoader:
 
     def __init__(self, folder_path):
         self.set_folder(folder_path)
@@ -209,7 +218,7 @@ class KnnLoader:
         file_name = os.path.basename(file_path)
         error_msg = "Error on collaborative data. File not founded: {}"
         if not os.path.exists(file_path):
-            raise KnnError(error_msg.format(file_name))
+            raise CollaborativeDataError(error_msg.format(file_name))
 
     def set_files_path(self):
         self.clusters_path = self.folder_path + 'clusters.xz'

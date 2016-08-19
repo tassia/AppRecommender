@@ -14,7 +14,7 @@ apprecommender.egg-info/
 apprecommender/tests/.apt_run/
 apprecommender/tests/test_data/.sample_axi/
 apprecommender/tests/test_data/.sample_axi/
-apprecommender/tests/test_data/.test_knn_axi/
+apprecommender/tests/test_data/.test_collaborative_axi/
 apprecommender/tests/test_data/.test_sample_axi/
 apprecommender/web/submissions/
 .travis.yml.container

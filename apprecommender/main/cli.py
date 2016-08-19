@@ -2,17 +2,17 @@
 
 import xapian
 
-from apprecommender.main.app_recommender import AppRecommender
+from apprecommender.collaborative_data import CollaborativeDataError
 from apprecommender.config import Config
 from apprecommender.initialize import Initialize
 from apprecommender.strategy import (MachineLearning, MachineLearningBVA,
                                      MachineLearningBOW,
                                      MachineLearningTrainError)
+from apprecommender.main.app_recommender import AppRecommender
 from apprecommender.main import collect_user_data
 from apprecommender.main import show_classifications
 from apprecommender.main.apt_run import AptRun
 from apprecommender.main.options import get_parser
-from apprecommender.knn import KnnError
 
 SUCCESS = 0
 ERROR_INIT = 1
@@ -34,8 +34,8 @@ def parse_options(args, config):
         config.because = True
     if args['num_recommendations']:
         config.num_recommendations = args['num_recommendations']
-    if args['withknn']:
-        config.use_knn_desktopapps()
+    if args['with_collaborative']:
+        config.use_collaborative_desktopapps()
 
 
 def run_apprecommender(reference_pkgs):
@@ -78,15 +78,15 @@ def run_train():
     return SUCCESS
 
 
-def run_update_knn():
+def run_update_collaborative_data():
     print "Updating collaborative data"
     initialize = Initialize()
 
     try:
-        initialize.update_knn_data()
+        initialize.update_collaborative_data()
     except OSError:
         return PERMISSION_DENIED
-    except KnnError as error:
+    except CollaborativeDataError as error:
         print error
 
     return SUCCESS
@@ -109,8 +109,8 @@ def run(args):
         return run_initialize()
     elif args['train']:
         return run_train()
-    elif args['update_knn']:
-        return run_update_knn()
+    elif args['update_collaborative_data']:
+        return run_update_collaborative_data()
     elif args['contribute']:
         collect_user_data.main()
     elif args['show_classifications']:
