@@ -10,6 +10,7 @@ import xapian
 from apprecommender.config import Config
 from apprecommender.decider import PkgInitDecider
 from apprecommender.collaborative_data import (CollaborativeData,
+                                               PopconSubmission,
                                                DownloadCollaborativeData)
 
 
@@ -107,25 +108,18 @@ class Initialize:
         path = self.config.collaborative_desktopapps
         tags_filter = os.path.join(base_dir, "filters/debtags")
         load_data_path = self.config.popcon_clusters_dir
-        user_popcon_file = os.path.join(base_dir, "popcon_submission")
+
+        print "Collect user popularity-contest submission"
+        popcon_submission = PopconSubmission()
+        submission_pkgs = popcon_submission.get_submission_pkgs()
 
         print "Download popularity-contest cluster data"
         download_data = DownloadCollaborativeData(load_data_path)
         download_data.download()
 
-        error = False
-        if not os.path.exists(load_data_path):
-            print "Folder not founded: {}".format(load_data_path)
-            error = True
-        if not os.path.isfile(user_popcon_file):
-            print "File not founded: {}".format(user_popcon_file)
-            error = True
-
-        if error:
-            exit(1)
-
+        print "Loading popularity-contest cluster data"
         collaborative = CollaborativeData.load(load_data_path,
-                                               user_popcon_file)
+                                               submission_pkgs)
         pkgs = collaborative.user_cluster_pkgs
         valid_pkgs = [pkg for pkg in pkgs if self.pkg_init_decider(pkg)]
 
@@ -136,7 +130,7 @@ class Initialize:
 
         end_time = datetime.datetime.now()
         print("Collaborative data indexing completed at %s" % end_time)
-        print("Number of documents (pkgs): %d" % index.get_doccount())
+        print("Number of packages: %d" % index.get_doccount())
 
         delta = end_time - begin_time
         print("Time elapsed: %d seconds." % delta.seconds)

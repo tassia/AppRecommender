@@ -6,12 +6,14 @@ import os
 import shutil
 import unittest
 
-from apprecommender.collaborative_data import CollaborativeData
+from mock import patch
+
+from apprecommender.collaborative_data import (CollaborativeData,
+                                               PopconSubmission)
 
 
 COLLABORATIVE_DATA_DIR = 'apprecommender/tests/test_data/' \
                          '.popcon_clusters_tests/'
-USER_POPCON_FILE = COLLABORATIVE_DATA_DIR + 'popcon_for_test'
 INRELEASE_FILE = COLLABORATIVE_DATA_DIR + 'InRelease'
 CLUSTERS_FILE = COLLABORATIVE_DATA_DIR + 'clusters.txt'
 CLUSTERS_FILE_XZ = COLLABORATIVE_DATA_DIR + 'clusters.xz'
@@ -59,28 +61,23 @@ class CollaborativeDataTests(unittest.TestCase):
             text.write(pkgs_clusters)
         self.compress_file(PKGS_CLUSTERS_FILE, PKGS_CLUSTERS_FILE_XZ)
 
-    def create_user_popcon_file(self):
-        popcon_header = 'POPULARITY-CONTEST-0 TIME:370542026 ID:1popcon' \
-                        'ARCH:amd64 POPCONVER: VENDOR:Debian\n'
-
-        with open(USER_POPCON_FILE, 'wb') as text:
-            text.write(popcon_header)
-            text.write('15019500 154428337 vim /usr/bin/vim\n')
-            text.write('15019500 154428337 gedit /usr/bin/gedit\n')
-            text.write('END-POPULARITY-CONTEST-0 TIME:1464009355\n')
-
     def create_inrelease_file(self):
         command = "sha256sum {}*.xz > {}".format(COLLABORATIVE_DATA_DIR,
                                                  INRELEASE_FILE)
         commands.getoutput(command)
 
-    def test_load_collaborative_by_files(self):
+    @patch('apprecommender.collaborative_data.PopconSubmission.'
+           'get_submission_pkgs')
+    def test_load_collaborative_by_files(self, mock_submission_pkgs):
+        mock_submission_pkgs.return_value = ['vim', 'gedit']
+
         self.create_collaborative_data_dir()
-        self.create_user_popcon_file()
         self.create_inrelease_file()
 
+        popcon_submission = PopconSubmission()
+        submission_pkgs = popcon_submission.get_submission_pkgs()
         collaborative = CollaborativeData.load(COLLABORATIVE_DATA_DIR,
-                                               USER_POPCON_FILE)
+                                               submission_pkgs)
         shutil.rmtree(COLLABORATIVE_DATA_DIR)
 
         self.assertEqual(['ruby', 'vagrant', 'vim'],

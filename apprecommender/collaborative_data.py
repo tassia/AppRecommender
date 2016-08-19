@@ -6,6 +6,7 @@ import lzma
 import os
 import re
 import shutil
+import subprocess
 import wget
 
 import numpy as np
@@ -20,7 +21,7 @@ class CollaborativeData:
     This class its used to get the collaborative cluster data and find the
     each cluster the user belongs to
 
-    Main attributes:
+    Attributes:
 
     user - The packages of user popularity contest submission
     user_cluster_pkgs - The packages in cluster that the user belongs to
@@ -28,7 +29,7 @@ class CollaborativeData:
     """
 
     @staticmethod
-    def load(load_data_path, user_popcon_file_path):
+    def load(load_data_path, user_pkgs):
         collaborative = CollaborativeData()
         collaborative_loader = CollaborativeDataLoader(load_data_path)
 
@@ -36,7 +37,7 @@ class CollaborativeData:
         collaborative.clusters = collaborative_loader.load_clusters()
         collaborative.pkgs_clusters = collaborative_loader.load_pkgs_clusters()
 
-        collaborative.load_user_popcon_file(user_popcon_file_path)
+        collaborative.load_user_popcon_file(user_pkgs)
 
         return collaborative
 
@@ -45,25 +46,11 @@ class CollaborativeData:
         self.user_cluster_pkgs = {}
         self.user_cluster_index = None
 
-    def read_popcon_file(self, file_path):
-        file_path = os.path.expanduser(file_path)
-
-        match = re.compile(r'^\d+\s\d+\s([^\/\s]+)(?!.*<NOFILES>)',
-                           re.MULTILINE)
-        ifile = open(file_path)
-        text = ifile.read()
-        ifile.close()
-
-        popcon_entry = match.findall(text)
-
-        return popcon_entry
-
-    def create_user(self, popcon_file_path):
-        popcon_entry = self.read_popcon_file(popcon_file_path)
+    def create_user(self, user_pkgs):
         self.user = [0 for x in range(len(self.all_pkgs))]
 
         for pkg_index, pkg in enumerate(self.all_pkgs):
-            if pkg in popcon_entry:
+            if pkg in user_pkgs:
                 self.user[pkg_index] = 1
 
         return self.user
@@ -80,16 +67,29 @@ class CollaborativeData:
                                   self.pkgs_clusters.iteritems()
                                   if cluster in clusters]
 
-    def create_users_submissions_by_user_cluster(self):
-        np_users_clusters = np.array(self.users_clusters)
-        index = self.user_cluster_index
-        users_indices = np.where(np_users_clusters == index)[0].tolist()
-        self.submissions = self.loader.users(users_indices)
-
-    def load_user_popcon_file(self, popcon_file_path):
-        self.create_user(popcon_file_path)
+    def load_user_popcon_file(self, user_pkgs):
+        self.create_user(user_pkgs)
         self.create_user_cluster_index()
         self.create_user_cluster_pkgs()
+
+
+class PopconSubmission:
+
+    def __init__(self):
+        self.pkgs_regex = re.compile(r'^\d+\s\d+\s([^\/\s]+)(?!.*<NOFILES>)',
+                                     re.MULTILINE)
+
+    def get_submission_pkgs(self):
+        submission = self.generate_submission()
+
+        pkgs = self.pkgs_regex.findall(submission)
+
+        return pkgs
+
+    def generate_submission(self):
+        submission = subprocess.check_output('/usr/sbin/popularity-contest',
+                                             shell=True)
+        return submission
 
 
 class CollaborativeDataError(Exception):
