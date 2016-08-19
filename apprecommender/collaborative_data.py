@@ -16,6 +16,17 @@ from apprecommender.config import Config
 
 class CollaborativeData:
 
+    """
+    This class its used to get the collaborative cluster data and find the
+    each cluster the user belongs to
+
+    Main attributes:
+
+    user - The packages of user popularity contest submission
+    user_cluster_pkgs - The packages in cluster that the user belongs to
+    user_cluster_index - The index of cluster that the user belongs to
+    """
+
     @staticmethod
     def load(load_data_path, user_popcon_file_path):
         collaborative = CollaborativeData()
