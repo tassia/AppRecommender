@@ -97,12 +97,12 @@ def get_args():
 
     parser.add_argument(
         '--pre-install-pkgs',
-        help='Indentify installed packages before install the new packages',
+        help='Identify installed packages before install the new packages',
         action='store_true')
 
     parser.add_argument(
         '--post-invoke',
-        help='Indentify the installed packages and makes recommendation',
+        help='Identify the installed packages and makes recommendation',
         action='store_true')
 
     args = vars(parser.parse_args())
