@@ -37,7 +37,7 @@ class RecommendationResultTests(unittest.TestCase):
 
     def test_str(self):
         rec = '\n1: inkscape             \t vector-based drawing program\n'
-        rec += '2: gimp                 \t The GNU Image Manipulation Program\n'  # noqa
+        rec += '2: gimp                 \t GNU Image Manipulation Program\n'  # noqa
         rec += '3: eog                  \t Eye of GNOME graphics viewer program\n'  # noqa
         self.assertEqual(self.result.__str__(), rec)
 
